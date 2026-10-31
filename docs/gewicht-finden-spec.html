@@ -1,0 +1,1854 @@
+<title>Gewicht finden</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: Spezifikationsblatt in einer Spalte (max. 1080px). Oben das BPMN-Diagramm als helles Blatt mit eigener Scrollfläche, darunter die Regeln als nummerierte Abschnitte. Farben und Schrift wie die Gym-App. */
+:root{
+  --bg:#EDF0F3; --surface:#FFFFFF; --sunken:#E1E6EC; --fg:#12161B; --muted:#55606D; --faint:#8893A0; --line:#D3DAE2;
+  --accent:#1556D4; --accent-soft:#DDE7FA; --warn:#8F5600; --warn-soft:#FBEACB; --ok:#137A48; --ok-soft:#D9EFE2;
+  --sheet:#FFFFFF; --sheet-line:#D3DAE2;
+  --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E1114; --surface:#171B20; --sunken:#262C34; --fg:#ECEFF3; --muted:#9CA6B2; --faint:#6E7986; --line:#2A3139;
+  --accent:#73A0FF; --accent-soft:#1A2948; --warn:#F0B04A; --warn-soft:#33260F; --ok:#4CC88A; --ok-soft:#13301F;
+  --sheet:#FFFFFF; --sheet-line:#3B444F; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0E1114; --surface:#171B20; --sunken:#262C34; --fg:#ECEFF3; --muted:#9CA6B2; --faint:#6E7986; --line:#2A3139;
+  --accent:#73A0FF; --accent-soft:#1A2948; --warn:#F0B04A; --warn-soft:#33260F; --ok:#4CC88A; --ok-soft:#13301F;
+  --sheet:#FFFFFF; --sheet-line:#3B444F; color-scheme:dark;
+}
+/**
+ * Semantic tokens, copied from `@bpmn-io/theme` to style the components
+ * according to this theme.
+ *
+ * Names and values of the tokens should stay intact with the `@bpmn-io/theme`
+ * source of truth, to ensure matching styles and allow overrides with an
+ * alternative theme.
+ */
+.bio-theme-parent {
+  --bio-surface: hsl(0, 0%, 100%);
+  --bio-surface-overlay: hsl(0, 0%, 100%);
+  --bio-surface-subtle: hsl(225, 10%, 97%);
+  --bio-surface-medium: hsl(225, 10%, 95%);
+  --bio-surface-inverted: hsl(0, 0%, 22%);
+  --bio-surface-inverted-subtle: hsl(225, 10%, 35%);
+  --bio-text: hsl(225, 10%, 15%);
+  --bio-text-subtle: hsl(225, 10%, 35%);
+  --bio-text-subtlest: hsl(225, 10%, 55%);
+  --bio-text-on-inverted: hsl(0, 0%, 100%);
+  --bio-border: hsl(225, 10%, 75%);
+  --bio-border-disabled: hsl(225, 10%, 90%);
+  --bio-primary: hsl(205, 100%, 40%);
+  --bio-primary-surface: hsl(205, 100%, 95%);
+  --bio-danger: hsl(360, 100%, 45%);
+  --bio-danger-surface-subtle: hsl(360, 100%, 97%);
+  --bio-selected-surface: var(--bio-surface-medium);
+  --bio-selected-text: var(--bio-text);
+  --bio-focus: hsl(205, 100%, 40%);
+  --bio-focus-surface: hsl(205, 100%, 95%);
+  --bio-canvas-accent: hsl(205, 100%, 40%);
+  --bio-canvas-accent-subtle: hsl(205, 100%, 75%);
+  --bio-shadow: hsla(0, 0%, 0%, 30%);
+  --bio-shadow-subtle: hsla(0, 0%, 0%, 10%);
+  --bio-radius-sm: 2px;
+  --bio-radius-md: 3px;
+  --bio-radius-lg: 4px;
+}
+
+/**
+ * color definitions
+ *
+ * Colours resolve through the semantic tokens in `@bpmn-io/theme`; a handful of
+ * values with no matching token stay literal.
+ */
+.djs-parent {
+
+  --button-border-radius: var(--bio-radius-md);
+  --input-border-radius: var(--bio-radius-sm);
+  --surface-border-radius: var(--bio-radius-lg);
+
+  --canvas-fill-color: var(--bio-surface);
+
+  --accent-color: var(--bio-canvas-accent);
+
+  --bendpoint-fill-color: var(--bio-canvas-accent);
+  --bendpoint-stroke-color: var(--canvas-fill-color);
+
+  --context-pad-entry-background-color: var(--bio-surface);
+  --context-pad-entry-hover-background-color: var(--bio-surface-medium);
+
+  --element-dragger-color: var(--accent-color);
+  --element-selected-outline-stroke-color: var(--accent-color);
+  --element-selected-outline-secondary-stroke-color: var(--bio-canvas-accent-subtle);
+
+  --lasso-fill-color: color-mix(in srgb, var(--bio-canvas-accent) 15%, transparent);
+  --lasso-stroke-color: var(--element-selected-outline-stroke-color);
+
+  --palette-entry-color: var(--bio-text);
+  --palette-entry-hover-color: var(--bio-primary);
+  --palette-entry-selected-color: var(--bio-primary);
+  --palette-separator-color: var(--bio-border);
+  --palette-toggle-hover-background-color: var(--bio-surface-medium);
+  --palette-background-color: var(--bio-surface-subtle);
+  --palette-border-color: var(--bio-border);
+
+  --popup-font-family: "IBM Plex Sans", sans-serif;
+  --popup-font-size: 14px;
+  --popup-secondary-font-size: .9em;
+  --popup-header-entry-selected-color: var(--bio-primary);
+  --popup-header-font-weight: bolder;
+  --popup-header-group-divider-color: var(--bio-border);
+  --popup-background-color: var(--bio-surface-overlay);
+  --popup-border-color: transparent;
+  --popup-shadow-color: var(--bio-shadow);
+  /* translucent, so the thumb darkens whatever it scrolls over */
+  --popup-scrollbar-thumb-color: rgba(0, 0, 0, 0.2);
+  --popup-button-background-color: var(--bio-surface-overlay);
+  --popup-button-hover-background-color: var(--bio-surface-medium);
+  --popup-disabled-color: var(--bio-text-subtle);
+  --popup-description-color: var(--bio-text-subtle);
+  --popup-no-results-color: var(--bio-text-subtlest);
+  --popup-entry-title-color: var(--bio-text-subtlest);
+
+  --popup-entry-selected-background-color: var(--bio-selected-surface);
+  --popup-entry-selected-color: var(--bio-selected-text);
+  --popup-search-border-color: var(--bio-border);
+  --popup-search-focus-border-color: var(--bio-focus);
+  --popup-search-focus-background-color: var(--bio-focus-surface);
+  --popup-tab-color: var(--bio-text-subtlest);
+  --popup-tab-hover-color: var(--bio-text);
+  --popup-tab-active-color: var(--bio-text);
+  --popup-tab-active-border-color: var(--bio-primary);
+  --popup-tab-strip-border-color: var(--bio-border-disabled);
+  --popup-tab-focus-border-color: var(--bio-focus);
+
+  --resizer-fill-color: var(--bio-canvas-accent);
+  --resizer-stroke-color: var(--canvas-fill-color);
+
+  --search-font-family: "IBM Plex Sans", sans-serif;
+  --search-font-size: 14px;
+  --search-container-background-color: var(--bio-surface-overlay);
+  --search-shadow-color: var(--bio-shadow);
+  --search-input-border-color: var(--bio-border);
+  --search-input-focus-border-color: var(--bio-focus);
+  --search-input-focus-background-color: var(--bio-primary-surface);
+  --search-result-hover-background-color: var(--bio-surface-medium);
+  --search-result-secondary-color: var(--bio-text-subtlest);
+  --search-preselected-background-color: color-mix(in srgb, var(--bio-canvas-accent) 15%, transparent);
+
+  --shape-attach-allowed-stroke-color: var(--accent-color);
+  --shape-connect-allowed-fill-color: var(--bio-surface-subtle);
+  --shape-drop-allowed-fill-color: var(--bio-surface-subtle);
+  --shape-drop-not-allowed-fill-color: var(--bio-danger-surface-subtle);
+  --shape-resize-preview-stroke-color: var(--accent-color);
+
+  --snap-line-stroke-color: color-mix(in srgb, var(--bio-canvas-accent) 30%, transparent);
+
+  --space-tool-crosshair-stroke-color: var(--bio-text);
+
+  --tooltip-error-background-color: var(--bio-danger-surface-subtle);
+  --tooltip-error-border-color: var(--bio-danger);
+  --tooltip-error-color: var(--bio-danger);
+
+  --hover-tooltip-font-family: "IBM Plex Sans", sans-serif;
+  --hover-tooltip-font-size: 12px;
+  --hover-tooltip-secondary-font-size: 11px;
+  --hover-tooltip-background-color: var(--bio-surface-inverted);
+  --hover-tooltip-color: var(--bio-text-on-inverted);
+  --hover-tooltip-shadow-color: var(--bio-shadow-subtle);
+
+  --palette-tooltip-shortcut-background-color: var(--bio-surface-inverted-subtle);
+}
+
+/**
+ * SVG styles
+ */
+
+.djs-container svg.drop-not-ok {
+  background: var(--shape-drop-not-allowed-fill-color) !important;
+}
+
+.djs-container svg.new-parent {
+  background: var(--shape-drop-allowed-fill-color) !important;
+}
+
+.djs-container svg:focus {
+  outline-offset: -1px;
+}
+
+/**
+ * outline styles
+ */
+
+.djs-outline,
+.djs-selection-outline {
+  fill: none;
+  shape-rendering: geometricPrecision;
+  stroke-width: 2px;
+}
+
+.djs-outline {
+  visibility: hidden;
+}
+
+.djs-selection-outline {
+  stroke: var(--element-selected-outline-stroke-color);
+}
+
+.djs-element.selected .djs-outline {
+  visibility: visible;
+
+  stroke: var(--element-selected-outline-stroke-color);
+}
+
+.djs-connection.selected .djs-outline {
+  display: none;
+}
+
+.djs-multi-select .djs-element.selected .djs-outline,
+.djs-dragging-active-lasso .djs-element.selected .djs-outline {
+  stroke: var(--element-selected-outline-secondary-stroke-color);
+  display: block;
+}
+
+.djs-outline-hidden .djs-outline {
+  display: none !important;
+}
+
+.djs-shape.connect-ok .djs-visual > :nth-child(1) {
+  fill: var(--shape-connect-allowed-fill-color) !important;
+}
+
+.djs-shape.connect-not-ok .djs-visual > :nth-child(1),
+.djs-shape.drop-not-ok .djs-visual > :nth-child(1) {
+  fill: var(--shape-drop-not-allowed-fill-color) !important;
+}
+
+.djs-shape.new-parent .djs-visual > :nth-child(1) {
+  fill: var(--shape-drop-allowed-fill-color) !important;
+}
+
+
+/* Override move cursor during drop and connect */
+.drop-not-ok,
+.connect-not-ok,
+.drop-not-ok *,
+.connect-not-ok * {
+  cursor: not-allowed !important;
+}
+
+.drop-ok,
+.connect-ok,
+.drop-ok *,
+.connect-ok * {
+  cursor: default !important;
+}
+
+.djs-element.attach-ok .djs-visual > :nth-child(1) {
+  stroke-width: 5px !important;
+  stroke: var(--shape-attach-allowed-stroke-color) !important;
+}
+
+.djs-frame.connect-not-ok .djs-visual > :nth-child(1),
+.djs-frame.drop-not-ok .djs-visual > :nth-child(1) {
+  stroke-width: 3px !important;
+  stroke: var(--shape-drop-not-allowed-fill-color) !important;
+  fill: none !important;
+}
+
+/**
+* Selection box style
+*
+*/
+.djs-lasso-overlay {
+  fill: var(--lasso-fill-color);
+  stroke: var(--lasso-stroke-color);
+  stroke-width: 2px;
+  shape-rendering: geometricPrecision;
+  pointer-events: none;
+}
+
+/**
+ * Resize styles
+ */
+.djs-resize-overlay {
+  fill: none;
+
+  stroke-dasharray: 5 1 3 1;
+  stroke: var(--shape-resize-preview-stroke-color);
+
+  pointer-events: none;
+}
+
+.djs-resizer-hit {
+  fill: none;
+  pointer-events: all;
+}
+
+.djs-resizer-visual {
+  fill: var(--resizer-fill-color);
+  stroke-width: 1px;
+  stroke: var(--resizer-stroke-color);
+  shape-rendering: geometricPrecision;
+}
+
+.djs-resizer:hover .djs-resizer-visual {
+  stroke: var(--resizer-stroke-color);
+  stroke-opacity: 1;
+}
+
+.djs-cursor-resize-ns,
+.djs-resizer-n,
+.djs-resizer-s {
+  cursor: ns-resize;
+}
+
+.djs-cursor-resize-ew,
+.djs-resizer-e,
+.djs-resizer-w {
+  cursor: ew-resize;
+}
+
+.djs-cursor-resize-nwse,
+.djs-resizer-nw,
+.djs-resizer-se {
+  cursor: nwse-resize;
+}
+
+.djs-cursor-resize-nesw,
+.djs-resizer-ne,
+.djs-resizer-sw {
+  cursor: nesw-resize;
+}
+
+.djs-shape.djs-resizing > .djs-outline {
+  visibility: hidden !important;
+}
+
+.djs-shape.djs-resizing > .djs-resizer {
+  visibility: hidden;
+}
+
+.djs-dragger > .djs-resizer {
+  visibility: hidden;
+}
+
+/**
+ * drag styles
+ */
+.djs-dragger * {
+  fill: none !important;
+  stroke: var(--element-dragger-color) !important;
+}
+
+.djs-dragger tspan,
+.djs-dragger text {
+  fill: var(--element-dragger-color) !important;
+  stroke: none !important;
+}
+
+.djs-dragger marker circle,
+.djs-dragger marker path,
+.djs-dragger marker polygon,
+.djs-dragger marker polyline,
+.djs-dragger marker rect {
+  fill: var(--element-dragger-color) !important;
+  stroke: none !important;
+}
+
+.djs-dragger marker text,
+.djs-dragger marker tspan {
+  fill: none !important;
+  stroke: var(--element-dragger-color) !important;
+}
+
+.djs-dragging,
+.djs-dragging > * {
+  opacity: 0.3 !important;
+  pointer-events: none !important;
+}
+
+/**
+ * no pointer events for visual
+ */
+.djs-visual,
+.djs-outline {
+  pointer-events: none;
+}
+
+.djs-element.attach-ok .djs-hit {
+  stroke-width: 60px !important;
+}
+
+/**
+ * all pointer events for hit shape
+ */
+.djs-element > .djs-hit-all,
+.djs-element > .djs-hit-no-move {
+  pointer-events: all;
+}
+
+.djs-element > .djs-hit-stroke,
+.djs-element > .djs-hit-click-stroke {
+  pointer-events: stroke;
+}
+
+/**
+ * shape / connection basic styles
+ */
+.djs-connection .djs-visual {
+  stroke-width: 2px;
+  fill: none;
+}
+
+.djs-cursor-grab {
+  cursor: -webkit-grab;
+  cursor: -moz-grab;
+  cursor: grab;
+}
+
+.djs-cursor-grabbing {
+  cursor: -webkit-grabbing;
+  cursor: -moz-grabbing;
+  cursor: grabbing;
+}
+
+.djs-cursor-crosshair {
+  cursor: crosshair;
+}
+
+.djs-cursor-move {
+  cursor: move;
+}
+
+.djs-cursor-resize-ns {
+  cursor: ns-resize;
+}
+
+.djs-cursor-resize-ew {
+  cursor: ew-resize;
+}
+
+
+/**
+ * snapping
+ */
+.djs-snap-line {
+  stroke: var(--snap-line-stroke-color);
+  stroke-linecap: round;
+  stroke-width: 2px;
+  pointer-events: none;
+}
+
+/**
+ * snapping
+ */
+.djs-crosshair {
+  stroke: var(--space-tool-crosshair-stroke-color);
+  stroke-linecap: round;
+  stroke-width: 1px;
+  pointer-events: none;
+  shape-rendering: geometricPrecision;
+  stroke-dasharray: 5, 5;
+}
+
+/**
+ * palette
+ */
+
+.djs-palette {
+  position: absolute;
+  left: 20px;
+  top: 20px;
+
+  box-sizing: border-box;
+  width: 48px;
+}
+
+.djs-palette .separator {
+  margin: 5px;
+  padding-top: 5px;
+
+  border: none;
+  border-bottom: solid 1px var(--palette-separator-color);
+
+  clear: both;
+}
+
+.djs-palette .entry:before {
+  vertical-align: initial;
+}
+
+.djs-palette .djs-palette-toggle {
+  cursor: pointer;
+}
+
+.djs-palette .entry,
+.djs-palette .djs-palette-toggle {
+  color: var(--palette-entry-color);
+  font-size: 30px;
+
+  text-align: center;
+}
+
+.djs-palette .entry {
+  float: left;
+}
+
+.djs-palette .entry img {
+  max-width: 100%;
+}
+
+.djs-palette .djs-palette-entries:after {
+  content: '';
+  display: table;
+  clear: both;
+}
+
+.djs-palette .djs-palette-toggle:hover {
+  background: var(--palette-toggle-hover-background-color);
+}
+
+.djs-palette .entry:hover {
+  color: var(--palette-entry-hover-color);
+}
+
+.djs-palette .highlighted-entry {
+  color: var(--palette-entry-selected-color) !important;
+}
+
+.djs-palette .entry,
+.djs-palette .djs-palette-toggle {
+  width: 46px;
+  height: 46px;
+  line-height: 46px;
+  cursor: default;
+}
+
+/**
+ * Palette open / two-column layout is controlled via
+ * classes on the palette. Events to hook into palette
+ * changed life-cycle are available in addition.
+ */
+.djs-palette.two-column.open {
+  width: 94px;
+}
+
+.djs-palette:not(.open) .djs-palette-entries {
+  display: none;
+}
+
+.djs-palette:not(.open) {
+  overflow: hidden;
+}
+
+.djs-palette.open .djs-palette-toggle {
+  display: none;
+}
+
+.djs-hover-tooltip {
+  position: fixed;
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 6px 10px;
+  border-radius: var(--surface-border-radius);
+
+  background-color: var(--hover-tooltip-background-color);
+  color: var(--hover-tooltip-color);
+
+  font-family: var(--hover-tooltip-font-family);
+  font-size: var(--hover-tooltip-font-size);
+  line-height: 1.2;
+  white-space: nowrap;
+
+  pointer-events: none;
+  box-shadow: 0 1px 4px var(--hover-tooltip-shadow-color);
+}
+
+.djs-hover-tooltip--right {
+  transform: translateY(-50%);
+}
+
+.djs-hover-tooltip--top {
+  transform: translate(-50%, -100%);
+}
+
+.djs-palette-tooltip-shortcut {
+  padding: 1px 5px;
+
+  border-radius: var(--button-border-radius);
+
+  background-color: var(--palette-tooltip-shortcut-background-color);
+
+  font-family: monospace;
+  font-size: var(--hover-tooltip-secondary-font-size);
+  line-height: 1.2;
+}
+
+/**
+ * context-pad
+ */
+.djs-context-pad {
+  position: absolute;
+  display: none;
+  pointer-events: none;
+  line-height: 1;
+  width: 72px;
+  z-index: 100;
+}
+
+.djs-context-pad .entry {
+  width: 22px;
+  height: 22px;
+  text-align: center;
+  display: inline-block;
+  font-size: 22px;
+  margin: 0 2px 2px 0;
+
+  border-radius: 3px;
+
+  cursor: default;
+
+  background-color: var(--context-pad-entry-background-color);
+  box-shadow: 0 0 2px 1px var(--context-pad-entry-background-color);
+  pointer-events: all;
+  vertical-align: middle;
+}
+
+.djs-context-pad .entry:hover {
+  background: var(--context-pad-entry-hover-background-color);
+}
+
+.djs-context-pad.open {
+  display: block;
+}
+
+/**
+ * popup styles
+ */
+.djs-popup {
+  line-height: 1;
+  box-sizing: border-box;
+  background: var(--popup-background-color);
+  overflow: hidden;
+  position: fixed;
+  z-index: 200;
+  box-shadow: 0px 2px 6px var(--popup-shadow-color);
+  border: solid 1px var(--popup-border-color);
+  min-width: 120px;
+  max-width: 300px;
+  outline: none;
+  font-size: var(--popup-font-size);
+  font-family: var(--popup-font-family);
+}
+
+.djs-popup-search input {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: var(--popup-font-size);
+  padding: 3px 6px 3px 28px;
+  border-radius: var(--input-border-radius);
+  border: solid 1px var(--popup-search-border-color);
+  line-height: 21px;
+}
+
+.djs-popup-search input:focus {
+  background-color: var(--popup-search-focus-background-color);
+  border: solid 1px var(--popup-search-focus-border-color);
+  outline: none;
+}
+
+.djs-popup-header {
+  display: flex;
+  align-items: stretch;
+  line-height: 20px;
+  margin: 10px 12px 10px 12px;
+}
+
+.djs-popup-header .entry {
+  border-radius: 2px;
+}
+
+.djs-popup button.entry {
+  padding: 0;
+  background: transparent;
+  border: 0;
+}
+
+.djs-popup-header .entry.active {
+  color: var(--popup-header-entry-selected-color);
+}
+
+.djs-popup-header .entry.disabled {
+  color: inherit;
+}
+
+.djs-popup-header-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.djs-popup-header-group .entry {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.djs-popup-header-group + .djs-popup-header-group:before {
+  content: '';
+  width: 1px;
+  height: 20px;
+  background: var(--popup-header-group-divider-color);
+  margin: 0 5px;
+}
+
+.djs-popup-search {
+  position: relative;
+  width: auto;
+  margin: 10px 12px;
+}
+
+.djs-popup-tabs-container {
+  position: relative;
+  border-bottom: solid 1px var(--popup-tab-strip-border-color);
+}
+
+/**
+ * The scroll control doubles as the edge fade: tabs scrolled past it fade out
+ * rather than being cut off behind an opaque block.
+ */
+.djs-popup-tabs-scroll {
+  appearance: none;
+  position: absolute;
+  top: 0;
+  bottom: 1px;
+  width: 28px;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  color: var(--popup-tab-color);
+  cursor: pointer;
+}
+
+.djs-popup-tabs-scroll:hover {
+  color: var(--popup-tab-hover-color);
+}
+
+.djs-popup-tabs-scroll-start {
+  left: 0;
+  justify-content: flex-start;
+  background: linear-gradient(to left, transparent, var(--popup-background-color) 60%);
+}
+
+.djs-popup-tabs-scroll-end {
+  right: 0;
+  justify-content: flex-end;
+  background: linear-gradient(to right, transparent, var(--popup-background-color) 60%);
+}
+
+.djs-popup-tabs-scroll-start svg {
+  transform: rotate(180deg);
+}
+
+.djs-popup-tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 2px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0 12px;
+
+  /* keep scrolled-to tabs clear of the scroll controls */
+  scroll-padding: 0 28px;
+  scrollbar-width: none;
+}
+
+.djs-popup-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.djs-popup-tab {
+  appearance: none;
+  background: transparent;
+  border: none;
+  border-bottom: solid 2px transparent;
+  border-radius: 0;
+  flex: 0 0 auto;
+  padding: 6px 10px;
+  font: inherit;
+  font-size: var(--popup-font-size);
+  color: var(--popup-tab-color);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.djs-popup-tab:hover {
+  color: var(--popup-tab-hover-color);
+}
+
+.djs-popup-tab:focus-visible {
+  outline: solid 1px var(--popup-tab-focus-border-color);
+  outline-offset: -2px;
+}
+
+.djs-popup-tab[aria-selected="true"] {
+  color: var(--popup-tab-active-color);
+  border-bottom-color: var(--popup-tab-active-border-color);
+  font-weight: var(--popup-header-font-weight);
+}
+
+.djs-popup-title {
+  font-size: var(--popup-font-size);
+  font-weight: var(--popup-header-font-weight);
+  flex: 1;
+  margin: 0;
+}
+
+.djs-popup-breadcrumbs {
+  display: flex;
+  line-height: 20px;
+  margin: 10px 12px;
+}
+
+.djs-popup-breadcrumbs-item {
+  display: inline-flex;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: 0;
+  outline: none;
+  appearance: none;
+  color: var(--popup-description-color);
+  font: inherit;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.djs-popup-breadcrumbs-item--separator::before {
+  display: inline-block;
+  content: '/';
+  color: var(--popup-description-color);
+  margin: 0 4px;
+}
+
+.djs-popup-breadcrumbs-item:hover {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.djs-popup-breadcrumbs-item:focus-visible {
+  outline: 1px solid var(--popup-search-focus-border-color);
+  outline-offset: 2px;
+}
+
+.djs-popup-breadcrumbs-item--back {
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 2px 3px;
+  margin-right: 6px;
+  border: 1px solid var(--popup-search-border-color);
+  border-radius: 4px;
+}
+
+.djs-popup-breadcrumbs-item--back:hover {
+  background: var(--popup-button-hover-background-color);
+}
+
+.djs-popup-breadcrumbs-item--current {
+  font-weight: var(--popup-header-font-weight);
+  color: inherit;
+  cursor: default;
+}
+
+.djs-popup-breadcrumbs-item--current:hover {
+  text-decoration: none;
+}
+
+.djs-popup-entry-actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 6px;
+  margin-left: 6px;
+}
+
+.djs-popup-entry-chevron {
+  display: flex;
+  align-items: center;
+  color: var(--popup-description-color);
+}
+
+.djs-popup-search-icon {
+  position: absolute;
+  left: 8px;
+  top: 7px;
+}
+
+.djs-popup-search-count {
+  margin: 0 12px;
+  font-size: var(--popup-secondary-font-size);
+  color: var(--popup-description-color);
+}
+
+.djs-popup-results {
+  margin: 7px 3px 7px 12px;
+  list-style: none;
+  max-height: 280px;
+  overflow: auto;
+  padding-right: 9px;
+}
+
+/**
+ * The results list is focusable (as a listbox holding
+ * `aria-activedescendant`) when there is no search field.
+ * The active entry is indicated via `.entry.selected`, so we hide
+ * the outline on the list container itself.
+ */
+.djs-popup-results:focus {
+  outline: none;
+}
+
+.djs-popup-group {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.djs-popup-body .entry,
+.djs-popup-body .entry-header {
+  padding: 5px 7px;
+  cursor: default;
+  border-radius: 4px;
+}
+
+.djs-popup-body .entry-header {
+  font-weight: var(--popup-header-font-weight);
+  color: var(--popup-entry-title-color);
+  padding-left: 0;
+}
+
+.djs-popup [class*="icon"] .djs-popup-label,
+.djs-popup-label:not(:first-child) {
+  margin-left: .5em;
+}
+
+.djs-popup [class*="icon"]:before,
+.djs-popup-entry-icon {
+  width: 1em;
+  height: 1em;
+  display: inline-block;
+  font-size: 1.4em;
+  vertical-align: middle;
+}
+
+.djs-popup-body .entry-header:not(:first-child) {
+  margin-top: 8px;
+  margin-bottom: 2px;
+}
+
+.djs-popup-body .entry {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  height: min-content;
+}
+
+.djs-popup .entry.selected {
+  color: var(--popup-entry-selected-color);
+  background-color: var(--popup-entry-selected-background-color);
+}
+
+.djs-popup .entry.disabled {
+  color: var(--popup-disabled-color);
+  cursor: not-allowed;
+}
+
+.djs-popup-body .entry:not(:first-child) {
+  margin-top: 2px;
+}
+
+.djs-popup-entry-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.djs-popup-entry-description {
+  font-size: var(--popup-secondary-font-size);
+  margin-top: .25em;
+
+  color: var(--popup-description-color);
+}
+
+.djs-popup-label,
+.djs-popup-entry-description {
+  line-height: 1.4em;
+}
+
+.djs-popup .entry,
+.djs-popup .entry-header {
+  margin: 1px;
+}
+
+.djs-popup-body {
+  flex-direction: column;
+  width: auto;
+}
+
+.djs-popup *::-webkit-scrollbar {
+  width: 6px;
+}
+
+.djs-popup *::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background-color: var(--popup-scrollbar-thumb-color);
+}
+
+.djs-popup *::-webkit-scrollbar-track {
+  box-shadow: none;
+  background: transparent;
+  margin: 0;
+  padding: 5px;
+}
+
+.djs-popup-no-results {
+  padding: 0 12px 12px 12px;
+  color: var(--popup-no-results-color);
+}
+
+.djs-popup-footer {
+  display: flex;
+  padding: 5px 12px 7px 12px;
+  border-top: solid 1px var(--popup-border-color);
+}
+
+/**
+ * The footer holds the keyboard/assistive-technology reachable documentation
+ * link. Pointer interaction switches the popup to the per-entry
+ * `.djs-popup-entry-docs` affordance instead.
+ */
+.djs-popup--pointer .djs-popup-footer {
+  display: none;
+}
+
+.djs-popup-entry-docs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  visibility: hidden;
+  padding: 2px 3px;
+  color: var(--popup-description-color);
+  background: var(--popup-button-background-color);
+  border: 1px solid var(--popup-search-border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color .12s ease, border-color .12s ease, color .12s ease;
+}
+
+.djs-popup--pointer .djs-popup-body .entry:hover .djs-popup-entry-docs {
+  visibility: visible;
+}
+
+.djs-popup-body .entry .djs-popup-entry-docs:hover {
+  background: var(--popup-button-hover-background-color);
+}
+
+.djs-popup-entry-docs svg {
+  vertical-align: middle;
+}
+
+.djs-popup-footer-docs {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--popup-secondary-font-size);
+  color: var(--popup-description-color);
+  text-decoration: none;
+}
+
+.djs-popup-footer-docs:hover {
+  text-decoration: underline;
+}
+
+.djs-popup-footer-docs svg {
+  vertical-align: middle;
+  margin: 2px;
+}
+
+/**
+ *  palette styles
+ */
+.djs-palette {
+  background: var(--palette-background-color);
+  border: solid 1px var(--palette-border-color);
+  border-radius: var(--surface-border-radius);
+}
+
+/**
+ * bendpoints
+ */
+.djs-segment-dragger,
+.djs-bendpoint {
+  display: none;
+}
+
+.djs-segment-dragger .djs-visual {
+  display: none;
+
+  fill: var(--bendpoint-fill-color);
+  stroke: var(--bendpoint-stroke-color);
+  stroke-width: 1px;
+  stroke-opacity: 1;
+}
+
+.djs-segment-dragger:hover .djs-visual {
+  display: block;
+}
+
+.djs-bendpoint .djs-visual {
+  fill: var(--bendpoint-fill-color);
+  stroke: var(--bendpoint-stroke-color);
+  stroke-width: 1px;
+}
+
+.djs-segment-dragger:hover,
+.djs-bendpoints.hover .djs-segment-dragger,
+.djs-bendpoints.selected .djs-segment-dragger,
+.djs-bendpoint:hover,
+.djs-bendpoints.hover .djs-bendpoint,
+.djs-bendpoints.selected .djs-bendpoint {
+  display: block;
+}
+
+.djs-drag-active .djs-bendpoints * {
+  display: none;
+}
+
+.djs-bendpoints:not(.hover) .floating {
+  display: none;
+}
+
+.djs-bendpoint.floating:not(.positioned) {
+  display: none;
+}
+
+.djs-segment-dragger:hover .djs-visual,
+.djs-segment-dragger.djs-dragging .djs-visual,
+.djs-bendpoint:hover .djs-visual,
+.djs-bendpoint.floating .djs-visual {
+  fill: var(--bendpoint-fill-color);
+  stroke: var(--bendpoint-stroke-color);
+  stroke-opacity: 1;
+}
+
+.djs-bendpoint.floating .djs-hit {
+  pointer-events: none;
+}
+
+.djs-segment-dragger .djs-hit,
+.djs-bendpoint .djs-hit {
+  fill: none;
+  pointer-events: all;
+}
+
+.djs-segment-dragger.horizontal .djs-hit {
+  cursor: ns-resize;
+}
+
+.djs-segment-dragger.vertical .djs-hit {
+  cursor: ew-resize;
+}
+
+.djs-segment-dragger.djs-dragging .djs-hit {
+  pointer-events: none;
+}
+
+.djs-updating,
+.djs-updating > * {
+  pointer-events: none !important;
+}
+
+.djs-updating .djs-context-pad,
+.djs-updating .djs-outline,
+.djs-updating .djs-bendpoint,
+.djs-multi-select .djs-bendpoint,
+.djs-multi-select .djs-segment-dragger,
+.connect-ok .djs-bendpoint,
+.connect-not-ok .djs-bendpoint,
+.drop-ok .djs-bendpoint,
+.drop-not-ok .djs-bendpoint {
+  display: none !important;
+}
+
+.djs-segment-dragger.djs-dragging,
+.djs-bendpoint.djs-dragging {
+  display: block;
+  opacity: 1.0;
+}
+
+
+/**
+ * tooltips
+ */
+.djs-tooltip-error {
+  width: 160px;
+  padding: 6px;
+
+  background: var(--tooltip-error-background-color);
+  border: solid 1px var(--tooltip-error-border-color);
+  border-radius: var(--surface-border-radius);
+  color: var(--tooltip-error-color);
+  font-size: 12px;
+  line-height: 16px;
+
+  opacity: 0.75;
+}
+
+.djs-tooltip-error:hover {
+  opacity: 1;
+}
+
+
+/**
+ * search pad
+ */
+.djs-search-open .djs-context-pad {
+  display: none;
+}
+
+.djs-search-open .djs-connection.selected .djs-outline {
+  display: block;
+}
+
+.djs-search-container {
+  position: absolute;
+  top: 20px;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+
+  width: 25%;
+  min-width: 300px;
+  max-width: 400px;
+  z-index: 10;
+
+  font-family: var(--search-font-family);
+  font-size: var(--search-font-size);
+  border-radius: var(--surface-border-radius);
+  box-shadow: 0px 2px 6px var(--search-shadow-color);
+}
+
+.djs-search-container:not(.open) {
+  display: none;
+}
+
+.djs-search-input {
+  position: relative;
+}
+
+.djs-search-input svg {
+  position: absolute;
+  left: 8px;
+  top: 7px;
+}
+
+.djs-search-input input {
+  font-size: var(--search-font-size);
+  width: 100%;
+  padding: 3px 6px 3px 28px;
+  border: 1px solid var(--search-input-border-color);
+  border-radius: var(--input-border-radius);
+  box-sizing: border-box;
+  line-height: 21px;
+}
+
+.djs-search-input input:focus {
+  background-color: var(--search-input-focus-background-color);
+  border: solid 1px var(--search-input-focus-border-color);
+  outline: none;
+}
+
+.djs-search-results {
+  position: relative;
+  overflow-y: auto;
+  max-height: 200px;
+  background: var(--search-container-background-color);
+}
+
+.djs-search-result {
+  padding: 6px 8px;
+}
+
+.djs-search-result-primary {
+  margin: 0 0 3px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.djs-search-result-secondary {
+  font-family: monospace;
+  margin: 0;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  color: var(--search-result-secondary-color);
+}
+
+.djs-search-result:hover {
+  background: var(--search-result-hover-background-color);
+}
+
+.djs-search-result-selected {
+  background: var(--search-result-hover-background-color);
+}
+
+.djs-search-result-selected:hover {
+  background: var(--search-result-hover-background-color);
+}
+
+.djs-search-open .djs-element .djs-outline {
+  fill: var(--search-preselected-background-color) !important;
+}
+
+/**
+ * hidden styles
+ */
+.djs-element-hidden,
+.djs-element-hidden .djs-hit,
+.djs-element-hidden .djs-outline,
+.djs-label-hidden .djs-label {
+  display: none !important;
+}
+
+.djs-element .djs-hit-stroke,
+.djs-element .djs-hit-click-stroke,
+.djs-element .djs-hit-all {
+  cursor: move;
+}
+/**
+ * Semantic tokens, copied from `@bpmn-io/theme` to style the components
+ * according to this theme.
+ *
+ * Names and values of the tokens should stay intact with the `@bpmn-io/theme`
+ * source of truth, to ensure matching styles and allow overrides with an
+ * alternative theme.
+ */
+.bio-theme-parent {
+  --bio-surface-subtle: hsl(225, 10%, 97%);
+  --bio-text-on-primary: hsl(0, 0%, 100%);
+  --bio-border: hsl(225, 10%, 75%);
+  --bio-primary: hsl(205, 100%, 40%);
+  --bio-focus: hsl(205, 100%, 40%);
+  --bio-radius-md: 3px;
+  --bio-radius-lg: 4px;
+}
+
+.bjs-container {
+  --bjs-font-family: Arial, sans-serif;
+
+  --accent-color: var(--bio-primary);
+
+  --breadcrumbs-font-family: var(--bjs-font-family);
+  --breadcrumbs-item-color: var(--accent-color);
+  --breadcrumbs-background-color: var(--bio-surface-subtle);
+  --breadcrumbs-border-color: var(--bio-border);
+  --breadcrumbs-focus-outline-color: var(--bio-focus);
+  --drilldown-fill-color: var(--bio-text-on-primary);
+  --drilldown-background-color: var(--accent-color);
+  --drilldown-focus-outline-color: var(--bio-focus);
+
+  --button-border-radius: var(--bio-radius-md);
+  --surface-border-radius: var(--bio-radius-lg);
+}
+
+.bjs-breadcrumbs {
+  position: absolute;
+  display: none;
+  flex-wrap: wrap;
+  align-items: center;
+  top: 20px;
+  left: 20px;
+  padding: 5px 10px;
+  margin: 0px;
+  font-family: var(--breadcrumbs-font-family);
+  font-size: 16px;
+  line-height: normal;
+  background-color: var(--breadcrumbs-background-color);
+  border: solid 1px var(--breadcrumbs-border-color);
+  border-radius: var(--surface-border-radius);
+  row-gap: 5px;
+}
+
+.bjs-breadcrumbs-shown .bjs-breadcrumbs {
+  display: flex;
+}
+
+.djs-palette-shown .bjs-breadcrumbs {
+  left: 90px;
+}
+
+.djs-palette-shown.djs-palette-two-column .bjs-breadcrumbs {
+  left: 140px;
+}
+
+.bjs-breadcrumbs li {
+  display: inline-flex;
+  align-items: center;
+}
+
+.bjs-breadcrumbs a.bjs-crumb {
+  cursor: pointer;
+  color: var(--breadcrumbs-item-color);
+  text-decoration: none;
+}
+
+.bjs-breadcrumbs a.bjs-crumb:focus-visible {
+  outline: solid 1px var(--breadcrumbs-focus-outline-color);
+  outline-offset: 1px;
+}
+
+.bjs-breadcrumbs li:not(:first-child)::before {
+  content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" /><path d="M0 0h24v24H0z" fill="none" /></svg>');
+  padding: 0 8px;
+  height: 1em;
+}
+
+.bjs-breadcrumbs .bjs-crumb {
+  display: inline-block;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bjs-drilldown {
+  width: 20px;
+  height: 20px;
+
+  padding: 0px;
+  margin-left: -20px;
+
+  cursor: pointer;
+  border: none;
+  border-radius: var(--button-border-radius);
+
+  fill: var(--drilldown-fill-color);
+  background-color: var(--drilldown-background-color);
+}
+
+.bjs-drilldown:focus-visible {
+  outline: solid 1px var(--drilldown-focus-outline-color);
+  outline-offset: 1px;
+}
+
+.bjs-drilldown-empty {
+  display: none;
+}
+
+.selected .bjs-drilldown-empty {
+  display: inherit;
+}
+
+[data-popup="align-elements"] .djs-popup-results {
+  display: flex;
+}
+
+[data-popup="align-elements"] .djs-popup-body [data-group] + [data-group] {
+  border-left: 1px solid var(--popup-border-color);
+}
+
+[data-popup="align-elements"] [data-group="align"] {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+[data-popup="align-elements"] .djs-popup-body .entry {
+  padding: 6px 8px;
+}
+
+[data-popup="align-elements"] .djs-popup-body .entry:not(:first-child) {
+  margin-top: 0;
+}
+
+[data-popup="align-elements"] .djs-popup-entry-icon {
+  display: block;
+  margin: 0;
+  height: 20px;
+  width: 20px;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:400 16px/1.55 var(--f-body);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:32px 64px;display:flex;flex-direction:column;gap:36px}
+.eyebrow{margin:0;font:600 12px/1.2 var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+h1{margin:6px 0 0;font:700 clamp(40px,7vw,64px)/.95 var(--f-display);text-transform:uppercase;letter-spacing:.005em;text-wrap:balance}
+h2{margin:0;font:700 26px/1.05 var(--f-display);text-transform:uppercase;letter-spacing:.01em;text-wrap:balance;display:flex;gap:12px;align-items:baseline}
+h2 .no{font:700 15px/1 var(--f-display);color:var(--accent);min-width:22px}
+.lead{margin:12px 0 0;max-width:62ch;font-size:18px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}
+.chip{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:var(--sunken);font-size:13px;font-weight:600;white-space:nowrap}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.diagram{display:flex;flex-direction:column;gap:12px;min-width:0}
+.legend{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:14px;color:var(--muted);align-items:center}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.sw{display:inline-block;width:26px;height:18px;border-radius:5px;border:2px solid}
+.sw.u{background:#DDE7FA;border-color:#1556D4}
+.sw.s{background:#FFFFFF;border-color:#3B444F}
+.sw.g{width:14px;height:14px;border-radius:2px;transform:rotate(45deg);border-color:var(--fg);background:var(--surface)}
+.sheet{position:relative;background:var(--sheet);border-radius:16px;box-shadow:0 0 0 1px var(--sheet-line);overflow:hidden}
+.scroller{overflow:auto;max-height:78vh;cursor:grab;overscroll-behavior:contain}
+.scroller.drag{cursor:grabbing;user-select:none}
+#canvas{position:relative}
+#canvas .djs-container{background:transparent}
+.tools{position:absolute;right:12px;top:12px;display:flex;gap:6px;z-index:5}
+.tools button{min-width:40px;height:38px;padding:0 12px;border-radius:10px;border:0;background:#12161B;color:#FFFFFF;font:600 15px/1 var(--f-body);cursor:pointer}
+.tools button:focus-visible,.actions button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.fail{margin:0;padding:40px 20px;color:#55606D;text-align:center}
+.actions{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;font-size:14px;color:var(--muted)}
+.actions button{height:40px;padding:0 14px;border-radius:10px;border:0;background:var(--accent);color:#FFFFFF;font:600 15px/1 var(--f-body);cursor:pointer}
+.rules{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:36px 40px}
+.rule{display:flex;flex-direction:column;gap:12px;min-width:0}
+.rule.wide{grid-column:1/-1}
+.rule p{margin:0;max-width:65ch}
+.rule .note{font-size:14px;color:var(--muted)}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px;font-variant-numeric:tabular-nums}
+th{text-align:left;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:0 12px 8px 0;border-bottom:1.5px solid var(--fg);white-space:nowrap}
+td{padding:9px 12px 9px 0;border-bottom:1px solid var(--line);vertical-align:top}
+td.k{font-weight:600;white-space:nowrap}
+.res{display:inline-block;padding:2px 8px;border-radius:6px;font-size:13px;font-weight:600;white-space:nowrap}
+.res.up{background:var(--accent-soft);color:var(--accent)}
+.res.ok{background:var(--ok-soft);color:var(--ok)}
+.res.down{background:var(--warn-soft);color:var(--warn)}
+ul.list{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;max-width:70ch}
+.example{background:var(--surface);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.steps{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+a{color:var(--accent)}
+@media (max-width:760px){.rules{grid-template-columns:minmax(0,1fr)}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<main class="wrap">
+  <header>
+    <p class="eyebrow">Gym-Logbuch · Prozess</p>
+    <h1>Gewicht finden</h1>
+    <p class="lead">Wie die App nach einer Trainingspause oder bei einer neuen Übung das Arbeitsgewicht mit wenigen Probesätzen ermittelt, ohne bis zum Versagen zu gehen.</p>
+    <div class="chips"><span class="chip warn">Entwurf zur Freigabe</span><span class="chip">Stand 31.10.2026</span><span class="chip">BPMN 2.0</span><span class="chip">Pro Übung</span></div>
+  </header>
+
+  <section class="diagram" aria-labelledby="h-diagram">
+    <h2 id="h-diagram"><span class="no">0</span>Ablauf</h2>
+    <div class="legend">
+      <span><i class="sw u"></i>Du machst etwas</span>
+      <span><i class="sw s"></i>Die App rechnet oder zeigt an</span>
+      <span><i class="sw g"></i>Entscheidung</span>
+    </div>
+    <div class="sheet">
+      <div class="tools" role="group" aria-label="Zoom">
+        <button type="button" id="z-out" aria-label="Verkleinern">−</button>
+        <button type="button" id="z-in" aria-label="Vergrössern">+</button>
+        <button type="button" id="z-fit">Ganzes Diagramm</button>
+      </div>
+      <div class="scroller" id="scroller"><div id="canvas" role="img" aria-label="BPMN-Diagramm des Prozesses Gewicht finden"></div></div>
+    </div>
+    <div class="actions"><button type="button" id="svg-save" hidden>Diagramm als SVG speichern</button><span>Zum Verschieben ziehen oder scrollen. Die BPMN-Datei bekommst du im Chat.</span></div>
+  </section>
+
+  <section class="rules" aria-label="Regeln">
+    <div class="rule wide">
+      <h2><span class="no">1</span>Wann die App es vorschlägt</h2>
+      <div class="tw"><table>
+        <thead><tr><th>Übung zuletzt vor</th><th>Was passiert</th><th>Startgewicht</th></tr></thead>
+        <tbody>
+          <tr><td class="k">unter 4 Wochen</td><td>Normale Progression, keine Probesätze</td><td>wie gewohnt</td></tr>
+          <tr><td class="k">4–12 Wochen</td><td>Vorschlag «Gewicht finden»</td><td>letztes Gewicht −15 %</td></tr>
+          <tr><td class="k">über 12 Wochen oder noch nie</td><td>Vorschlag «Gewicht finden»</td><td>50 % des eingetragenen früheren Gewichts, sonst vorsichtiges Startgewicht (Abschnitt 4)</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">Bis etwa 4 Wochen ohne Training bleibt die Maximalkraft weitgehend erhalten, danach nimmt sie schneller ab (Meta-Analyse über 103 Studien, Bosquet et al. 2013). Die −15 % und 50 % sind Faustregeln, die Probesätze korrigieren sie. Du kannst jeden Vorschlag ablehnen und das Arbeitsgewicht selbst eintragen.</p>
+    </div>
+
+    <div class="rule wide">
+      <h2><span class="no">2</span>Bewertung eines Probesatzes</h2>
+      <p>Nach jedem Probesatz tippst du, wie viele Wiederholungen noch drin gewesen wären. Was die App daraus macht, hängt vom Ziel ab.</p>
+      <div class="tw"><table>
+        <thead><tr><th>Deine Antwort</th><th>Ziel 3–4 in Reserve<br>Wiedereinstieg, Hamstring-Übungen</th><th>Ziel 1–2 in Reserve<br>sonst</th></tr></thead>
+        <tbody>
+          <tr><td class="k">0</td><td><span class="res down">−10 %, gefunden</span></td><td><span class="res down">−10 %, gefunden</span></td></tr>
+          <tr><td class="k">1–2</td><td><span class="res down">−10 %, gefunden</span></td><td><span class="res ok">gefunden</span></td></tr>
+          <tr><td class="k">3–4</td><td><span class="res ok">gefunden</span></td><td><span class="res up">+10 %</span></td></tr>
+          <tr><td class="k">5–7</td><td><span class="res up">+25 %</span></td><td><span class="res up">+25 %</span></td></tr>
+          <tr><td class="k">8 oder mehr</td><td><span class="res up">+50 %</span></td><td><span class="res up">+50 %</span></td></tr>
+          <tr><td class="k">Technik wackelte</td><td><span class="res down">−10 %, gefunden</span></td><td><span class="res down">−10 %, gefunden</span></td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">Neue Gewichte werden auf deinen kleinsten Gewichtsschritt gerundet, mindestens ein Schritt. Zwischen Probesätzen läuft eine Pause von 90 Sekunden. Nach höchstens 3 Probesätzen ist Schluss: Ist das Gewicht dann noch zu leicht, übernimmt die App das gesteigerte Gewicht als Arbeitsgewicht.</p>
+    </div>
+
+    <div class="rule">
+      <h2><span class="no">3</span>Wann ein Probesatz zählt</h2>
+      <p>Ein Probesatz zählt als erster Arbeitssatz, wenn er «gefunden» ohne Abzug ergibt: richtiges Gewicht, Wiederholungen im Bereich, Reserve im Ziel. Nach einem Abzug von 10 % oder nach dem dritten Probesatz zählt er nicht.</p>
+      <div class="example">
+        <strong>Beispiel RDL am 2. November, ohne Vorwissen</strong>
+        <ol class="steps">
+          <li>Probesatz 1: 30 kg × 6, Antwort «8 oder mehr» → +50 % → 45 kg</li>
+          <li>Probesatz 2: 45 kg × 6, Antwort «4» → gefunden, zählt als Arbeitssatz 1</li>
+          <li>Arbeitssatz 2: 45 kg × 6</li>
+        </ol>
+        <span class="note">3 Sätze total. Im Wiedereinstieg sind 2 Arbeitssätze geplant.</span>
+      </div>
+    </div>
+
+    <div class="rule">
+      <h2><span class="no">4</span>Startgewichte ohne Vorwissen</h2>
+      <div class="tw"><table>
+        <thead><tr><th>Übung</th><th>Start</th></tr></thead>
+        <tbody>
+          <tr><td>Goblet Squat</td><td class="k">12 kg</td></tr>
+          <tr><td>Rumänisches Kreuzheben</td><td class="k">30 kg</td></tr>
+          <tr><td>Hip Thrust</td><td class="k">40 kg</td></tr>
+          <tr><td>Brustgestütztes Rudern, Schrägbankdrücken</td><td class="k">12 kg pro Hand</td></tr>
+          <tr><td>Einarmiges Rudern</td><td class="k">14 kg</td></tr>
+          <tr><td>Bulgarian Split Squat</td><td class="k">6 kg pro Hand</td></tr>
+          <tr><td>Face Pulls, Trizeps-Pushdowns</td><td class="k">15 kg</td></tr>
+          <tr><td>Pallof Press</td><td class="k">7.5 kg</td></tr>
+          <tr><td>Landmine Press</td><td class="k">5 kg</td></tr>
+          <tr><td>Bizeps-Curls</td><td class="k">8 kg</td></tr>
+          <tr><td>Seitliche Ausfallschritte, Klimmzüge</td><td class="k">ohne Gewicht</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">Alternativübungen bekommen eigene, ähnlich vorsichtige Startwerte.</p>
+    </div>
+
+    <div class="rule">
+      <h2><span class="no">5</span>Sonderfälle</h2>
+      <ul class="list">
+        <li><b>Klimmzüge:</b> ein Probesatz ohne Zusatzgewicht. Unter 6 sauberen Wiederholungen schlägt die App die assistierte Variante vor.</li>
+        <li><b>Nordics:</b> keine Probesätze. Die Stufenleiter startet bei Stufe 1 (2 × 3).</li>
+        <li><b>Übungen ohne Gewicht</b> wie Dead Bug oder Bird Dog: keine Probephase.</li>
+        <li><b>Start ohne Gewicht:</b> Der erste Schritt nach oben sind 4 kg pro Hand.</li>
+        <li><b>Aufwärmen:</b> Die Probesätze ersetzen die Aufwärmsätze dieser Übung.</li>
+      </ul>
+    </div>
+
+    <div class="rule">
+      <h2><span class="no">6</span>Anzeige und Daten</h2>
+      <ul class="list">
+        <li><b>Vor der Einheit</b> zeigt der Check, bei wie vielen Übungen eine Probephase ansteht, und die Zusatzzeit, z.B. «8 Übungen, ca. 15 Minuten mehr».</li>
+        <li><b>Probesätze</b> werden getrennt gespeichert. Sie zählen weder ins Volumen noch in die Progression, ausser dem Satz, der als Arbeitssatz zählt.</li>
+        <li><b>Briefing-Text:</b> «RDL: Gewicht gefunden, 45 kg (2 Probesätze)».</li>
+      </ul>
+    </div>
+  </section>
+
+  <p class="note" style="font-size:13px;color:var(--muted);margin:0">Quelle zur Pausendauer: <a href="https://www.strongerbyscience.com/detraining/" target="_blank" rel="noopener">Stronger by Science, Zusammenfassung von Bosquet et al. 2013</a>.</p>
+</main>
+
+<script type="application/xml" id="bpmn-xml"><?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color/1.0" id="Defs_GewichtFinden" targetNamespace="https://pkzfjz7mzf-web.github.io/gym-logbuch/" exporter="Claude" exporterVersion="1">
+<bpmn:collaboration id="Collab"><bpmn:participant id="Pool" name="Gym-Logbuch: Gewicht finden" processRef="GewichtFinden"/></bpmn:collaboration>
+<bpmn:process id="GewichtFinden" name="Gewicht finden" isExecutable="false">
+<bpmn:laneSet id="LS">
+<bpmn:lane id="L_aaron" name="Aaron"><bpmn:flowNodeRef>G_accept</bpmn:flowNodeRef><bpmn:flowNodeRef>G_m2</bpmn:flowNodeRef><bpmn:flowNodeRef>U_probe</bpmn:flowNodeRef><bpmn:flowNodeRef>U_rate</bpmn:flowNodeRef><bpmn:flowNodeRef>U_manual</bpmn:flowNodeRef><bpmn:flowNodeRef>U_work</bpmn:flowNodeRef></bpmn:lane>
+<bpmn:lane id="L_app" name="App"><bpmn:flowNodeRef>S</bpmn:flowNodeRef><bpmn:flowNodeRef>T_check</bpmn:flowNodeRef><bpmn:flowNodeRef>G_weight</bpmn:flowNodeRef><bpmn:flowNodeRef>E_noweight</bpmn:flowNodeRef><bpmn:flowNodeRef>G_pause</bpmn:flowNodeRef><bpmn:flowNodeRef>T_start1</bpmn:flowNodeRef><bpmn:flowNodeRef>G_prev</bpmn:flowNodeRef><bpmn:flowNodeRef>T_start2</bpmn:flowNodeRef><bpmn:flowNodeRef>T_start3</bpmn:flowNodeRef><bpmn:flowNodeRef>T_normal</bpmn:flowNodeRef><bpmn:flowNodeRef>E_normal</bpmn:flowNodeRef><bpmn:flowNodeRef>G_m1</bpmn:flowNodeRef><bpmn:flowNodeRef>T_offer</bpmn:flowNodeRef><bpmn:flowNodeRef>G_rate</bpmn:flowNodeRef><bpmn:flowNodeRef>G_count</bpmn:flowNodeRef><bpmn:flowNodeRef>T_next</bpmn:flowNodeRef><bpmn:flowNodeRef>T_take</bpmn:flowNodeRef><bpmn:flowNodeRef>T_found</bpmn:flowNodeRef><bpmn:flowNodeRef>T_down</bpmn:flowNodeRef><bpmn:flowNodeRef>G_m3</bpmn:flowNodeRef><bpmn:flowNodeRef>T_fill</bpmn:flowNodeRef><bpmn:flowNodeRef>T_save</bpmn:flowNodeRef><bpmn:flowNodeRef>E_done</bpmn:flowNodeRef></bpmn:lane>
+</bpmn:laneSet>
+<bpmn:startEvent id="S" name="Übung in der Einheit erreicht"><bpmn:outgoing>f1</bpmn:outgoing></bpmn:startEvent>
+<bpmn:serviceTask id="T_check" name="Letzte Ausführung der Übung prüfen"><bpmn:incoming>f1</bpmn:incoming><bpmn:outgoing>f2</bpmn:outgoing><bpmn:property id="P_check" name="__targetRef_placeholder"/><bpmn:dataInputAssociation id="DA_in"><bpmn:sourceRef>DS_in</bpmn:sourceRef><bpmn:targetRef>P_check</bpmn:targetRef></bpmn:dataInputAssociation></bpmn:serviceTask>
+<bpmn:exclusiveGateway id="G_weight" name="Übung mit Gewicht?"><bpmn:incoming>f2</bpmn:incoming><bpmn:outgoing>f3</bpmn:outgoing><bpmn:outgoing>f4</bpmn:outgoing></bpmn:exclusiveGateway>
+<bpmn:endEvent id="E_noweight" name="Ohne Probephase"><bpmn:incoming>f4</bpmn:incoming></bpmn:endEvent>
+<bpmn:exclusiveGateway id="G_pause" name="Wie lange her?"><bpmn:incoming>f3</bpmn:incoming><bpmn:outgoing>f5</bpmn:outgoing><bpmn:outgoing>f7</bpmn:outgoing><bpmn:outgoing>f8</bpmn:outgoing></bpmn:exclusiveGateway>
+<bpmn:serviceTask id="T_start1" name="Start: letztes Gewicht −15 %"><bpmn:incoming>f7</bpmn:incoming><bpmn:outgoing>f11</bpmn:outgoing></bpmn:serviceTask>
+<bpmn:exclusiveGateway id="G_prev" name="Früheres Gewicht eingetragen?"><bpmn:incoming>f8</bpmn:incoming><bpmn:outgoing>f9</bpmn:outgoing><bpmn:outgoing>f10</bpmn:outgoing></bpmn:exclusiveGateway>
+<bpmn:serviceTask id="T_start2" name="Start: 50 % des früheren Gewichts"><bpmn:incoming>f9</bpmn:incoming><bpmn:outgoing>f12</bpmn:outgoing></bpmn:serviceTask>
+<bpmn:serviceTask id="T_start3" name="Start: vorsichtiges Startgewicht"><bpmn:incoming>f10</bpmn:incoming><bpmn:outgoing>f13</bpmn:outgoing></bpmn:serviceTask>
+<bpmn:serviceTask id="T_normal" name="Normale Progression vorschlagen"><bpmn:incoming>f5</bpmn:incoming><bpmn:outgoing>f6</bpmn:outgoing></bpmn:serviceTask>
+<bpmn:endEvent id="E_normal" name="Normale Arbeitssätze"><bpmn:incoming>f6</bpmn:incoming></bpmn:endEvent>
+<bpmn:exclusiveGateway id="G_m1"><bpmn:incoming>f11</bpmn:incoming><bpmn:incoming>f12</bpmn:incoming><bpmn:incoming>f13</bpmn:incoming><bpmn:outgoing>f14</bpmn:outgoing></bpmn:exclusiveGateway>
+<bpmn:serviceTask id="T_offer" name="«Gewicht finden» vorschlagen"><bpmn:incoming>f14</bpmn:incoming><bpmn:outgoing>f15</bpmn:outgoing></bpmn:serviceTask>
+<bpmn:exclusiveGateway id="G_accept" name="Vorschlag annehmen?"><bpmn:incoming>f15</bpmn:incoming><bpmn:outgoing>f16</bpmn:outgoing><bpmn:outgoing>f17</bpmn:outgoing></bpmn:exclusiveGateway>
+<bpmn:exclusiveGateway id="G_m2"><bpmn:incoming>f16</bpmn:incoming><bpmn:incoming>f25</bpmn:incoming><bpmn:outgoing>f18</bpmn:outgoing></bpmn:exclusiveGateway>
+<bpmn:userTask id="U_probe" name="Probesatz ausführen (untere Wdh.-Grenze)"><bpmn:incoming>f18</bpmn:incoming><bpmn:outgoing>f19</bpmn:outgoing></bpmn:userTask>
+<bpmn:userTask id="U_rate" name="Reserve angeben"><bpmn:incoming>f19</bpmn:incoming><bpmn:outgoing>f20</bpmn:outgoing></bpmn:userTask>
+<bpmn:userTask id="U_manual" name="Arbeitsgewicht selbst eintragen"><bpmn:incoming>f17</bpmn:incoming><bpmn:outgoing>f30</bpmn:outgoing></bpmn:userTask>
+<bpmn:exclusiveGateway id="G_rate" name="Reserve im Vergleich zum Ziel?"><bpmn:incoming>f20</bpmn:incoming><bpmn:outgoing>f21</bpmn:outgoing><bpmn:outgoing>f22</bpmn:outgoing><bpmn:outgoing>f23</bpmn:outgoing></bpmn:exclusiveGateway>
+<bpmn:exclusiveGateway id="G_count" name="Schon 3 Probesätze?"><bpmn:incoming>f23</bpmn:incoming><bpmn:outgoing>f24</bpmn:outgoing><bpmn:outgoing>f26</bpmn:outgoing></bpmn:exclusiveGateway>
+<bpmn:serviceTask id="T_next" name="Nächstes Gewicht berechnen, 90 s Pause"><bpmn:incoming>f24</bpmn:incoming><bpmn:outgoing>f25</bpmn:outgoing></bpmn:serviceTask>
+<bpmn:serviceTask id="T_take" name="Gesteigertes Gewicht übernehmen"><bpmn:incoming>f26</bpmn:incoming><bpmn:outgoing>f29</bpmn:outgoing></bpmn:serviceTask>
+<bpmn:serviceTask id="T_found" name="Gefunden, Probesatz zählt als 1. Arbeitssatz"><bpmn:incoming>f21</bpmn:incoming><bpmn:outgoing>f27</bpmn:outgoing></bpmn:serviceTask>
+<bpmn:serviceTask id="T_down" name="Gewicht −10 %, gefunden"><bpmn:incoming>f22</bpmn:incoming><bpmn:outgoing>f28</bpmn:outgoing></bpmn:serviceTask>
+<bpmn:exclusiveGateway id="G_m3"><bpmn:incoming>f27</bpmn:incoming><bpmn:incoming>f28</bpmn:incoming><bpmn:incoming>f29</bpmn:incoming><bpmn:incoming>f30</bpmn:incoming><bpmn:outgoing>f31</bpmn:outgoing></bpmn:exclusiveGateway>
+<bpmn:serviceTask id="T_fill" name="Arbeitssätze vorbefüllen"><bpmn:incoming>f31</bpmn:incoming><bpmn:outgoing>f32</bpmn:outgoing></bpmn:serviceTask>
+<bpmn:userTask id="U_work" name="Arbeitssätze ausführen"><bpmn:incoming>f32</bpmn:incoming><bpmn:outgoing>f33</bpmn:outgoing></bpmn:userTask>
+<bpmn:serviceTask id="T_save" name="Arbeitsgewicht speichern, Probesätze separat"><bpmn:incoming>f33</bpmn:incoming><bpmn:outgoing>f34</bpmn:outgoing><bpmn:dataOutputAssociation id="DA_out"><bpmn:targetRef>DS_out</bpmn:targetRef></bpmn:dataOutputAssociation></bpmn:serviceTask>
+<bpmn:endEvent id="E_done" name="Übung abgeschlossen"><bpmn:incoming>f34</bpmn:incoming></bpmn:endEvent>
+<bpmn:sequenceFlow id="f1" sourceRef="S" targetRef="T_check"/>
+<bpmn:sequenceFlow id="f2" sourceRef="T_check" targetRef="G_weight"/>
+<bpmn:sequenceFlow id="f3" name="ja" sourceRef="G_weight" targetRef="G_pause"/>
+<bpmn:sequenceFlow id="f4" name="nein" sourceRef="G_weight" targetRef="E_noweight"/>
+<bpmn:sequenceFlow id="f5" name="unter 4 Wochen" sourceRef="G_pause" targetRef="T_normal"/>
+<bpmn:sequenceFlow id="f7" name="4–12 Wochen" sourceRef="G_pause" targetRef="T_start1"/>
+<bpmn:sequenceFlow id="f8" name="über 12 Wochen oder nie" sourceRef="G_pause" targetRef="G_prev"/>
+<bpmn:sequenceFlow id="f9" name="ja" sourceRef="G_prev" targetRef="T_start2"/>
+<bpmn:sequenceFlow id="f10" name="nein" sourceRef="G_prev" targetRef="T_start3"/>
+<bpmn:sequenceFlow id="f6" sourceRef="T_normal" targetRef="E_normal"/>
+<bpmn:sequenceFlow id="f11" sourceRef="T_start1" targetRef="G_m1"/>
+<bpmn:sequenceFlow id="f12" sourceRef="T_start2" targetRef="G_m1"/>
+<bpmn:sequenceFlow id="f13" sourceRef="T_start3" targetRef="G_m1"/>
+<bpmn:sequenceFlow id="f14" sourceRef="G_m1" targetRef="T_offer"/>
+<bpmn:sequenceFlow id="f15" sourceRef="T_offer" targetRef="G_accept"/>
+<bpmn:sequenceFlow id="f16" name="ja" sourceRef="G_accept" targetRef="G_m2"/>
+<bpmn:sequenceFlow id="f17" name="nein" sourceRef="G_accept" targetRef="U_manual"/>
+<bpmn:sequenceFlow id="f18" sourceRef="G_m2" targetRef="U_probe"/>
+<bpmn:sequenceFlow id="f19" sourceRef="U_probe" targetRef="U_rate"/>
+<bpmn:sequenceFlow id="f20" sourceRef="U_rate" targetRef="G_rate"/>
+<bpmn:sequenceFlow id="f21" name="im Ziel" sourceRef="G_rate" targetRef="T_found"/>
+<bpmn:sequenceFlow id="f22" name="darunter oder Technik wackelte" sourceRef="G_rate" targetRef="T_down"/>
+<bpmn:sequenceFlow id="f23" name="darüber" sourceRef="G_rate" targetRef="G_count"/>
+<bpmn:sequenceFlow id="f24" name="nein" sourceRef="G_count" targetRef="T_next"/>
+<bpmn:sequenceFlow id="f25" sourceRef="T_next" targetRef="G_m2"/>
+<bpmn:sequenceFlow id="f26" name="ja" sourceRef="G_count" targetRef="T_take"/>
+<bpmn:sequenceFlow id="f27" sourceRef="T_found" targetRef="G_m3"/>
+<bpmn:sequenceFlow id="f28" sourceRef="T_down" targetRef="G_m3"/>
+<bpmn:sequenceFlow id="f29" sourceRef="T_take" targetRef="G_m3"/>
+<bpmn:sequenceFlow id="f30" sourceRef="U_manual" targetRef="G_m3"/>
+<bpmn:sequenceFlow id="f31" sourceRef="G_m3" targetRef="T_fill"/>
+<bpmn:sequenceFlow id="f32" sourceRef="T_fill" targetRef="U_work"/>
+<bpmn:sequenceFlow id="f33" sourceRef="U_work" targetRef="T_save"/>
+<bpmn:sequenceFlow id="f34" sourceRef="T_save" targetRef="E_done"/>
+<bpmn:dataStoreReference id="DS_in" name="Verlauf"/>
+<bpmn:dataStoreReference id="DS_out" name="Verlauf"/>
+</bpmn:process>
+<bpmndi:BPMNDiagram id="Diagram"><bpmndi:BPMNPlane id="Plane" bpmnElement="Collab">
+<bpmndi:BPMNShape id="Pool_di" bpmnElement="Pool" isHorizontal="true"><dc:Bounds x="100" y="40" width="2600" height="840"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="L_aaron_di" bpmnElement="L_aaron" isHorizontal="true" bioc:fill="#F2F6FD" color:background-color="#F2F6FD"><dc:Bounds x="130" y="40" width="2570" height="260"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="L_app_di" bpmnElement="L_app" isHorizontal="true" bioc:fill="#F7F8FA" color:background-color="#F7F8FA"><dc:Bounds x="130" y="300" width="2570" height="580"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="S_di" bpmnElement="S" bioc:stroke="#14181D" bioc:fill="#FFFFFF"><dc:Bounds x="212" y="452" width="36" height="36"/><bpmndi:BPMNLabel><dc:Bounds x="186" y="494" width="90" height="28"/></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="T_check_di" bpmnElement="T_check" bioc:stroke="#3B444F" bioc:fill="#FFFFFF" color:background-color="#FFFFFF" color:border-color="#3B444F"><dc:Bounds x="290" y="430" width="120" height="80"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="G_weight_di" bpmnElement="G_weight" isMarkerVisible="true" bioc:stroke="#14181D" bioc:fill="#FFFFFF"><dc:Bounds x="455" y="445" width="50" height="50"/><bpmndi:BPMNLabel><dc:Bounds x="424" y="412" width="96" height="28"/></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="E_noweight_di" bpmnElement="E_noweight" bioc:stroke="#14181D" bioc:fill="#FFFFFF"><dc:Bounds x="462" y="562" width="36" height="36"/><bpmndi:BPMNLabel><dc:Bounds x="436" y="602" width="90" height="14"/></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="G_pause_di" bpmnElement="G_pause" isMarkerVisible="true" bioc:stroke="#14181D" bioc:fill="#FFFFFF"><dc:Bounds x="575" y="445" width="50" height="50"/><bpmndi:BPMNLabel><dc:Bounds x="606" y="428" width="84" height="14"/></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="T_start1_di" bpmnElement="T_start1" bioc:stroke="#3B444F" bioc:fill="#FFFFFF" color:background-color="#FFFFFF" color:border-color="#3B444F"><dc:Bounds x="830" y="320" width="120" height="80"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="G_prev_di" bpmnElement="G_prev" isMarkerVisible="true" bioc:stroke="#14181D" bioc:fill="#FFFFFF"><dc:Bounds x="715" y="445" width="50" height="50"/><bpmndi:BPMNLabel><dc:Bounds x="704" y="410" width="100" height="28"/></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="T_start2_di" bpmnElement="T_start2" bioc:stroke="#3B444F" bioc:fill="#FFFFFF" color:background-color="#FFFFFF" color:border-color="#3B444F"><dc:Bounds x="830" y="430" width="120" height="80"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="T_start3_di" bpmnElement="T_start3" bioc:stroke="#3B444F" bioc:fill="#FFFFFF" color:background-color="#FFFFFF" color:border-color="#3B444F"><dc:Bounds x="830" y="540" width="120" height="80"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="T_normal_di" bpmnElement="T_normal" bioc:stroke="#3B444F" bioc:fill="#FFFFFF" color:background-color="#FFFFFF" color:border-color="#3B444F"><dc:Bounds x="830" y="650" width="120" height="80"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="E_normal_di" bpmnElement="E_normal" bioc:stroke="#14181D" bioc:fill="#FFFFFF"><dc:Bounds x="1002" y="672" width="36" height="36"/><bpmndi:BPMNLabel><dc:Bounds x="980" y="712" width="90" height="28"/></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="G_m1_di" bpmnElement="G_m1" isMarkerVisible="true" bioc:stroke="#14181D" bioc:fill="#FFFFFF"><dc:Bounds x="1005" y="445" width="50" height="50"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="T_offer_di" bpmnElement="T_offer" bioc:stroke="#3B444F" bioc:fill="#FFFFFF" color:background-color="#FFFFFF" color:border-color="#3B444F"><dc:Bounds x="1100" y="430" width="120" height="80"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="G_accept_di" bpmnElement="G_accept" isMarkerVisible="true" bioc:stroke="#14181D" bioc:fill="#FFFFFF"><dc:Bounds x="1275" y="175" width="50" height="50"/><bpmndi:BPMNLabel><dc:Bounds x="1196" y="186" width="90" height="28"/></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="G_m2_di" bpmnElement="G_m2" isMarkerVisible="true" bioc:stroke="#14181D" bioc:fill="#FFFFFF"><dc:Bounds x="1395" y="175" width="50" height="50"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="U_probe_di" bpmnElement="U_probe" bioc:stroke="#1556D4" bioc:fill="#DDE7FA" color:background-color="#DDE7FA" color:border-color="#1556D4"><dc:Bounds x="1480" y="160" width="120" height="80"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="U_rate_di" bpmnElement="U_rate" bioc:stroke="#1556D4" bioc:fill="#DDE7FA" color:background-color="#DDE7FA" color:border-color="#1556D4"><dc:Bounds x="1640" y="160" width="120" height="80"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="U_manual_di" bpmnElement="U_manual" bioc:stroke="#1556D4" bioc:fill="#DDE7FA" color:background-color="#DDE7FA" color:border-color="#1556D4"><dc:Bounds x="1820" y="60" width="120" height="80"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="G_rate_di" bpmnElement="G_rate" isMarkerVisible="true" bioc:stroke="#14181D" bioc:fill="#FFFFFF"><dc:Bounds x="1675" y="445" width="50" height="50"/><bpmndi:BPMNLabel><dc:Bounds x="1730" y="402" width="110" height="28"/></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="G_count_di" bpmnElement="G_count" isMarkerVisible="true" bioc:stroke="#14181D" bioc:fill="#FFFFFF"><dc:Bounds x="1515" y="445" width="50" height="50"/><bpmndi:BPMNLabel><dc:Bounds x="1430" y="476" width="90" height="28"/></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="T_next_di" bpmnElement="T_next" bioc:stroke="#3B444F" bioc:fill="#FFFFFF" color:background-color="#FFFFFF" color:border-color="#3B444F"><dc:Bounds x="1480" y="320" width="120" height="80"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="T_take_di" bpmnElement="T_take" bioc:stroke="#3B444F" bioc:fill="#FFFFFF" color:background-color="#FFFFFF" color:border-color="#3B444F"><dc:Bounds x="1480" y="540" width="120" height="80"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="T_found_di" bpmnElement="T_found" bioc:stroke="#3B444F" bioc:fill="#FFFFFF" color:background-color="#FFFFFF" color:border-color="#3B444F"><dc:Bounds x="1820" y="430" width="120" height="80"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="T_down_di" bpmnElement="T_down" bioc:stroke="#3B444F" bioc:fill="#FFFFFF" color:background-color="#FFFFFF" color:border-color="#3B444F"><dc:Bounds x="1820" y="540" width="120" height="80"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="G_m3_di" bpmnElement="G_m3" isMarkerVisible="true" bioc:stroke="#14181D" bioc:fill="#FFFFFF"><dc:Bounds x="2005" y="445" width="50" height="50"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="T_fill_di" bpmnElement="T_fill" bioc:stroke="#3B444F" bioc:fill="#FFFFFF" color:background-color="#FFFFFF" color:border-color="#3B444F"><dc:Bounds x="2120" y="430" width="120" height="80"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="U_work_di" bpmnElement="U_work" bioc:stroke="#1556D4" bioc:fill="#DDE7FA" color:background-color="#DDE7FA" color:border-color="#1556D4"><dc:Bounds x="2270" y="160" width="120" height="80"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="T_save_di" bpmnElement="T_save" bioc:stroke="#3B444F" bioc:fill="#FFFFFF" color:background-color="#FFFFFF" color:border-color="#3B444F"><dc:Bounds x="2420" y="430" width="120" height="80"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="E_done_di" bpmnElement="E_done" bioc:stroke="#14181D" bioc:fill="#FFFFFF"><dc:Bounds x="2602" y="452" width="36" height="36"/><bpmndi:BPMNLabel><dc:Bounds x="2580" y="494" width="90" height="14"/></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="DS_in_di" bpmnElement="DS_in"><dc:Bounds x="325" y="585" width="50" height="50"/><bpmndi:BPMNLabel><dc:Bounds x="325" y="640" width="50" height="14"/></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="DS_out_di" bpmnElement="DS_out"><dc:Bounds x="2455" y="585" width="50" height="50"/><bpmndi:BPMNLabel><dc:Bounds x="2455" y="640" width="50" height="14"/></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+<bpmndi:BPMNEdge id="f1_di" bpmnElement="f1"><di:waypoint x="248" y="470"/><di:waypoint x="290" y="470"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f2_di" bpmnElement="f2"><di:waypoint x="410" y="470"/><di:waypoint x="455" y="470"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f3_di" bpmnElement="f3"><di:waypoint x="505" y="470"/><di:waypoint x="575" y="470"/><bpmndi:BPMNLabel><dc:Bounds x="522" y="476" width="30" height="14"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f4_di" bpmnElement="f4"><di:waypoint x="480" y="495"/><di:waypoint x="480" y="562"/><bpmndi:BPMNLabel><dc:Bounds x="488" y="512" width="30" height="14"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f5_di" bpmnElement="f5"><di:waypoint x="600" y="495"/><di:waypoint x="600" y="690"/><di:waypoint x="830" y="690"/><bpmndi:BPMNLabel><dc:Bounds x="612" y="664" width="90" height="14"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f7_di" bpmnElement="f7"><di:waypoint x="600" y="445"/><di:waypoint x="600" y="360"/><di:waypoint x="830" y="360"/><bpmndi:BPMNLabel><dc:Bounds x="640" y="340" width="80" height="14"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f8_di" bpmnElement="f8"><di:waypoint x="625" y="470"/><di:waypoint x="715" y="470"/><bpmndi:BPMNLabel><dc:Bounds x="630" y="478" width="84" height="28"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f9_di" bpmnElement="f9"><di:waypoint x="765" y="470"/><di:waypoint x="830" y="470"/><bpmndi:BPMNLabel><dc:Bounds x="778" y="448" width="30" height="14"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f10_di" bpmnElement="f10"><di:waypoint x="740" y="495"/><di:waypoint x="740" y="580"/><di:waypoint x="830" y="580"/><bpmndi:BPMNLabel><dc:Bounds x="748" y="512" width="30" height="14"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f6_di" bpmnElement="f6"><di:waypoint x="950" y="690"/><di:waypoint x="1002" y="690"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f11_di" bpmnElement="f11"><di:waypoint x="950" y="360"/><di:waypoint x="1030" y="360"/><di:waypoint x="1030" y="445"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f12_di" bpmnElement="f12"><di:waypoint x="950" y="470"/><di:waypoint x="1005" y="470"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f13_di" bpmnElement="f13"><di:waypoint x="950" y="580"/><di:waypoint x="1030" y="580"/><di:waypoint x="1030" y="495"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f14_di" bpmnElement="f14"><di:waypoint x="1055" y="470"/><di:waypoint x="1100" y="470"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f15_di" bpmnElement="f15"><di:waypoint x="1220" y="470"/><di:waypoint x="1300" y="470"/><di:waypoint x="1300" y="225"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f16_di" bpmnElement="f16"><di:waypoint x="1325" y="200"/><di:waypoint x="1395" y="200"/><bpmndi:BPMNLabel><dc:Bounds x="1338" y="178" width="30" height="14"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f17_di" bpmnElement="f17"><di:waypoint x="1300" y="175"/><di:waypoint x="1300" y="100"/><di:waypoint x="1820" y="100"/><bpmndi:BPMNLabel><dc:Bounds x="1308" y="118" width="30" height="14"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f18_di" bpmnElement="f18"><di:waypoint x="1445" y="200"/><di:waypoint x="1480" y="200"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f19_di" bpmnElement="f19"><di:waypoint x="1600" y="200"/><di:waypoint x="1640" y="200"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f20_di" bpmnElement="f20"><di:waypoint x="1700" y="240"/><di:waypoint x="1700" y="445"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f21_di" bpmnElement="f21"><di:waypoint x="1725" y="470"/><di:waypoint x="1820" y="470"/><bpmndi:BPMNLabel><dc:Bounds x="1740" y="478" width="60" height="14"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f22_di" bpmnElement="f22"><di:waypoint x="1700" y="495"/><di:waypoint x="1700" y="580"/><di:waypoint x="1820" y="580"/><bpmndi:BPMNLabel><dc:Bounds x="1708" y="590" width="104" height="28"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f23_di" bpmnElement="f23"><di:waypoint x="1675" y="470"/><di:waypoint x="1565" y="470"/><bpmndi:BPMNLabel><dc:Bounds x="1580" y="448" width="60" height="14"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f24_di" bpmnElement="f24"><di:waypoint x="1540" y="445"/><di:waypoint x="1540" y="400"/><bpmndi:BPMNLabel><dc:Bounds x="1548" y="412" width="30" height="14"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f25_di" bpmnElement="f25"><di:waypoint x="1480" y="360"/><di:waypoint x="1420" y="360"/><di:waypoint x="1420" y="225"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f26_di" bpmnElement="f26"><di:waypoint x="1540" y="495"/><di:waypoint x="1540" y="540"/><bpmndi:BPMNLabel><dc:Bounds x="1548" y="506" width="30" height="14"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f27_di" bpmnElement="f27"><di:waypoint x="1940" y="470"/><di:waypoint x="2005" y="470"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f28_di" bpmnElement="f28"><di:waypoint x="1940" y="580"/><di:waypoint x="2030" y="580"/><di:waypoint x="2030" y="495"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f29_di" bpmnElement="f29"><di:waypoint x="1540" y="620"/><di:waypoint x="1540" y="650"/><di:waypoint x="2030" y="650"/><di:waypoint x="2030" y="495"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f30_di" bpmnElement="f30"><di:waypoint x="1940" y="100"/><di:waypoint x="2030" y="100"/><di:waypoint x="2030" y="445"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f31_di" bpmnElement="f31"><di:waypoint x="2055" y="470"/><di:waypoint x="2120" y="470"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f32_di" bpmnElement="f32"><di:waypoint x="2240" y="470"/><di:waypoint x="2330" y="470"/><di:waypoint x="2330" y="240"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f33_di" bpmnElement="f33"><di:waypoint x="2390" y="200"/><di:waypoint x="2480" y="200"/><di:waypoint x="2480" y="430"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f34_di" bpmnElement="f34"><di:waypoint x="2540" y="470"/><di:waypoint x="2602" y="470"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="DA_in_di" bpmnElement="DA_in"><di:waypoint x="350" y="585"/><di:waypoint x="350" y="510"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="DA_out_di" bpmnElement="DA_out"><di:waypoint x="2480" y="510"/><di:waypoint x="2480" y="585"/></bpmndi:BPMNEdge>
+</bpmndi:BPMNPlane></bpmndi:BPMNDiagram></bpmn:definitions></script>
+<script src="https://cdn.jsdelivr.net/npm/bpmn-js@18.31.0/dist/bpmn-viewer.production.min.js"></script>
+<script>
+(async function(){
+  const el=document.getElementById('canvas'), sc=document.getElementById('scroller');
+  const xml=document.getElementById('bpmn-xml').textContent.trim();
+  if(!window.BpmnJS){ el.innerHTML='<p class="fail">Das Diagramm konnte nicht geladen werden. Die Regeln unten beschreiben den gleichen Ablauf.</p>'; return; }
+  try{ await Promise.race([document.fonts.load('500 12px Barlow'), new Promise(r=>setTimeout(r,1500))]); }catch(e){}
+  const viewer=new BpmnJS({container:el, textRenderer:{defaultStyle:{fontFamily:'Barlow, Arial, sans-serif', fontSize:13, fontWeight:500, lineHeight:1.2}, externalStyle:{fontFamily:'Barlow, Arial, sans-serif', fontSize:12, lineHeight:1.2}}});
+  try{ await viewer.importXML(xml); }catch(e){ el.innerHTML='<p class="fail">Das Diagramm konnte nicht gezeichnet werden.</p>'; return; }
+  const canvas=viewer.get('canvas'), inner=canvas.viewbox().inner, PAD=24;
+  const readable=0.8;
+  let z = Math.min(readable, 1);
+  function apply(){
+    const w=Math.ceil(inner.width*z+2*PAD), h=Math.ceil(inner.height*z+2*PAD);
+    el.style.width=w+'px'; el.style.height=h+'px';
+    canvas.resized();
+    canvas.viewbox({x:inner.x-PAD/z, y:inner.y-PAD/z, width:w/z, height:h/z});
+  }
+  function fitZ(){ return Math.max(0.15, (sc.clientWidth-2*PAD)/inner.width); }
+  apply();
+  document.getElementById('z-in').onclick=()=>{ z=Math.min(1.6, z*1.25); apply(); };
+  document.getElementById('z-out').onclick=()=>{ z=Math.max(0.15, z/1.25); apply(); };
+  const fitBtn=document.getElementById('z-fit');
+  fitBtn.onclick=()=>{ const f=fitZ(); if(Math.abs(z-f)<0.01){ z=readable; fitBtn.textContent='Ganzes Diagramm'; } else { z=f; fitBtn.textContent='Lesbare Grösse'; } apply(); sc.scrollLeft=0; };
+  // Mit der Maus ziehen
+  let drag=null;
+  sc.addEventListener('pointerdown', e=>{ if(e.pointerType!=='mouse' || e.button!==0) return; drag={x:e.clientX, y:e.clientY, l:sc.scrollLeft, t:sc.scrollTop}; sc.classList.add('drag'); sc.setPointerCapture(e.pointerId); });
+  sc.addEventListener('pointermove', e=>{ if(!drag) return; sc.scrollLeft=drag.l-(e.clientX-drag.x); sc.scrollTop=drag.t-(e.clientY-drag.y); });
+  const end=()=>{ drag=null; sc.classList.remove('drag'); };
+  sc.addEventListener('pointerup', end); sc.addEventListener('pointercancel', end);
+  // SVG speichern, wenn der Viewer es erlaubt
+  try{
+    const dl = window.claude && typeof window.claude.use==='function' ? await window.claude.use('downloads') : null;
+    if(dl){
+      const b=document.getElementById('svg-save'); b.hidden=false;
+      b.onclick=async()=>{ try{ const r=await viewer.saveSVG(); await dl.save({filename:'gewicht-finden.svg', data:r.svg}); }catch(e){} };
+    }
+  }catch(e){}
+})();
+</script>
