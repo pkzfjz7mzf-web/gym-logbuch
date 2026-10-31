@@ -7,4 +7,6 @@ Persönliches Trainingslogbuch für Einheit A/B: Progressionsvorschläge, Pausen
 - **Verbindung:** `config.js` enthält die Project URL und den Publishable key. Beide sind öffentlich gedacht.
 - **Wach halten:** `.github/workflows/keepalive.yml` pingt Supabase täglich, damit das Gratis-Projekt nicht pausiert.
 
+- **Werkzeuge:** `tools/build-preview.py` baut eine Testversion mit Demo-Daten, `tools/test_app.py` testet die App gegen eine simulierte Datenbank.
+
 Auswertungen in Supabase: `v_einheiten` (eine Zeile pro Einheit) und `v_saetze` (eine Zeile pro Satz).
