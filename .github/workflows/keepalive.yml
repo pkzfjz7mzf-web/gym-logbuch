@@ -1,0 +1,52 @@
+name: Supabase wach halten
+
+# Supabase pausiert Gratis-Projekte nach einer Woche mit wenig Aktivität.
+# Dieser Job pingt die Datenbank jeden Tag einmal und prüft dabei, dass ohne Login keine Daten lesbar sind.
+# Zusätzlich macht er alle 45 Tage einen kleinen Commit, weil GitHub geplante Jobs
+# in öffentlichen Repos nach 60 Tagen ohne Aktivität abschaltet.
+
+on:
+  schedule:
+    - cron: '23 4 * * *'   # täglich 04:23 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verbindungsdaten aus config.js lesen
+        run: |
+          echo "SB_URL=$(node -e "global.window={}; require('./config.js'); process.stdout.write(window.GYM_CONFIG.supabaseUrl)")" >> "$GITHUB_ENV"
+          echo "SB_KEY=$(node -e "global.window={}; require('./config.js'); process.stdout.write(window.GYM_CONFIG.supabaseKey)")" >> "$GITHUB_ENV"
+
+      - name: Supabase anpingen
+        run: |
+          if [ -z "$SB_URL" ] || [ -z "$SB_KEY" ]; then echo "config.js ist noch leer"; exit 1; fi
+          curl -fsS --retry 3 --retry-delay 20 -X POST "$SB_URL/rest/v1/rpc/keepalive" \
+            -H "apikey: $SB_KEY" -H "Content-Type: application/json" -d '{}'
+          echo
+
+      - name: Prüfen, dass ohne Login nichts lesbar ist
+        run: |
+          body=$(curl -fsS "$SB_URL/rest/v1/sessions?select=id&limit=1" -H "apikey: $SB_KEY")
+          echo "Einheiten ohne Login: $body"
+          if [ "$body" != "[]" ]; then echo "::error::Einheiten sind ohne Login lesbar. Zugriffsregeln prüfen."; exit 1; fi
+
+      - name: Zeitplan aktiv halten
+        run: |
+          last=$(git log -1 --format=%ct)
+          days=$(( ( $(date +%s) - last ) / 86400 ))
+          echo "Letzter Commit vor $days Tagen"
+          if [ "$days" -ge 45 ]; then
+            date -u +%Y-%m-%dT%H:%M:%SZ > .github/heartbeat
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add .github/heartbeat
+            git commit -m "Heartbeat für geplante Jobs"
+            git push
+          fi
