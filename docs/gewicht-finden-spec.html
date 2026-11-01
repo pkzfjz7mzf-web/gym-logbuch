@@ -1555,7 +1555,7 @@ a{color:var(--accent)}
     <p class="eyebrow">Gym-Logbuch · Prozess</p>
     <h1>Gewicht finden</h1>
     <p class="lead">Wie die App nach einer Trainingspause oder bei einer neuen Übung das Arbeitsgewicht mit wenigen Probesätzen ermittelt, ohne bis zum Versagen zu gehen.</p>
-    <div class="chips"><span class="chip warn">Entwurf zur Freigabe</span><span class="chip">Stand 31.10.2026</span><span class="chip">BPMN 2.0</span><span class="chip">Pro Übung</span></div>
+    <div class="chips"><span class="chip warn">Entwurf zur Freigabe</span><span class="chip">Stand 1.11.2026</span><span class="chip">BPMN 2.0</span><span class="chip">Pro Übung</span></div>
   </header>
 
   <section class="diagram" aria-labelledby="h-diagram">
@@ -1594,16 +1594,9 @@ a{color:var(--accent)}
       <h2><span class="no">2</span>Bewertung eines Probesatzes</h2>
       <p>Nach jedem Probesatz tippst du, wie viele Wiederholungen noch drin gewesen wären. Was die App daraus macht, hängt vom Ziel ab.</p>
       <div class="tw"><table>
-        <thead><tr><th>Deine Antwort</th><th>Ziel 3–4 in Reserve<br>Wiedereinstieg, Hamstring-Übungen</th><th>Ziel 1–2 in Reserve<br>sonst</th></tr></thead>
-        <tbody>
-          <tr><td class="k">0</td><td><span class="res down">−10 %, gefunden</span></td><td><span class="res down">−10 %, gefunden</span></td></tr>
-          <tr><td class="k">1–2</td><td><span class="res down">−10 %, gefunden</span></td><td><span class="res ok">gefunden</span></td></tr>
-          <tr><td class="k">3–4</td><td><span class="res ok">gefunden</span></td><td><span class="res up">+10 %</span></td></tr>
-          <tr><td class="k">5–7</td><td><span class="res up">+25 %</span></td><td><span class="res up">+25 %</span></td></tr>
-          <tr><td class="k">8 oder mehr</td><td><span class="res up">+50 %</span></td><td><span class="res up">+50 %</span></td></tr>
-          <tr><td class="k">Technik wackelte</td><td><span class="res down">−10 %, gefunden</span></td><td><span class="res down">−10 %, gefunden</span></td></tr>
-        </tbody>
+        <thead><tr><th>Deine Antwort</th><th>Ziel 3–4<br>erste Einheit im Wiedereinstieg</th><th>Ziel 2–3<br>restlicher Wiedereinstieg</th><th>Ziel 1–2<br>Grundübungen danach</th></tr></thead><tbody><tr><td class="k">0</td><td><span class="res down">−10 %, gefunden</span></td><td><span class="res down">−10 %, gefunden</span></td><td><span class="res down">−10 %, gefunden</span></td></tr><tr><td class="k">1–2</td><td><span class="res down">−10 %, gefunden</span></td><td><span class="res ok">gefunden</span></td><td><span class="res ok">gefunden</span></td></tr><tr><td class="k">3–4</td><td><span class="res ok">gefunden</span></td><td><span class="res ok">gefunden</span></td><td><span class="res up">+10 %</span></td></tr><tr><td class="k">5–7</td><td><span class="res up">+25 %</span></td><td><span class="res up">+25 %</span></td><td><span class="res up">+25 %</span></td></tr><tr><td class="k">8 oder mehr</td><td><span class="res up">+50 %</span></td><td><span class="res up">+50 %</span></td><td><span class="res up">+50 %</span></td></tr><tr><td class="k">Technik wackelte</td><td><span class="res down">−10 %, gefunden</span></td><td><span class="res down">−10 %, gefunden</span></td><td><span class="res down">−10 %, gefunden</span></td></tr></tbody>
       </table></div>
+      <p class="note">Das Ziel ist dieselbe Reserve, die auch für die Arbeitssätze gilt. Ergänzungsübungen haben nach dem Wiedereinstieg das Ziel 1–3, dort zählen 1–2 und 3–4 als gefunden. Bei Muskelkater in der betroffenen Körperregion liegt das Ziel 1 Wdh. höher.</p>
       <p class="note">Neue Gewichte werden auf deinen kleinsten Gewichtsschritt gerundet, mindestens ein Schritt. Zwischen Probesätzen läuft eine Pause von 90 Sekunden. Nach höchstens 3 Probesätzen ist Schluss: Ist das Gewicht dann noch zu leicht, übernimmt die App das gesteigerte Gewicht als Arbeitsgewicht.</p>
     </div>
 

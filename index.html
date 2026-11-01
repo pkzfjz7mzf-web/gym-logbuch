@@ -303,6 +303,14 @@ textarea.brief{width:100%;min-height:260px;border:0;border-radius:12px;backgroun
 .prose p{margin:0;color:var(--muted)}
 .prose cite{font-style:normal;color:var(--faint);font-size:13px}
 
+/* Check: Körperregionen */
+.body-q{display:flex;flex-direction:column;gap:8px}
+.bq-l{font-size:13px;font-weight:600;color:var(--muted)}
+.rchips{display:flex;flex-wrap:wrap;gap:6px}
+.rchip{min-height:38px;padding:0 13px;border-radius:999px;background:var(--raised);box-shadow:inset 0 0 0 1px var(--line);font-size:14px;font-weight:600;color:var(--fg)}
+.rchip.on{background:var(--fg);color:var(--bg);box-shadow:none}
+.rchip.pain.on{background:var(--bad);color:var(--bg)}
+
 /* Gewicht finden */
 .find{display:flex;flex-direction:column;gap:12px;padding:14px;border-radius:14px;background:var(--accent-soft)}
 .find-h{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:14px;font-weight:600;color:var(--accent)}
@@ -508,7 +516,7 @@ const EX = {
 /* Alternativen nach Bewegungsmuster */
 const GROUPS = {
   squat:   {label:'Kniebeuge', ex:['goblet','frontsq','legpress']},
-  hinge:   {label:'Hüftbeuge, Hamstrings', ex:['rdl','dbrdl','slrdl'], note:'Alle Alternativen trainieren die Hamstrings unter Dehnung. Die Hamstring-Prävention bleibt erhalten.'},
+  hinge:   {label:'Hüftbeuge, Hamstrings', ex:['rdl','dbrdl','slrdl'], note:'Alle Alternativen trainieren die Hamstrings unter Dehnung.'},
   hrow:    {label:'Horizontales Ziehen', ex:['csrow','dbrow','cablerow','machrow']},
   incline: {label:'Drücken, Brust', ex:['incline','dbbench','chestpress','pushup']},
   single:  {label:'Einbeinig', ex:['bss','revlunge','stepup']},
@@ -582,7 +590,25 @@ const DEFAULTS = {v:1, swaps:{}, nordicA:true, arms:false, autoFind:true,
   rest:{main:150, acc:90, ss:90, nordic:120, short:45}, sound:true};
 
 const ENERGY = ['Tief','Mittel','Gut'];
-const HAMS = ['Unauffällig','Muskelkater','Ziehen/Schmerz'];
+const HAMS = ['Unauffällig','Muskelkater','Ziehen/Schmerz']; // nur für alte Einheiten
+const REGIONS = [['shoulders','Schultern'],['upback','Oberer Rücken'],['lowback','Unterer Rücken'],['arms','Arme'],['hips','Gesäss/Hüfte'],['front','Beine vorne'],['back','Beine hinten'],['core','Bauch']];
+const REGION_MUSCLES = {shoulders:['shoulders','chest'], upback:['upback','lats'], arms:['arms'], hips:['glutes','adductors'], front:['quads'], back:['hams'], core:['core']};
+const LOWBACK = ['rdl','dbrdl','slrdl','frontsq','goblet','dbrow','rollout','legpress'];
+function regionHits(exId, region, minW){ if(region==='lowback') return LOWBACK.includes(exId); const m=(EX[exId]||{}).m||{}; return (REGION_MUSCLES[region]||[]).some(k=>(m[k]||0)>=minW); }
+function regionName(id){ const r=REGIONS.find(x=>x[0]===id); return r ? r[1] : id; }
+function normCheck(c){
+  if(!c) return null;
+  if(c.sore || c.pain) return c;
+  return Object.assign({}, c, {sore: c.hams===1?['back']:[], pain: c.hams===2?['back']:[]});
+}
+function checkText(c){
+  c=normCheck(c); if(!c) return '';
+  const p=['Energie '+ENERGY[c.energy==null?1:c.energy].toLowerCase()];
+  if((c.sore||[]).length) p.push('Muskelkater '+c.sore.map(regionName).join(', '));
+  if((c.pain||[]).length) p.push('Schmerz '+c.pain.map(regionName).join(', '));
+  if(c.intense) p.push('gestern intensiv');
+  return p.join(' · ');
+}
 const FEEL_L = ['zäh','','ok','','stark'];
 
 /* =========================================================
@@ -608,6 +634,7 @@ function fmtShort(s){ const d=parseYmd(s); return d.getDate()+'.'+(d.getMonth()+
 function fmtW(w){ if(w==null||isNaN(w)) return '–'; const r=rnd(w); return String(r); }
 function fmtClock(sec){ sec=Math.max(0,Math.round(sec)); const h=Math.floor(sec/3600), m=Math.floor(sec%3600/60), s=sec%60; return h? h+':'+pad(m)+':'+pad(s) : m+':'+pad(s); }
 function fmtKg(n){ return Math.round(n).toLocaleString('de-CH'); }
+function rirTxt(r){ return r[0]===r[1] ? String(r[0]) : r[0]+'–'+r[1]; }
 function repTxt(r){ return r[0]===r[1] ? String(r[0]) : r[0]+'–'+r[1]; }
 function parseNum(v){ if(v==null) return null; const t=String(v).trim().replace(',','.'); if(t==='') return null; const n=parseFloat(t); return isNaN(n)?null:n; }
 function roundTo(x,inc,mode){ const q=x/inc; const n = mode==='up'?Math.ceil(q-1e-9) : mode==='down'?Math.floor(q+1e-9) : Math.round(q); return rnd(n*inc); }
@@ -886,11 +913,12 @@ function computeTarget(exId, it, ctx){
   const def=EX[exId], st=ctx.settings;
   const lo=it.reps[0], hi=it.reps[1];
   const sets = ctx.reentry ? Math.min(it.sets,2) : it.sets;
-  let rir = ctx.reentry ? [3,4] : (def.rir || (def.main ? [1,2] : [1,3]));
+  let rir = ctx.reentry ? (ctx.firstReentry ? [3,4] : [2,3]) : (def.rir || (def.main ? [1,2] : [1,3]));
   const notes=[];
   const chk = ctx.check || {};
   if(chk.intense && def.legs && !def.noRir){ rir=[Math.min(4,rir[0]+1), Math.min(4,rir[1]+1)]; notes.push('Gestern intensiv: 1 Wdh. mehr Reserve.'); }
-  if(chk.hams===1 && def.ham && exId!=='nordic' && def.load!=='reps'){ rir=[Math.min(4,rir[0]+1), Math.min(4,rir[1]+1)]; notes.push('Muskelkater in den Hamstrings: etwas mehr Reserve.'); }
+  const sore=((normCheck(chk)||{}).sore||[]).filter(r=>regionHits(exId, r, 1));
+  if(sore.length && !def.noRir){ rir=[Math.min(4,rir[0]+1), Math.min(4,rir[1]+1)]; notes.push('Muskelkater '+sore.map(regionName).join(', ')+': 1 Wdh. mehr Reserve.'); }
   const hist = perfHistory(exId, ctx.ts, ctx.excludeId);
   const last = hist[0];
   const base = {sets, reps:[lo,hi], rir, w:null, perSet:Array(sets).fill(lo), action:'new', reason:'', notes};
@@ -914,8 +942,8 @@ function computeTarget(exId, it, ctx){
     else if(p>0){ const f = ctx.reentry ? 0.65 : 0.8; base.w=Math.max(minW, roundTo(p*f, inc, 'down')); base.action='start'; base.reason=Math.round(f*100)+' % deines früheren Gewichts ('+fmtW(p)+' kg). Technik vor Last.'; }
     else if(def.equip==='bw'){ base.w=0; base.reason='Ohne Zusatzgewicht starten.'; }
     else if(def.zero){ base.w=0; base.reason='Erst ohne Gewicht, Bewegung sauber lernen.'; }
-    else if(def.equip==='bb'){ base.w=minW; base.reason='Erstes Mal: mit der Stange ('+fmtW(minW)+' kg) beginnen und steigern, bis RIR '+rir[0]+'–'+rir[1]+' passt.'; }
-    else base.reason='Erstes Mal: Gewicht wählen, mit dem du RIR '+rir[0]+'–'+rir[1]+' schaffst.';
+    else if(def.equip==='bb'){ base.w=minW; base.reason='Erstes Mal: mit der Stange ('+fmtW(minW)+' kg) beginnen und steigern, bis RIR '+rirTxt(rir)+' passt.'; }
+    else base.reason='Erstes Mal: Gewicht wählen, mit dem du RIR '+rirTxt(rir)+' schaffst.';
     return base;
   }
 
@@ -968,7 +996,7 @@ function computeTarget(exId, it, ctx){
   base.action='hold'; base.w=topW;
   base.perSet = Array.from({length:sets}, (_,i)=>{ const r=(atW[i]||atW[atW.length-1]).r; return Math.min(hi, r+1); });
   base.reason = fromReentry
-    ? 'Wiedereinstieg vorbei: gleiches Gewicht, jetzt '+sets+' Sätze bei RIR '+rir[0]+'–'+rir[1]+'.'
+    ? 'Wiedereinstieg vorbei: gleiches Gewicht, jetzt '+sets+' Sätze bei RIR '+rirTxt(rir)+'.'
     : 'Letztes Mal '+lastTxt+'. Gleiches Gewicht, pro Satz 1 Wdh. mehr (bis '+hi+').';
   return base;
 }
@@ -991,7 +1019,7 @@ function nordicTarget(it, ctx, hist, base){
     const gap=(ctx.ts-(last.s.startedAt||0))/864e5;
     if(got<0){ lv=0; action='hold'; reason='Einstiegsstufe 2 × 3 wiederholen.'; }
     else if(gap>21){ lv=Math.max(0,got-1); action='down'; reason='Über 3 Wochen seit den letzten Nordics → eine Stufe zurück, damit der Muskelkater klein bleibt.'; }
-    else if(ctx.check && ctx.check.hams===1){ lv=got; action='hold'; reason='Muskelkater: Stufe halten.'; }
+    else if(ctx.check && ((normCheck(ctx.check).sore||[]).includes('back'))){ lv=got; action='hold'; reason='Muskelkater Beine hinten: Stufe halten.'; }
     else { lv=Math.min(LADDER.length-1, got+1); action = lv>got ? 'up' : 'hold'; reason = lv>got ? 'Letztes Mal '+fmtSets(last.sets, EX.nordic, false)+' → nächste Stufe.' : 'Höchste Stufe erreicht: halten und noch langsamer absenken.'; }
   }
   const s = Math.min(LADDER[lv][0], capS);
@@ -1004,8 +1032,9 @@ function nordicTarget(it, ctx, hist, base){
    Gewicht finden (Prozess: docs/gewicht-finden.bpmn)
    ========================================================= */
 function canFind(def, exId){ return def.load!=='reps' && exId!=='nordic'; }
-function findHigh(def, reentry){ return !!(reentry || def.ham); }
-function findTarget(high){ return high ? [3,4] : [1,2]; }
+const FIND_RANGE = {r0:[0,0], r12:[1,2], r34:[3,4], r57:[5,7], r8:[8,99]};
+function findTr(f){ return f.tr || (f.high ? [3,4] : [1,2]); }
+function findOverlaps(key, tr){ const r=FIND_RANGE[key]; return r[1]>=tr[0] && r[0]<=tr[1]; }
 function findMinW(def){ return def.equip==='bb' ? (+state.settings.barKg||20) : 0; }
 function findRound(w, def){
   if(def.equip==='bw') return Math.max(0, rnd(w));
@@ -1030,17 +1059,17 @@ function findPlan(exId, ctx){
 }
 function findBegin(e, ctxReentry, start, why, manual){
   const def=EX[e.ex];
-  e.find={status:'active', high:findHigh(def, ctxReentry), start, w:start, r:e.target.reps[0], steps:[], why, manual:!!manual};
+  e.find={status:'active', tr:(e.target.rir||[1,2]).slice(), start, w:start, r:e.target.reps[0], steps:[], why, manual:!!manual};
   e.target.action='find'; e.target.reason=why; e.target.w=null;
   e.sets.forEach(x=>{ if(!x.done) x.w=null; });
 }
 function findDecide(e, rating, reps){
-  const high=e.find.high, lo=e.target.reps[0];
-  if(rating==='tech' || rating==='r0' || (reps!=null && reps<lo)) return 'down';
-  if(rating==='r12') return high ? 'down' : 'found';
-  if(rating==='r34') return high ? 'found' : 'up10';
-  if(rating==='r57') return 'up25';
-  return 'up50';
+  const tr=findTr(e.find), lo=e.target.reps[0];
+  if(rating==='tech' || (reps!=null && reps<lo)) return 'down';
+  const r=FIND_RANGE[rating];
+  if(r[1]<tr[0]) return 'down';
+  if(findOverlaps(rating, tr)) return 'found';
+  return rating==='r34' ? 'up10' : rating==='r57' ? 'up25' : 'up50';
 }
 function findHeavier(w, def, pct){
   const st=state.settings, inc=incFor(def, st);
@@ -1086,8 +1115,9 @@ function buildSession(type, opts){
   const ts = opts.date && opts.date!==todayStr() ? parseYmd(date).getTime()+18*3600e3 : Date.now();
   if(!opts.preview && type!=='H' && st.reentry && !st.reentryStart){ st.reentryStart=date; Store.saveSettings(); }
   const re = type!=='H' && isReentry(date);
+  const firstRe = re && !Object.values(state.sessions).some(x=>x.status==='done' && x.type!=='H' && x.date>=(st.reentryStart||date));
   const id = opts.preview ? 'preview' : uid(date);
-  const ctx = {settings:st, reentry:re, ts, excludeId:id, check:opts.check||null, noFind:!!opts.backlog};
+  const ctx = {settings:st, reentry:re, firstReentry:firstRe, ts, excludeId:id, check:opts.check||null, noFind:!!opts.backlog};
   const blocks=[];
   PLANS[type].blocks.forEach(pb=>{
     if(pb.opt && !st[pb.opt]) return;
@@ -1095,20 +1125,21 @@ function buildSession(type, opts){
     blocks.push({ss:!!pb.ss, opt:pb.opt||null, rest:pb.rest, items});
   });
   if(opts.short && type!=='H'){
-    blocks.forEach((b,i)=>{ if(i>2 && !b.items.some(e=>EX[e.ex].ham)) b.items.forEach(e=>{ e.skipped=true; e.skipWhy='Kurzversion'; }); });
+    blocks.forEach((b,i)=>{ if(i>2) b.items.forEach(e=>{ e.skipped=true; e.skipWhy='Kurzversion'; }); });
   }
-  if(opts.check && opts.check.hams===2){
-    blocks.forEach(b=>b.items.forEach(e=>{ if(EX[e.ex].ham){ e.skipped=true; e.skipWhy='Hamstrings ziehen'; } }));
+  const pain=((normCheck(opts.check)||{}).pain)||[];
+  if(pain.length){
+    blocks.forEach(b=>b.items.forEach(e=>{ const hit=pain.filter(r=>regionHits(e.ex, r, 0.5)); if(hit.length && !e.skipped){ e.skipped=true; e.skipWhy='Schmerz '+hit.map(regionName).join(', '); } }));
   }
   return {id, v:1, type, status: opts.backlog ? 'backlog' : 'active', date, startedAt:ts, endedAt:null,
-    reentry:re, short:!!opts.short, check:opts.check||null,
+    reentry:re, reentryFirst:firstRe, short:!!opts.short, check:opts.check||null,
     warmup: type==='H' ? [] : WARMUP.map(()=>false), blocks, feel:null, fun:null, note:''};
 }
 
 function swapEntry(s, bi, ii, exId, scope){
   const b=s.blocks[bi], e=b.items[ii], key=entryKey(s,e), grp=entryGroup(e);
   const pit = planItemIn(s.type, key) || planItemAny(key) || {key, group:grp, ex:e.ex, sets:e.plan.sets, reps:e.plan.reps};
-  const ctx = {settings:state.settings, reentry:s.reentry, ts:s.startedAt, excludeId:s.id, check:s.check};
+  const ctx = {settings:state.settings, reentry:s.reentry, firstReentry:!!s.reentryFirst, ts:s.startedAt, excludeId:s.id, check:s.check};
   const done = e.sets.filter(x=>x.done), from=e.ex;
   if(done.length){
     const remaining = Math.max(1, e.sets.length-done.length);
@@ -1243,7 +1274,7 @@ function briefingText(off){
       else if(d.length) out += '\n- '+def.name+': '+fmtSets(d, def, true)+(e.find && e.find.status==='done' ? ' · Gewicht gefunden ('+e.find.steps.length+' '+(e.find.steps.length===1?'Probesatz':'Probesätze')+')' : '');
     }));
     if(s.feel!=null || s.fun!=null) out += '\nGefühl '+(s.feel==null?'–':s.feel)+'/5 · Spass '+(s.fun==null?'–':s.fun)+'/5';
-    if(s.check) out += '\nVorher: Energie '+ENERGY[s.check.energy].toLowerCase()+', Hamstrings '+HAMS[s.check.hams].toLowerCase()+(s.check.intense?', gestern intensiv':'');
+    if(s.check) out += '\nVorher: '+checkText(s.check);
     const prs=sessionPRs(s); if(prs.length) out += '\nBestwerte (geschätztes 1RM): '+prs.map(p=>exName(p.ex)+' '+fmtW(rnd(p.val))+' kg').join(', ');
     if(s.note) out += '\nNotiz: '+s.note;
   });
@@ -1418,7 +1449,7 @@ async function onLoginSubmit(ev){
 function phaseText(d){
   const p=phaseOf(d);
   if(!p) return d<PHASES[0].from ? '' : 'Nach dem Z10: die nächste Phase im Briefing planen.';
-  if(p.n===0) return d<='2026-11-01' ? 'Marathon-Erholung: diese Woche nur Bewegung. Gym-Wiedereinstieg ab Montag, 2. Nov.' : 'Gym-Wiedereinstieg mit leichten Gewichten: 2 Sätze, RIR 3–4, Technik vor Last.';
+  if(p.n===0) return d<='2026-11-01' ? 'Marathon-Erholung: diese Woche nur Bewegung. Gym-Wiedereinstieg ab Montag, 2. Nov.' : 'Gym-Wiedereinstieg: 2 Sätze pro Übung, in der ersten Einheit 3–4 Wdh. in Reserve, danach 2–3. Technik vor Last.';
   if(p.n===1) return 'Gym-Routine aufbauen. Baseline ist 1× pro Woche, die 2. Einheit ist Bonus.';
   if(p.n===2) return 'Gym 1–2× pro Woche. Den Qualitätslauf nicht auf den Tag nach schweren Beinen legen.';
   if(d>=addDays(Z10,-6)) return 'Z10-Woche: Gym nur locker oder auslassen.';
@@ -1441,7 +1472,7 @@ function viewHome(){
     const alt = nt==='A'?'B':'A';
     h+='<section class="hero"><div class="hero-top"><div class="plate '+plateCls(nt)+'">'+nt+'</div><div><h2>'+typeName(nt)+'</h2><div class="hero-sub">Als Nächstes dran · ca. '+estimateMin(pv)+' min</div></div></div>';
     const nf=findActive(pv);
-    if(pv.reentry || nf) h+='<div class="chips">'+(pv.reentry?'<span class="chip warn">Wiedereinstieg · 2 Sätze · RIR 3–4</span>':'')+(nf?'<span class="chip acc">Gewicht finden bei '+nf+' '+(nf===1?'Übung':'Übungen')+'</span>':'')+'</div>';
+    if(pv.reentry || nf) h+='<div class="chips">'+(pv.reentry?'<span class="chip warn">Wiedereinstieg · 2 Sätze · RIR '+(pv.reentryFirst?'3–4':'2–3')+'</span>':'')+(nf?'<span class="chip acc">Gewicht finden bei '+nf+' '+(nf===1?'Übung':'Übungen')+'</span>':'')+'</div>';
     h+=planList(pv);
     h+='<button class="btn pri block" data-a="start" data-t="'+nt+'">'+typeName(nt)+' starten</button><div class="alt"><button class="link" data-a="start" data-t="'+alt+'">Stattdessen '+typeName(alt)+'</button><button class="link" data-a="start" data-t="H">Heimroutine, 10 min</button></div></section>';
   }
@@ -1455,7 +1486,7 @@ function viewHome(){
     const dd=parseYmd(d);
     h+='<div class="day'+(d===t?' today':'')+'"><span>'+WD[dd.getDay()]+'</span>'+(ds.length?'<span class="plate xs '+plateCls(ds[0].type)+'" title="'+esc(typeName(ds[0].type))+'">'+ds[0].type+'</span>':'<span class="slot"></span>')+'<span class="tnum" style="font-weight:500">'+dd.getDate()+'</span></div>';
   }
-  h+='</div><div class="chips"><span class="chip '+(gym.length>=1?'ok':'')+'">'+(gym.length>=1?'Gym '+gym.length+'× · Baseline ✓':'Gym 0 von 1 (Baseline)')+'</span><span class="chip '+(ham.hinge?'ok':'')+'">RDL '+(ham.hinge?'✓':'–')+'</span><span class="chip '+(ham.nordic||ham.ecc?'ok':'')+'">'+(ham.nordic?'Nordics ✓':ham.ecc?'Nordics-Ersatz ✓':'Nordics –')+'</span></div></section>';
+  h+='</div><div class="chips"><span class="chip '+(gym.length>=1?'ok':'')+'">'+(gym.length>=1?'Gym '+gym.length+'× · Baseline ✓':'Gym 0 von 1 (Baseline)')+'</span></div></section>';
 
   // Letzte
   const ds=doneSessions().slice(0,3);
@@ -1512,7 +1543,7 @@ function viewSession(){
     const tips=checkTips(s.check, s.type);
     if(tips.length) h+='<div class="callout">'+I.warn+'<div>'+tips.map(t=>'<div>'+t+'</div>').join('')+'</div></div>';
   }
-  if(s.reentry && !edit) h+='<div class="callout info">'+I.info+'<div><b>Wiedereinstieg.</b> 2 Sätze pro Übung, 3–4 Wiederholungen in Reserve. Technik vor Last.</div></div>';
+  if(s.reentry && !edit) h+='<div class="callout info">'+I.info+'<div><b>Wiedereinstieg.</b> 2 Sätze pro Übung, '+(s.reentryFirst?'3–4 Wiederholungen in Reserve, weil es deine erste Einheit ist':'2–3 Wiederholungen in Reserve')+'. Technik vor Last.</div></div>';
 
   if(s.warmup.length){
     const dn=s.warmup.filter(Boolean).length;
@@ -1544,7 +1575,7 @@ function openBlock(s,b,bi,label){
   const rest=restOf(b);
   let head;
   if(b.ss) head='Supersatz · abwechselnd, '+fmtClock(rest)+' Pause nach jeder Runde';
-  else if(b.opt==='nordicA') head='Hamstring-Erhalt · optional, ein kurzer Reiz pro Woche';
+  else if(b.opt==='nordicA') head='Nordics-Erhalt · optional, damit die Nordics jede Woche drankommen';
   else head=fmtClock(rest)+' Pause zwischen den Sätzen';
   if(b.opt==='arms') head='Optik-Bonus · '+head;
   let h='<section class="blk" id="blk-'+bi+'"><div class="blk-head"><span class="blk-no">'+label+'</span><span>'+head+'</span></div>';
@@ -1563,7 +1594,7 @@ function entryCard(s,bi,ii){
   const firstOpen = e.sets.findIndex(x=>!x.done);
   const meta=[];
   meta.push(e.sets.length+' × '+repTxt(t.reps)+(def.side?' pro Seite':''));
-  if(!def.noRir && t.rir) meta.push('RIR '+t.rir[0]+'–'+t.rir[1]);
+  if(!def.noRir && t.rir) meta.push('RIR '+rirTxt(t.rir));
   if(t.level!=null) meta.push('Stufe '+(t.level+1)+' von '+LADDER.length);
   if(eq.hint) meta.push(eq.hint);
   const grp=entryGroup(e), canSwap = s.type!=='H' && !!(grp && GROUPS[grp]) && !e.swappedTo;
@@ -1600,16 +1631,15 @@ function entryCard(s,bi,ii){
 }
 
 function findPanel(s,bi,ii){
-  const e=s.blocks[bi].items[ii], def=EX[e.ex], f=e.find, k=f.steps.length+1, tr=findTarget(f.high), eq=EQUIP[def.equip];
+  const e=s.blocks[bi].items[ii], def=EX[e.ex], f=e.find, k=f.steps.length+1, tr=findTr(f), eq=EQUIP[def.equip];
   const ref='data-b="'+bi+'" data-i="'+ii+'"', sref=ref+' data-s="0"';
-  const tgtKey = f.high ? 'r34' : 'r12';
   let h='<div class="find" id="find-'+bi+'-'+ii+'"><div class="find-h"><span class="tag find">Gewicht finden</span><span>Probesatz '+k+' von max. '+FIND_MAX+'</span></div>';
   h+='<p class="find-t">'+(k===1 ? esc(f.why)+' Mach '+e.target.reps[0]+' Wdh.'+(def.side?' pro Seite':'')+' und sag danach, wie viele noch drin gewesen wären.' : 'Gleiche Wiederholungen mit dem neuen Gewicht.')+'</p>';
   if(f.steps.length) h+='<ol class="find-steps">'+f.steps.map(st=>'<li>'+esc(findStepText(st,def))+'</li>').join('')+'</ol>';
   h+='<div class="find-in"><div><div class="lab">'+(eq.col==='Hilfe'?'Hilfe kg':eq.col==='+kg'?'Zusatz kg':(def.pair?'kg pro Hand':'kg'))+'</div>'+numBox('fw', f.w, sref, bi,ii,0, 'kg')+'</div><div><div class="lab">'+(def.side?'Wdh/Seite':'Wdh')+'</div>'+numBox('fr', f.r, sref, bi,ii,0, 'Wdh')+'</div></div>';
   const pl=plateHtml(f.w, def); if(pl) h+='<div class="aux"><div class="aux-row" id="pl-'+bi+'-'+ii+'">'+pl+'</div></div>';
-  h+='<div class="find-q">Wie viele Wdh. wären noch drin gewesen?<span>Ziel '+tr[0]+'–'+tr[1]+'</span></div>';
-  h+='<div class="find-r" role="group" aria-label="Wiederholungen in Reserve">'+FIND_RATINGS.map(([v,l])=>'<button class="fr-b'+(v===tgtKey?' tgt':'')+'" data-a="fd-rate" '+ref+' data-v="'+v+'" aria-label="'+FIND_LABEL[v]+'">'+l+'</button>').join('')+'</div>';
+  h+='<div class="find-q">Wie viele Wdh. wären noch drin gewesen?<span>Ziel '+rirTxt(tr)+'</span></div>';
+  h+='<div class="find-r" role="group" aria-label="Wiederholungen in Reserve">'+FIND_RATINGS.map(([v,l])=>'<button class="fr-b'+(findOverlaps(v,tr)?' tgt':'')+'" data-a="fd-rate" '+ref+' data-v="'+v+'" aria-label="'+FIND_LABEL[v]+'">'+l+'</button>').join('')+'</div>';
   h+='<button class="ghost-btn" data-a="fd-rate" '+ref+' data-v="tech">Technik wackelte</button>';
   if(f.steps.length) h+='<div class="find-foot"><button class="link" data-a="fd-undo" '+ref+'>Letzten Probesatz zurücknehmen</button></div>';
   return h+'</div>';
@@ -1637,7 +1667,7 @@ function findRate(s, bi, ii, rating){
   step.next=result;
   f.status='done'; f.result=result; f.counted=counted;
   const n=e.target.sets, lo=e.target.reps[0], sets=[];
-  if(counted) sets.push({w:result, r, rir:FIND_RIR[rating], done:true, t:Date.now(), probe:true});
+  if(counted) sets.push({w:result, r, rir:Math.max(findTr(f)[0], Math.min(findTr(f)[1], FIND_RIR[rating])), done:true, t:Date.now(), probe:true});
   while(sets.length<n) sets.push({w:result, r:e.target.perSet[sets.length]!=null?e.target.perSet[sets.length]:lo, rir:null, done:false});
   e.sets=sets; e.target.w=result; e.target.action='found';
   e.target.reason = 'Arbeitsgewicht '+fmtLoad(result,def)+(counted ? '. Probesatz '+f.steps.length+' zählt als Satz 1.' : kind==='down' ? ', etwas leichter als der letzte Probesatz.' : ', nach 3 Probesätzen übernommen.');
@@ -1664,8 +1694,9 @@ function numBox(f, val, sref, bi,ii,si, ph){
 
 function checkTips(c, type){
   const tips=[];
-  if(c.hams===2) tips.push('<b>Hamstrings ziehen:</b> RDL und Nordics heute ausgelassen. Hält das Ziehen an, lass es abklären.');
-  else if(c.hams===1) tips.push('<b>Muskelkater:</b> Nordics auf der aktuellen Stufe, RDL mit etwas mehr Reserve.');
+  c=normCheck(c)||{};
+  if((c.pain||[]).length) tips.push('<b>Schmerz '+c.pain.map(regionName).join(', ')+':</b> Übungen, die diese Stelle belasten, lasse ich heute aus. Du kannst jede einzeln wieder aufnehmen. Hält der Schmerz an oder wird er stärker, lass es abklären.');
+  if((c.sore||[]).length) tips.push('<b>Muskelkater '+c.sore.map(regionName).join(', ')+':</b> Übungen dafür mit 1 Wdh. mehr Reserve.');
   if(c.intense && type!=='H') tips.push('<b>Gestern intensiv:</b> Plan-Regel ist möglichst kein beinlastiges Gym am Folgetag. Heute Beine mit 1 Wdh. mehr Reserve, Oberkörper normal.');
   if(c.energy===0) tips.push('<b>Wenig Energie:</b> Kurzversion ist völlig ok. Jede Einheit zählt.');
   return tips;
@@ -1695,7 +1726,7 @@ function viewDetail(){
   let h='<section class="hero"><div class="hero-top"><div class="plate '+plateCls(s.type)+'">'+s.type+'</div><div><h2>'+typeName(s.type)+'</h2><div class="hero-sub">'+fmtDate(s.date)+(s.reentry?' · Wiedereinstieg':'')+(s.short?' · Kurzversion':'')+'</div></div></div>';
   h+='<div class="stats"><div class="stat"><b>'+(st.dur!=null?st.dur:'–')+'</b><span>Minuten</span></div><div class="stat"><b>'+st.sets+'</b><span>Sätze</span></div><div class="stat"><b>'+(s.feel!=null?s.feel:'–')+'<small style="font-size:16px">/5</small></b><span>Gefühl'+(s.fun!=null?' · Spass '+s.fun+'/5':'')+'</span></div></div>';
   if(prs.length) h+='<div class="chips">'+prs.map(p=>'<span class="chip ok">Bestwert '+esc(EX[p.ex].short||EX[p.ex].name)+' · e1RM '+fmtW(rnd(p.val))+' kg</span>').join('')+'</div>';
-  if(s.check) h+='<div class="muted" style="font-size:14px">Vorher: Energie '+ENERGY[s.check.energy].toLowerCase()+' · Hamstrings '+HAMS[s.check.hams].toLowerCase()+(s.check.intense?' · gestern intensiv':'')+'</div>';
+  if(s.check) h+='<div class="muted" style="font-size:14px">Vorher: '+esc(checkText(s.check))+'</div>';
   if(s.note) h+='<div style="font-size:15px">«'+esc(s.note)+'»</div>';
   h+='</section><section class="panel" style="gap:0">';
   s.blocks.forEach(b=>b.items.forEach(e=>{
@@ -1802,11 +1833,11 @@ function viewSettings(){
   h+='<section class="sec"><h2 class="eyebrow">Übungen in Einheit A</h2><p class="phase-t" style="font-size:14px">Tippe auf eine Übung, um sie dauerhaft zu tauschen. Für ein einzelnes Training tauschst du direkt in der Übung.</p><div class="sgroup">'+keysOf('A').map(prow).join('')+'</div></section>';
   h+='<section class="sec"><h2 class="eyebrow">Übungen in Einheit B</h2><div class="sgroup">'+keysOf('B').map(prow).join('')+'</div></section>';
   h+='<section class="sec"><h2 class="eyebrow">In beiden Einheiten</h2><div class="sgroup">'+['X.ecc','X.curl','X.tri'].map(prow).join('');
-  h+='<div class="srow"><div class="tx"><b>Hamstring-Erhalt auch in Einheit A</b><small>2 × 3–5, damit die Hamstrings jede Woche einen Reiz bekommen</small></div>'+tgl('nordicA')+'</div>';
+  h+='<div class="srow"><div class="tx"><b>Nordics auch in Einheit A</b><small>2 × 3–5, damit die Nordics jede Woche drankommen</small></div>'+tgl('nordicA')+'</div>';
   h+='<div class="srow"><div class="tx"><b>Optik-Bonus</b><small>Bizeps + Trizeps als Supersatz am Ende</small></div>'+tgl('arms')+'</div></div></section>';
 
   h+='<section class="sec"><h2 class="eyebrow">Wiedereinstieg</h2><div class="sgroup">';
-  h+='<div class="srow"><div class="tx"><b>Wiedereinstieg aktiv</b><small>2 Sätze, RIR 3–4, die ersten 2 Wochen</small></div>'+tgl('reentry')+'</div>';
+  h+='<div class="srow"><div class="tx"><b>Wiedereinstieg aktiv</b><small>Die ersten 2 Wochen: 2 Sätze, in der ersten Einheit RIR 3–4, danach 2–3</small></div>'+tgl('reentry')+'</div>';
   h+='<div class="srow"><div class="tx"><b>Gewicht finden vorschlagen</b><small>Bei neuen Übungen und nach 4 Wochen Pause, mit bis zu 3 Probesätzen</small></div>'+tgl('autoFind')+'</div>';
   h+='<div class="srow"><div class="tx"><b>Start</b><small>'+(st.reentryStart?'Läuft bis '+fmtDate(addDays(st.reentryStart,(st.reentryDays||14)-1)):'Startet mit deiner ersten Einheit')+'</small></div><input type="date" class="sinput date" id="st-reentryStart" data-s="reentryStart" data-t="date" value="'+(st.reentryStart||'')+'"></div></div></section>';
 
@@ -1872,10 +1903,11 @@ function sheetCheck(){
   const c=state.check, type=c.type;
   let h='<h2 id="sh-t">Kurzer Check</h2><p class="lead">Vor '+typeName(type)+'. Drei Antworten, dann passt die App die Vorgaben an.</p>';
   h+='<div class="q"><div class="q-l">Energie heute</div>'+segRow('ck-energy', ENERGY.map((l,i)=>[i,l]), c.energy)+'</div>';
-  h+='<div class="q"><div class="q-l">Hamstrings</div>'+segRow('ck-hams', HAMS.map((l,i)=>[i,l]), c.hams)+'</div>';
+  const rc=(act,list,pain)=>'<div class="rchips">'+REGIONS.map(([id,l])=>{ const on=list.includes(id); return '<button class="rchip'+(pain?' pain':'')+(on?' on':'')+'" data-a="'+act+'" data-v="'+id+'" aria-pressed="'+on+'">'+l+'</button>'; }).join('')+'</div>';
+  h+='<div class="q"><div class="q-l">Spürst du etwas? Nur antippen, wenn ja.</div><div class="body-q"><div class="bq-l">Muskelkater</div>'+rc('ck-sore', c.sore, false)+'<div class="bq-l">Schmerz</div>'+rc('ck-pain', c.pain, true)+'</div></div>';
   if(type!=='H') h+='<div class="q"><div class="q-l">Gestern Padel oder Qualitätslauf?</div>'+segRow('ck-intense', [[0,'Nein'],[1,'Ja']], c.intense==null?null:(c.intense?1:0))+'</div>';
-  if(type!=='H') h+='<div class="srow" style="padding:0;border:0"><div class="tx"><b>Kurzversion, ca. 35 min</b><small>Grundübungen und erster Supersatz, Hamstring-Übungen bleiben drin</small></div><label class="tgl"><input type="checkbox" id="ck-short" data-f="ck-short"'+(c.short?' checked':'')+'><span></span></label></div>';
-  const tips=checkTips({energy:c.energy, hams:c.hams, intense:!!c.intense}, type);
+  if(type!=='H') h+='<div class="srow" style="padding:0;border:0"><div class="tx"><b>Kurzversion, ca. 35 min</b><small>Die ersten drei Blöcke: Grundübungen und erster Supersatz</small></div><label class="tgl"><input type="checkbox" id="ck-short" data-f="ck-short"'+(c.short?' checked':'')+'><span></span></label></div>';
+  const tips=checkTips({energy:c.energy, sore:c.sore, pain:c.pain, intense:!!c.intense}, type);
   if(tips.length) h+='<div class="callout">'+I.warn+'<div>'+tips.map(t=>'<div>'+t+'</div>').join('')+'</div></div>';
   if(type!=='H'){
     const nf=findActive(buildSession(type,{preview:true}));
@@ -1940,7 +1972,7 @@ function sheetBacklog(){
 function sheetInfo(){
   return '<h2 id="sh-t">So rechnet die App</h2><div class="prose">'
   +'<div><h3>Doppelte Progression</h3><p>Das Gewicht bleibt, bis alle Sätze das obere Ende des Wiederholungsbereichs erreichen. Dann steigt es um 2.5 %, bei viel Luft (RIR über dem Ziel) um 5 %, gerundet auf deinen kleinsten Gewichtsschritt. Danach startest du wieder am unteren Ende. Zweimal in Folge unter dem Bereich: rund 10 % leichter und neu aufbauen.</p></div>'
-  +'<div><h3>RIR</h3><p>Wiederholungen in Reserve: wie viele saubere Wiederholungen noch drin gewesen wären. Grundübungen RIR 1–2, Ergänzungsübungen 1–3, im Wiedereinstieg 3–4.</p><cite>Helms et al. 2016, Strength & Conditioning Journal</cite></div>'
+  +'<div><h3>RIR</h3><p>Wiederholungen in Reserve: wie viele saubere Wiederholungen noch drin gewesen wären. Grundübungen RIR 1–2, Ergänzungsübungen 1–3. Im Wiedereinstieg in der ersten Einheit 3–4, danach 2–3: Der Muskel gewöhnt sich so ohne grossen Muskelkater wieder an die Belastung.</p><cite>Helms et al. 2016, Strength & Conditioning Journal</cite></div>'
   +'<div><h3>Geschätztes 1RM</h3><p>Epley-Formel mit Reserve: Gewicht × (1 + (Wdh + RIR) / 30). Nur als Trend lesen, nicht als Maximalversuch.</p></div>'
   +'<div><h3>Pausen</h3><p>Bei Mehrgelenksübungen bringen 2–3 Minuten Pause mehr Kraft- und Muskelzuwachs als 1 Minute. Darum 2:30 als Standard für die Grundübungen.</p><cite>Schoenfeld et al. 2016, J Strength Cond Res</cite></div>'
   +'<div><h3>Supersätze</h3><p>Zwei Übungen für verschiedene Muskeln im Wechsel sparen Zeit, ohne die Leistung pro Satz merklich zu drücken.</p><cite>Robbins et al. 2010, J Strength Cond Res</cite></div>'
@@ -2085,13 +2117,13 @@ function onClick(ev){
 
     case 'start': {
       if(activeSession()){ toast('Es läuft schon eine Einheit.'); break; }
-      state.check={type:d.t, energy:null, hams:null, intense:null, short:false, shortTouched:false};
+      state.check={type:d.t, energy:null, sore:[], pain:[], intense:null, short:false, shortTouched:false};
       openSheet('check'); break;
     }
     case 'ck-energy': { const c=state.check; c.energy=+d.v; if(!c.shortTouched && c.type!=='H') c.short = c.energy===0; renderSheet(); break; }
-    case 'ck-hams': state.check.hams=+d.v; renderSheet(); break;
+    case 'ck-sore': case 'ck-pain': { const key=a==='ck-sore'?'sore':'pain', other=a==='ck-sore'?'pain':'sore', c=state.check; const i=c[key].indexOf(d.v); if(i>-1) c[key].splice(i,1); else { c[key].push(d.v); const j=c[other].indexOf(d.v); if(j>-1) c[other].splice(j,1); } renderSheet(); break; }
     case 'ck-intense': state.check.intense=d.v==='1'; renderSheet(); break;
-    case 'ck-go': { const c=state.check; const chk={energy:c.energy==null?1:c.energy, hams:c.hams==null?0:c.hams, intense:!!c.intense}; startSession(c.type, chk, c.short); break; }
+    case 'ck-go': { const c=state.check; const chk={energy:c.energy==null?1:c.energy, sore:c.sore.slice(), pain:c.pain.slice(), intense:!!c.intense}; startSession(c.type, chk, c.short); break; }
     case 'ck-skip': startSession(state.check.type, null, false); break;
 
     case 'resume': state.editId=null; state.view='session'; keepAwake(true); render(); window.scrollTo(0,0); scrollToBlock(curBlock(activeSession())); break;
