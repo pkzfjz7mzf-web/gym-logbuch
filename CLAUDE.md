@@ -18,7 +18,7 @@ Aarons persönliche Trainings-Web-App (Einheit A/B, Progressionsvorschläge, RIR
 
 ## Versionen und Rollback
 - Jede Live-Version bekommt eine Nummer: `APP_VERSION` in `index.html` erhöhen und oben in `CHANGELOG` die Änderungen in Aarons Worten ergänzen (kurz, aus Nutzersicht). Die App zeigt sie einmal pro Gerät als «Was ist neu», alle Versionen unter Einstellungen. Den Test in `tools/test_app.py` auf die neue Nummer anpassen.
-- Versionen bisher: 1.0 = `713505e`, 1.1 = `7e04ebe`, 1.2 = `b67c662`. Neue Versionen hier nachtragen. Tags lassen sich aus der Session nicht pushen (403).
+- Versionen bisher: 1.0 = `713505e`, 1.1 = `7e04ebe`, 1.2 = `b67c662`, 1.3 = `e2edfc2`. Neue Versionen hier nachtragen. Tags lassen sich aus der Session nicht pushen (403).
 - Rollback: alten Stand der App-Dateien holen (`git checkout <commit> -- index.html sw.js manifest.webmanifest icons`), als neuen Commit «Rollback auf Version x» in `main` pushen. Kein Force-Push. Weil die Datenstruktur nur abwärtskompatibel wächst, kann die ältere Version die Daten weiter lesen.
 - Datenbank: Der Gratis-Tarif von Supabase hat keine automatischen Backups. Sicherung über den CSV-Export in der App.
 
