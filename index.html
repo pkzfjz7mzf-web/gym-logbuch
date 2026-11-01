@@ -329,7 +329,7 @@ textarea.brief{width:100%;min-height:260px;border:0;border-radius:12px;backgroun
 .find-foot{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center}
 .find-foot .link{font-size:14px;min-height:36px}
 .tag.find{background:var(--accent);color:var(--accent-ink)}
-.tag.found{background:var(--ok-soft);color:var(--ok)}
+.tag.found,.tag.reps{background:var(--ok-soft);color:var(--ok)}
 .sugg .act{display:inline-block;margin-top:4px;font-weight:600;color:var(--accent);min-height:32px}
 .plan-row .tg .fd{color:var(--accent)}
 
@@ -1085,11 +1085,32 @@ function findLighter(w, def){
   if(!w) return 0;
   return Math.max(findMinW(def), Math.min(rnd(w-inc), roundTo(w*0.9, inc, 'near')));
 }
+/* Eingrenzen: lo = schwerstes Gewicht, das zu leicht war, hi = leichtestes, das zu schwer war.
+   Bei der Klimmzug-Maschine ist weniger Hilfe schwerer, deshalb wird über D() verglichen. */
+function findBounds(f, def){
+  const D = w => def.equip==='assist' ? -w : w; let lo=null, hi=null;
+  f.steps.forEach(st=>{
+    if(st.kind==='down'){ if(hi==null || D(st.w)<D(hi)) hi=st.w; }
+    else if(st.kind!=='found'){ if(lo==null || D(st.w)>D(lo)) lo=st.w; }
+  });
+  return {lo, hi, D};
+}
+/* Nächstes Probegewicht, immer echt zwischen lo und hi. null = keine Stufe mehr frei. */
+function findNext(w, kind, f, def){
+  const inc=incFor(def, state.settings), sg=def.equip==='assist'?-1:1, {lo,hi,D}=findBounds(f, def);
+  let nw = kind==='down' ? findLighter(w, def) : findHeavier(w, def, kind==='up10'?0.10:kind==='up25'?0.25:0.5);
+  if(hi!=null && D(nw)>=D(hi)) nw=rnd(hi-sg*inc);
+  if(lo!=null && D(nw)<=D(lo)) nw=rnd(lo+sg*inc);
+  if(nw<0 || nw===w || (def.equip==='bb' && nw<findMinW(def))) return null;
+  if((hi!=null && D(nw)>=D(hi)) || (lo!=null && D(nw)<=D(lo))) return null;
+  return nw;
+}
 function findStepText(st, def){
   const head=fmtLoad(st.w,def)+' × '+st.r+' · '+FIND_LABEL[st.rating];
+  const nx = st.next!=null && st.next!==st.w ? ', '+fmtLoad(st.next,def) : '';
   if(st.kind==='found') return head+' → gefunden';
-  if(st.kind==='down') return head+' → leichter, '+fmtLoad(st.next,def);
-  return head+' → '+fmtLoad(st.next,def);
+  if(st.kind==='down') return head+(st.rating==='tech' ? ' → leichter' : ' → zu schwer')+nx;
+  return head+' → zu leicht'+nx;
 }
 function findActive(s){ let n=0; s.blocks.forEach(b=>b.items.forEach(e=>{ if(!e.skipped && e.find && e.find.status==='active') n++; })); return n; }
 function findCanUndo(e){ return e.find && e.find.steps.length>0 && !e.sets.some(x=>x.done && !x.probe); }
@@ -1271,7 +1292,7 @@ function briefingText(off){
     s.blocks.forEach(b=>b.items.forEach(e=>{
       const def=EX[e.ex], d=e.sets.filter(x=>x.done);
       if(e.skipped) out += '\n- '+def.name+': ausgelassen'+(e.skipWhy?' ('+e.skipWhy+')':'');
-      else if(d.length) out += '\n- '+def.name+': '+fmtSets(d, def, true)+(e.find && e.find.status==='done' ? ' · Gewicht gefunden ('+e.find.steps.length+' '+(e.find.steps.length===1?'Probesatz':'Probesätze')+')' : '');
+      else if(d.length) out += '\n- '+def.name+': '+fmtSets(d, def, true)+(e.find && e.find.status==='done' ? ' · '+(e.find.counted?'Gewicht gefunden':'Gewicht eingegrenzt')+' ('+e.find.steps.length+' '+(e.find.steps.length===1?'Probesatz':'Probesätze')+': '+e.find.steps.map(st=>fmtW(st.w)+'×'+st.r+' '+(st.rating==='tech'?'Technik wackelte':'RIR '+FIND_RATINGS.find(x=>x[0]===st.rating)[1])).join(', ')+')' : '');
     }));
     if(s.feel!=null || s.fun!=null) out += '\nGefühl '+(s.feel==null?'–':s.feel)+'/5 · Spass '+(s.fun==null?'–':s.fun)+'/5';
     if(s.check) out += '\nVorher: '+checkText(s.check);
@@ -1602,12 +1623,12 @@ function entryCard(s,bi,ii){
   let h='<article class="ex'+(ro?' ro':'')+'" id="ex-'+bi+'-'+ii+'"><div class="ex-head"><div class="tx">'+(tags.length?'<span class="ex-tag">'+esc(tags.join(' · '))+'</span>':'')+'<h3>'+esc(def.name)+'</h3><div class="ex-meta">'+meta.join(' · ')+'</div></div>'+(canSwap?'<button class="swap-btn" data-a="swap-open" '+ref+' aria-label="'+esc(def.name)+' tauschen">'+I.swap+'Tauschen</button>':'')+'</div>';
   const f=e.find;
   if(f && f.status==='active' && !state.editId){ h+=findPanel(s,bi,ii)+'<div class="ex-foot"><button class="ghost-btn" data-a="fd-skip" '+ref+'>Ich kenne mein Gewicht</button><span class="sp"></span><button class="ghost-btn" data-a="skip" '+ref+'>'+I.skip+'Auslassen</button></div>'; h+='<details class="cue"><summary>'+I.info+'<span class="when-closed">Technik-Tipp anzeigen</span><span class="when-open">Technik-Tipp</span>'+I.chevD+'</summary><p>'+esc(def.cue)+'</p></details>'; return h+'</article>'; }
-  const tagTxt={up:'↑ Mehr',hold:'= Halten',down:'↓ Leichter',new:'Neu',start:'Start',found:'Gefunden'}[t.action]||'';
+  const tagTxt={up:'↑ Mehr',hold:'= Halten',down:'↓ Leichter',new:'Neu',start:'Start',found:'Gefunden',reps:'Mehr Wdh.'}[t.action]||'';
   let extra='';
   if(f && f.status==='done') extra='<span class="note" style="color:var(--muted)">'+esc(f.steps.map(st=>findStepText(st,def)).join(' · '))+'</span>'+(findCanUndo(e)&&!state.editId?'<button class="act" data-a="fd-undo" '+ref+'>Letzten Probesatz zurücknehmen</button>':'');
   else if(canFind(def, e.ex) && !e.sets.some(x=>x.done) && !state.editId && s.type!=='H') extra='<button class="act" data-a="fd-start" '+ref+'>Gewicht neu finden</button>';
   h+='<div class="sugg"><span class="tag '+t.action+'">'+tagTxt+'</span><span>'+esc(t.reason)+(t.notes&&t.notes.length?t.notes.map(n=>'<span class="note">'+esc(n)+'</span>').join(''):'')+(extra?'<br>'+extra:'')+'</span></div>';
-  if(f && f.suggestAssist && !state.editId) h+='<div class="callout">'+I.warn+'<div><b>Weniger als '+t.reps[0]+' saubere Wdh.</b> Mit Unterstützung kommst du in den Zielbereich.<div><button class="link" data-a="fd-assist" '+ref+'>Heute Klimmzüge assistiert</button></div></div></div>';
+  if(f && f.suggestAssist && !state.editId) h+='<div class="callout">'+I.warn+'<div><b>'+(f.steps.length && f.steps[f.steps.length-1].r<t.reps[0] ? 'Weniger als '+t.reps[0]+' saubere Wdh.' : 'Zu wenig Reserve.')+'</b> Mit Unterstützung kommst du in den Zielbereich.<div><button class="link" data-a="fd-assist" '+ref+'>Heute Klimmzüge assistiert</button></div></div></div>';
   const wNow = firstOpen>-1 ? e.sets[firstOpen].w : (e.sets.length?e.sets[e.sets.length-1].w:null);
   const pl=plateHtml(wNow, def), wu=(state.editId || (f && f.status==='done'))?'':warmupSets(t.w, def);
   if(pl || wu) h+='<div class="aux">'+(pl?'<div class="aux-row" id="pl-'+bi+'-'+ii+'">'+pl+'</div>':'')+(wu?'<div>'+wu+'</div>':'')+'</div>';
@@ -1651,36 +1672,53 @@ function findRate(s, bi, ii, rating){
   const w=f.w==null?0:f.w, r=f.r!=null?f.r:e.target.reps[0];
   const kind=findDecide(e, rating, r), step={w, r, rating, kind, t:Date.now()};
   f.steps.push(step);
-  let result, counted=false;
-  if(kind==='found'){ result=w; counted=true; }
-  else if(kind==='down'){ result=findLighter(w, def); if(e.ex==='pullup' && r<e.target.reps[0]) f.suggestAssist=true; }
+  const tr=findTr(f), L=x=>fmtLoad(x,def);
+  let result, counted=false, reps=null, action, why;
+  if(kind==='found'){ result=w; counted=true; action='found'; why='Arbeitsgewicht '+L(w)+'. Probesatz '+f.steps.length+' zählt als Satz 1.'; }
   else {
-    const nw=findHeavier(w, def, kind==='up10'?0.10:kind==='up25'?0.25:0.5);
-    step.next=nw;
-    if(f.steps.length<FIND_MAX){
-      f.w=nw; persist(s);
-      Timer.start(FIND_REST, 'Probesatz '+(f.steps.length+1)+' · '+fmtLoad(nw,def));
-      return 'next';
+    if(kind==='down' && e.ex==='pullup' && r<e.target.reps[0]) f.suggestAssist=true;
+    const nw=findNext(w, kind, f, def);
+    if(nw!=null){
+      step.next=nw;
+      // Zu leicht oder zu schwer: noch ein Probesatz. Passt er, zählt er als Satz 1, kostet also keinen Extrasatz.
+      if(f.steps.length<FIND_MAX){
+        f.w=nw; persist(s);
+        Timer.start(FIND_REST, 'Probesatz '+(f.steps.length+1)+' · '+L(nw));
+        return 'next';
+      }
+      result=nw; action=kind==='down'?'down':'up';
+      why='Nach '+FIND_MAX+' Probesätzen übernommen: '+L(nw)+(kind==='down'?', etwas leichter als zuletzt.':', etwas schwerer als zuletzt.')+' Die Probesätze zählen nicht als Arbeitssätze.';
+    } else {
+      const {lo,hi}=findBounds(f, def);
+      if(lo!=null){
+        // Keine Gewichtsstufe mehr dazwischen: leichteres Gewicht, dafür mehr Wiederholungen.
+        const ls=f.steps.filter(st=>st.w===lo && st.kind!=='down' && st.kind!=='found').pop();
+        reps=Math.min(e.target.reps[1], Math.max(e.target.reps[0], ls.r + FIND_RIR[ls.rating] - tr[1]));
+        result=lo; action='reps';
+        why=(hi!=null ? 'Zwischen '+L(lo)+' und '+L(hi)+' gibt es keine Stufe.' : 'Schwerer geht hier nicht.')+' Nimm '+L(lo)+' und mach '+reps+' Wdh.'+(def.side?' pro Seite.':'');
+      } else {
+        result=w; action='down';
+        if(e.ex==='pullup'){ f.suggestAssist=true; why='Ohne Hilfe heute zu schwer.'; }
+        else why='Leichter geht hier nicht: '+L(w)+'. Mach so viele saubere Wdh., dass '+rirTxt(tr)+' in Reserve bleiben.';
+      }
+      step.next=result;
     }
-    result=nw;
   }
-  step.next=result;
-  f.status='done'; f.result=result; f.counted=counted;
+  f.status='done'; f.result=result; f.counted=counted; if(reps!=null) f.reps=reps; else delete f.reps;
   const n=e.target.sets, lo=e.target.reps[0], sets=[];
-  if(counted) sets.push({w:result, r, rir:Math.max(findTr(f)[0], Math.min(findTr(f)[1], FIND_RIR[rating])), done:true, t:Date.now(), probe:true});
-  while(sets.length<n) sets.push({w:result, r:e.target.perSet[sets.length]!=null?e.target.perSet[sets.length]:lo, rir:null, done:false});
-  e.sets=sets; e.target.w=result; e.target.action='found';
-  e.target.reason = 'Arbeitsgewicht '+fmtLoad(result,def)+(counted ? '. Probesatz '+f.steps.length+' zählt als Satz 1.' : kind==='down' ? ', etwas leichter als der letzte Probesatz.' : ', nach 3 Probesätzen übernommen.');
+  if(counted) sets.push({w:result, r, rir:Math.max(tr[0], Math.min(tr[1], FIND_RIR[rating])), done:true, t:Date.now(), probe:true});
+  while(sets.length<n) sets.push({w:result, r:reps!=null?reps:e.target.perSet[sets.length]!=null?e.target.perSet[sets.length]:lo, rir:null, done:false});
+  e.sets=sets; e.target.w=result; e.target.action=action; e.target.reason=why; e.target.notes=[];
   persist(s);
   if(counted && !state.editId) afterSetDone(s,bi,ii,0);
-  else Timer.start(FIND_REST, name+' · Satz 1 · '+fmtLoad(result,def));
-  return 'found';
+  else Timer.start(FIND_REST, name+' · Satz 1 · '+L(result));
+  return counted ? 'found' : 'done';
 }
 
 function findUndo(s, bi, ii){
   const e=s.blocks[bi].items[ii], f=e.find; if(!findCanUndo(e)) return;
   const last=f.steps.pop();
-  f.status='active'; f.w=last.w; f.r=last.r; delete f.result; delete f.counted; delete f.suggestAssist;
+  f.status='active'; f.w=last.w; f.r=last.r; delete f.result; delete f.counted; delete f.reps; delete f.suggestAssist;
   e.target.action='find'; e.target.reason=f.why; e.target.w=null;
   e.sets=Array.from({length:e.target.sets}, (_,i)=>({w:null, r:e.target.perSet[i]!=null?e.target.perSet[i]:e.target.reps[0], rir:null, done:false}));
   persist(s);
@@ -1731,7 +1769,7 @@ function viewDetail(){
   h+='</section><section class="panel" style="gap:0">';
   s.blocks.forEach(b=>b.items.forEach(e=>{
     const def=EX[e.ex], d=e.sets.filter(x=>x.done);
-    h+='<div class="det-ex"><b>'+esc(def.name)+(e.swapFrom&&EX[e.swapFrom]?' <span class="muted" style="font-weight:400">statt '+esc(EX[e.swapFrom].name)+'</span>':'')+'</b><span>'+(e.skipped?'Ausgelassen'+(e.skipWhy?' · '+esc(e.skipWhy):''):d.length?esc(fmtSets(d,def,true)):'Keine Sätze abgehakt')+'</span>'+(e.find && e.find.status==='done'?'<span>Gewicht gefunden: '+esc(e.find.steps.map(st=>fmtLoad(st.w,def)+' × '+st.r+' ('+FIND_LABEL[st.rating]+')').join(', '))+'</span>':'')+'</div>';
+    h+='<div class="det-ex"><b>'+esc(def.name)+(e.swapFrom&&EX[e.swapFrom]?' <span class="muted" style="font-weight:400">statt '+esc(EX[e.swapFrom].name)+'</span>':'')+'</b><span>'+(e.skipped?'Ausgelassen'+(e.skipWhy?' · '+esc(e.skipWhy):''):d.length?esc(fmtSets(d,def,true)):'Keine Sätze abgehakt')+'</span>'+(e.find && e.find.status==='done'?'<span>'+(e.find.counted?'Gewicht gefunden':'Gewicht eingegrenzt')+': '+esc(e.find.steps.map(st=>fmtLoad(st.w,def)+' × '+st.r+' ('+FIND_LABEL[st.rating]+')').join(', '))+'</span>':'')+'</div>';
   }));
   h+='</section><section class="sec"><div class="row-btns"><button class="btn sec" data-a="detail-edit">Bearbeiten</button>'+(state.delArm?'<button class="btn bad" data-a="detail-del-ok">Endgültig löschen</button><button class="link" data-a="detail-del-cancel">Abbrechen</button>':'<button class="btn bad" data-a="detail-del">Löschen</button>')+'</div></section>';
   return h;
@@ -1978,7 +2016,7 @@ function sheetInfo(){
   +'<div><h3>Supersätze</h3><p>Zwei Übungen für verschiedene Muskeln im Wechsel sparen Zeit, ohne die Leistung pro Satz merklich zu drücken.</p><cite>Robbins et al. 2010, J Strength Cond Res</cite></div>'
   +'<div><h3>Wochenvolumen</h3><p>Mehr harte Sätze pro Muskel und Woche bringen tendenziell mehr Muskelaufbau, ab etwa 10 Sätzen deutlich. Indirekte Beanspruchung zählt hier halb. In dieser Phase ist das nur Orientierung.</p><cite>Schoenfeld et al. 2017, J Sports Sci</cite></div>'
   +'<div><h3>Nordics</h3><p>Programme mit Nordics halbieren in Studien etwa das Risiko für Hamstring-Verletzungen. Für den Erhalt setzen Protokolle rund 1× pro Woche an. Die App steigert in Stufen von 2 × 3 bis 3 × 6 und geht nach über 3 Wochen Pause eine Stufe zurück, weil der Muskelkater-Schutz dann nachlässt.</p><cite>van Dyk et al. 2019, BJSM · Petersen et al. 2011, AJSM</cite></div>'
-  +'<div><h3>Gewicht finden</h3><p>Bei neuen Übungen und nach mehr als 4 Wochen Pause tastet sich die App mit bis zu 3 Probesätzen an dein Arbeitsgewicht heran. Bis etwa 4 Wochen bleibt die Maximalkraft weitgehend erhalten, danach nimmt sie schneller ab. Nach jedem Probesatz gibst du die Reserve an: zu leicht bedeutet +10, +25 oder +50 %, im Ziel ist gefunden, darunter −10 %. Passt der Probesatz, zählt er als erster Arbeitssatz.</p><cite>Bosquet et al. 2013, Scand J Med Sci Sports</cite></div>'
+  +'<div><h3>Gewicht finden</h3><p>Bei neuen Übungen und nach mehr als 4 Wochen Pause tastet sich die App mit bis zu 3 Probesätzen an dein Arbeitsgewicht heran. Bis etwa 4 Wochen bleibt die Maximalkraft weitgehend erhalten, danach nimmt sie schneller ab. Nach jedem Probesatz gibst du die Reserve an: zu leicht bedeutet +10, +25 oder +50 %, zu schwer −10 %, danach folgt der nächste Probesatz. Erst wenn die Reserve im Ziel liegt, ist das Gewicht gefunden, und dieser Probesatz zählt als erster Arbeitssatz. Gibt es zwischen zu leicht und zu schwer keine Gewichtsstufe mehr, nimmst du das leichtere Gewicht mit mehr Wiederholungen.</p><cite>Bosquet et al. 2013, Scand J Med Sci Sports</cite></div>'
   +'<div><h3>Aufwärmsätze</h3><p>Vor schweren Grundübungen schlägt die App 2–3 Rampensätze bei ca. 50, 70 und 85 % vor. Sie zählen nicht als Arbeitssätze.</p></div>'
   +'</div><button class="btn sec block" data-a="sheet-close">Schliessen</button>';
 }
@@ -2199,6 +2237,7 @@ function onClick(ev){
       const e=s.blocks[bi].items[ii], def=EX[e.ex];
       const res=findRate(s, bi, ii, d.v);
       if(res==='found') toast('Arbeitsgewicht gefunden: '+fmtLoad(e.find.result, def));
+      else if(res==='done' && !e.find.suggestAssist) toast('Arbeitsgewicht: '+fmtLoad(e.find.result, def)+(e.find.reps?' × '+e.find.reps:''));
       renderMain(); renderTop(); renderDock();
       const card=document.getElementById(res==='next'?'find-'+bi+'-'+ii:'ex-'+bi+'-'+ii); if(card && res==='next') card.scrollIntoView({block:'nearest'});
       break;

@@ -4,7 +4,7 @@
 <bpmn:process id="GewichtFinden" name="Gewicht finden" isExecutable="false">
 <bpmn:laneSet id="LS">
 <bpmn:lane id="L_aaron" name="Aaron"><bpmn:flowNodeRef>G_accept</bpmn:flowNodeRef><bpmn:flowNodeRef>G_m2</bpmn:flowNodeRef><bpmn:flowNodeRef>U_probe</bpmn:flowNodeRef><bpmn:flowNodeRef>U_rate</bpmn:flowNodeRef><bpmn:flowNodeRef>U_manual</bpmn:flowNodeRef><bpmn:flowNodeRef>U_work</bpmn:flowNodeRef></bpmn:lane>
-<bpmn:lane id="L_app" name="App"><bpmn:flowNodeRef>S</bpmn:flowNodeRef><bpmn:flowNodeRef>T_check</bpmn:flowNodeRef><bpmn:flowNodeRef>G_weight</bpmn:flowNodeRef><bpmn:flowNodeRef>E_noweight</bpmn:flowNodeRef><bpmn:flowNodeRef>G_pause</bpmn:flowNodeRef><bpmn:flowNodeRef>T_start1</bpmn:flowNodeRef><bpmn:flowNodeRef>G_prev</bpmn:flowNodeRef><bpmn:flowNodeRef>T_start2</bpmn:flowNodeRef><bpmn:flowNodeRef>T_start3</bpmn:flowNodeRef><bpmn:flowNodeRef>T_normal</bpmn:flowNodeRef><bpmn:flowNodeRef>E_normal</bpmn:flowNodeRef><bpmn:flowNodeRef>G_m1</bpmn:flowNodeRef><bpmn:flowNodeRef>T_offer</bpmn:flowNodeRef><bpmn:flowNodeRef>G_rate</bpmn:flowNodeRef><bpmn:flowNodeRef>G_count</bpmn:flowNodeRef><bpmn:flowNodeRef>T_next</bpmn:flowNodeRef><bpmn:flowNodeRef>T_take</bpmn:flowNodeRef><bpmn:flowNodeRef>T_found</bpmn:flowNodeRef><bpmn:flowNodeRef>T_down</bpmn:flowNodeRef><bpmn:flowNodeRef>G_m3</bpmn:flowNodeRef><bpmn:flowNodeRef>T_fill</bpmn:flowNodeRef><bpmn:flowNodeRef>T_save</bpmn:flowNodeRef><bpmn:flowNodeRef>E_done</bpmn:flowNodeRef></bpmn:lane>
+<bpmn:lane id="L_app" name="App"><bpmn:flowNodeRef>S</bpmn:flowNodeRef><bpmn:flowNodeRef>T_check</bpmn:flowNodeRef><bpmn:flowNodeRef>G_weight</bpmn:flowNodeRef><bpmn:flowNodeRef>E_noweight</bpmn:flowNodeRef><bpmn:flowNodeRef>G_pause</bpmn:flowNodeRef><bpmn:flowNodeRef>T_start1</bpmn:flowNodeRef><bpmn:flowNodeRef>G_prev</bpmn:flowNodeRef><bpmn:flowNodeRef>T_start2</bpmn:flowNodeRef><bpmn:flowNodeRef>T_start3</bpmn:flowNodeRef><bpmn:flowNodeRef>T_normal</bpmn:flowNodeRef><bpmn:flowNodeRef>E_normal</bpmn:flowNodeRef><bpmn:flowNodeRef>G_m1</bpmn:flowNodeRef><bpmn:flowNodeRef>T_offer</bpmn:flowNodeRef><bpmn:flowNodeRef>G_rate</bpmn:flowNodeRef><bpmn:flowNodeRef>G_count</bpmn:flowNodeRef><bpmn:flowNodeRef>T_next</bpmn:flowNodeRef><bpmn:flowNodeRef>T_take</bpmn:flowNodeRef><bpmn:flowNodeRef>T_found</bpmn:flowNodeRef><bpmn:flowNodeRef>G_m3</bpmn:flowNodeRef><bpmn:flowNodeRef>T_fill</bpmn:flowNodeRef><bpmn:flowNodeRef>T_save</bpmn:flowNodeRef><bpmn:flowNodeRef>E_done</bpmn:flowNodeRef></bpmn:lane>
 </bpmn:laneSet>
 <bpmn:startEvent id="S" name="Übung in der Einheit erreicht"><bpmn:outgoing>f1</bpmn:outgoing></bpmn:startEvent>
 <bpmn:serviceTask id="T_check" name="Letzte Ausführung der Übung prüfen"><bpmn:incoming>f1</bpmn:incoming><bpmn:outgoing>f2</bpmn:outgoing><bpmn:property id="P_check" name="__targetRef_placeholder"/><bpmn:dataInputAssociation id="DA_in"><bpmn:sourceRef>DS_in</bpmn:sourceRef><bpmn:targetRef>P_check</bpmn:targetRef></bpmn:dataInputAssociation></bpmn:serviceTask>
@@ -24,13 +24,12 @@
 <bpmn:userTask id="U_probe" name="Probesatz ausführen (untere Wdh.-Grenze)"><bpmn:incoming>f18</bpmn:incoming><bpmn:outgoing>f19</bpmn:outgoing></bpmn:userTask>
 <bpmn:userTask id="U_rate" name="Reserve angeben"><bpmn:incoming>f19</bpmn:incoming><bpmn:outgoing>f20</bpmn:outgoing></bpmn:userTask>
 <bpmn:userTask id="U_manual" name="Arbeitsgewicht selbst eintragen"><bpmn:incoming>f17</bpmn:incoming><bpmn:outgoing>f30</bpmn:outgoing></bpmn:userTask>
-<bpmn:exclusiveGateway id="G_rate" name="Reserve im Vergleich zum Ziel?"><bpmn:incoming>f20</bpmn:incoming><bpmn:outgoing>f21</bpmn:outgoing><bpmn:outgoing>f22</bpmn:outgoing><bpmn:outgoing>f23</bpmn:outgoing></bpmn:exclusiveGateway>
-<bpmn:exclusiveGateway id="G_count" name="Schon 3 Probesätze?"><bpmn:incoming>f23</bpmn:incoming><bpmn:outgoing>f24</bpmn:outgoing><bpmn:outgoing>f26</bpmn:outgoing></bpmn:exclusiveGateway>
-<bpmn:serviceTask id="T_next" name="Nächstes Gewicht berechnen, 90 s Pause"><bpmn:incoming>f24</bpmn:incoming><bpmn:outgoing>f25</bpmn:outgoing></bpmn:serviceTask>
-<bpmn:serviceTask id="T_take" name="Gesteigertes Gewicht übernehmen"><bpmn:incoming>f26</bpmn:incoming><bpmn:outgoing>f29</bpmn:outgoing></bpmn:serviceTask>
+<bpmn:exclusiveGateway id="G_rate" name="Reserve im Vergleich zum Ziel?"><bpmn:incoming>f20</bpmn:incoming><bpmn:outgoing>f21</bpmn:outgoing><bpmn:outgoing>f23</bpmn:outgoing></bpmn:exclusiveGateway>
+<bpmn:exclusiveGateway id="G_count" name="Unter 3 Probesätzen und Stufe frei?"><bpmn:incoming>f23</bpmn:incoming><bpmn:outgoing>f24</bpmn:outgoing><bpmn:outgoing>f26</bpmn:outgoing></bpmn:exclusiveGateway>
+<bpmn:serviceTask id="T_next" name="Leichter oder schwerer, 90 s Pause"><bpmn:incoming>f24</bpmn:incoming><bpmn:outgoing>f25</bpmn:outgoing></bpmn:serviceTask>
+<bpmn:serviceTask id="T_take" name="Bestes Gewicht übernehmen, bei Bedarf mehr Wdh."><bpmn:incoming>f26</bpmn:incoming><bpmn:outgoing>f29</bpmn:outgoing></bpmn:serviceTask>
 <bpmn:serviceTask id="T_found" name="Gefunden, Probesatz zählt als 1. Arbeitssatz"><bpmn:incoming>f21</bpmn:incoming><bpmn:outgoing>f27</bpmn:outgoing></bpmn:serviceTask>
-<bpmn:serviceTask id="T_down" name="Gewicht −10 %, gefunden"><bpmn:incoming>f22</bpmn:incoming><bpmn:outgoing>f28</bpmn:outgoing></bpmn:serviceTask>
-<bpmn:exclusiveGateway id="G_m3"><bpmn:incoming>f27</bpmn:incoming><bpmn:incoming>f28</bpmn:incoming><bpmn:incoming>f29</bpmn:incoming><bpmn:incoming>f30</bpmn:incoming><bpmn:outgoing>f31</bpmn:outgoing></bpmn:exclusiveGateway>
+<bpmn:exclusiveGateway id="G_m3"><bpmn:incoming>f27</bpmn:incoming><bpmn:incoming>f29</bpmn:incoming><bpmn:incoming>f30</bpmn:incoming><bpmn:outgoing>f31</bpmn:outgoing></bpmn:exclusiveGateway>
 <bpmn:serviceTask id="T_fill" name="Arbeitssätze vorbefüllen"><bpmn:incoming>f31</bpmn:incoming><bpmn:outgoing>f32</bpmn:outgoing></bpmn:serviceTask>
 <bpmn:userTask id="U_work" name="Arbeitssätze ausführen"><bpmn:incoming>f32</bpmn:incoming><bpmn:outgoing>f33</bpmn:outgoing></bpmn:userTask>
 <bpmn:serviceTask id="T_save" name="Arbeitsgewicht speichern, Probesätze separat"><bpmn:incoming>f33</bpmn:incoming><bpmn:outgoing>f34</bpmn:outgoing><bpmn:dataOutputAssociation id="DA_out"><bpmn:targetRef>DS_out</bpmn:targetRef></bpmn:dataOutputAssociation></bpmn:serviceTask>
@@ -56,13 +55,11 @@
 <bpmn:sequenceFlow id="f19" sourceRef="U_probe" targetRef="U_rate"/>
 <bpmn:sequenceFlow id="f20" sourceRef="U_rate" targetRef="G_rate"/>
 <bpmn:sequenceFlow id="f21" name="im Ziel" sourceRef="G_rate" targetRef="T_found"/>
-<bpmn:sequenceFlow id="f22" name="darunter oder Technik wackelte" sourceRef="G_rate" targetRef="T_down"/>
-<bpmn:sequenceFlow id="f23" name="darüber" sourceRef="G_rate" targetRef="G_count"/>
-<bpmn:sequenceFlow id="f24" name="nein" sourceRef="G_count" targetRef="T_next"/>
+<bpmn:sequenceFlow id="f23" name="zu leicht oder zu schwer" sourceRef="G_rate" targetRef="G_count"/>
+<bpmn:sequenceFlow id="f24" name="ja" sourceRef="G_count" targetRef="T_next"/>
 <bpmn:sequenceFlow id="f25" sourceRef="T_next" targetRef="G_m2"/>
-<bpmn:sequenceFlow id="f26" name="ja" sourceRef="G_count" targetRef="T_take"/>
+<bpmn:sequenceFlow id="f26" name="nein" sourceRef="G_count" targetRef="T_take"/>
 <bpmn:sequenceFlow id="f27" sourceRef="T_found" targetRef="G_m3"/>
-<bpmn:sequenceFlow id="f28" sourceRef="T_down" targetRef="G_m3"/>
 <bpmn:sequenceFlow id="f29" sourceRef="T_take" targetRef="G_m3"/>
 <bpmn:sequenceFlow id="f30" sourceRef="U_manual" targetRef="G_m3"/>
 <bpmn:sequenceFlow id="f31" sourceRef="G_m3" targetRef="T_fill"/>
@@ -95,11 +92,10 @@
 <bpmndi:BPMNShape id="U_rate_di" bpmnElement="U_rate" bioc:stroke="#1556D4" bioc:fill="#DDE7FA" color:background-color="#DDE7FA" color:border-color="#1556D4"><dc:Bounds x="1640" y="160" width="120" height="80"/></bpmndi:BPMNShape>
 <bpmndi:BPMNShape id="U_manual_di" bpmnElement="U_manual" bioc:stroke="#1556D4" bioc:fill="#DDE7FA" color:background-color="#DDE7FA" color:border-color="#1556D4"><dc:Bounds x="1820" y="60" width="120" height="80"/></bpmndi:BPMNShape>
 <bpmndi:BPMNShape id="G_rate_di" bpmnElement="G_rate" isMarkerVisible="true" bioc:stroke="#14181D" bioc:fill="#FFFFFF"><dc:Bounds x="1675" y="445" width="50" height="50"/><bpmndi:BPMNLabel><dc:Bounds x="1730" y="402" width="110" height="28"/></bpmndi:BPMNLabel></bpmndi:BPMNShape>
-<bpmndi:BPMNShape id="G_count_di" bpmnElement="G_count" isMarkerVisible="true" bioc:stroke="#14181D" bioc:fill="#FFFFFF"><dc:Bounds x="1515" y="445" width="50" height="50"/><bpmndi:BPMNLabel><dc:Bounds x="1430" y="476" width="90" height="28"/></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="G_count_di" bpmnElement="G_count" isMarkerVisible="true" bioc:stroke="#14181D" bioc:fill="#FFFFFF"><dc:Bounds x="1515" y="445" width="50" height="50"/><bpmndi:BPMNLabel><dc:Bounds x="1404" y="478" width="110" height="28"/></bpmndi:BPMNLabel></bpmndi:BPMNShape>
 <bpmndi:BPMNShape id="T_next_di" bpmnElement="T_next" bioc:stroke="#3B444F" bioc:fill="#FFFFFF" color:background-color="#FFFFFF" color:border-color="#3B444F"><dc:Bounds x="1480" y="320" width="120" height="80"/></bpmndi:BPMNShape>
 <bpmndi:BPMNShape id="T_take_di" bpmnElement="T_take" bioc:stroke="#3B444F" bioc:fill="#FFFFFF" color:background-color="#FFFFFF" color:border-color="#3B444F"><dc:Bounds x="1480" y="540" width="120" height="80"/></bpmndi:BPMNShape>
 <bpmndi:BPMNShape id="T_found_di" bpmnElement="T_found" bioc:stroke="#3B444F" bioc:fill="#FFFFFF" color:background-color="#FFFFFF" color:border-color="#3B444F"><dc:Bounds x="1820" y="430" width="120" height="80"/></bpmndi:BPMNShape>
-<bpmndi:BPMNShape id="T_down_di" bpmnElement="T_down" bioc:stroke="#3B444F" bioc:fill="#FFFFFF" color:background-color="#FFFFFF" color:border-color="#3B444F"><dc:Bounds x="1820" y="540" width="120" height="80"/></bpmndi:BPMNShape>
 <bpmndi:BPMNShape id="G_m3_di" bpmnElement="G_m3" isMarkerVisible="true" bioc:stroke="#14181D" bioc:fill="#FFFFFF"><dc:Bounds x="2005" y="445" width="50" height="50"/></bpmndi:BPMNShape>
 <bpmndi:BPMNShape id="T_fill_di" bpmnElement="T_fill" bioc:stroke="#3B444F" bioc:fill="#FFFFFF" color:background-color="#FFFFFF" color:border-color="#3B444F"><dc:Bounds x="2120" y="430" width="120" height="80"/></bpmndi:BPMNShape>
 <bpmndi:BPMNShape id="U_work_di" bpmnElement="U_work" bioc:stroke="#1556D4" bioc:fill="#DDE7FA" color:background-color="#DDE7FA" color:border-color="#1556D4"><dc:Bounds x="2270" y="160" width="120" height="80"/></bpmndi:BPMNShape>
@@ -128,13 +124,11 @@
 <bpmndi:BPMNEdge id="f19_di" bpmnElement="f19"><di:waypoint x="1600" y="200"/><di:waypoint x="1640" y="200"/></bpmndi:BPMNEdge>
 <bpmndi:BPMNEdge id="f20_di" bpmnElement="f20"><di:waypoint x="1700" y="240"/><di:waypoint x="1700" y="445"/></bpmndi:BPMNEdge>
 <bpmndi:BPMNEdge id="f21_di" bpmnElement="f21"><di:waypoint x="1725" y="470"/><di:waypoint x="1820" y="470"/><bpmndi:BPMNLabel><dc:Bounds x="1740" y="478" width="60" height="14"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
-<bpmndi:BPMNEdge id="f22_di" bpmnElement="f22"><di:waypoint x="1700" y="495"/><di:waypoint x="1700" y="580"/><di:waypoint x="1820" y="580"/><bpmndi:BPMNLabel><dc:Bounds x="1708" y="590" width="104" height="28"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
-<bpmndi:BPMNEdge id="f23_di" bpmnElement="f23"><di:waypoint x="1675" y="470"/><di:waypoint x="1565" y="470"/><bpmndi:BPMNLabel><dc:Bounds x="1580" y="448" width="60" height="14"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="f23_di" bpmnElement="f23"><di:waypoint x="1675" y="470"/><di:waypoint x="1565" y="470"/><bpmndi:BPMNLabel><dc:Bounds x="1574" y="436" width="96" height="28"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
 <bpmndi:BPMNEdge id="f24_di" bpmnElement="f24"><di:waypoint x="1540" y="445"/><di:waypoint x="1540" y="400"/><bpmndi:BPMNLabel><dc:Bounds x="1548" y="412" width="30" height="14"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
 <bpmndi:BPMNEdge id="f25_di" bpmnElement="f25"><di:waypoint x="1480" y="360"/><di:waypoint x="1420" y="360"/><di:waypoint x="1420" y="225"/></bpmndi:BPMNEdge>
 <bpmndi:BPMNEdge id="f26_di" bpmnElement="f26"><di:waypoint x="1540" y="495"/><di:waypoint x="1540" y="540"/><bpmndi:BPMNLabel><dc:Bounds x="1548" y="506" width="30" height="14"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
 <bpmndi:BPMNEdge id="f27_di" bpmnElement="f27"><di:waypoint x="1940" y="470"/><di:waypoint x="2005" y="470"/></bpmndi:BPMNEdge>
-<bpmndi:BPMNEdge id="f28_di" bpmnElement="f28"><di:waypoint x="1940" y="580"/><di:waypoint x="2030" y="580"/><di:waypoint x="2030" y="495"/></bpmndi:BPMNEdge>
 <bpmndi:BPMNEdge id="f29_di" bpmnElement="f29"><di:waypoint x="1540" y="620"/><di:waypoint x="1540" y="650"/><di:waypoint x="2030" y="650"/><di:waypoint x="2030" y="495"/></bpmndi:BPMNEdge>
 <bpmndi:BPMNEdge id="f30_di" bpmnElement="f30"><di:waypoint x="1940" y="100"/><di:waypoint x="2030" y="100"/><di:waypoint x="2030" y="445"/></bpmndi:BPMNEdge>
 <bpmndi:BPMNEdge id="f31_di" bpmnElement="f31"><di:waypoint x="2055" y="470"/><di:waypoint x="2120" y="470"/></bpmndi:BPMNEdge>

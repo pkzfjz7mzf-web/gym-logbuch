@@ -49,6 +49,14 @@ with sync_playwright() as p:
     sid=list(db['sessions'].keys())
     e0=db['sessions'][sid[0]]['blocks'][0]['items'][0]
     ok('Einheit in Datenbank gespeichert, Probesätze separat', len(sid)==1 and e0['sets'][0]['done'] and e0['sets'][0].get('probe') and len(e0['find']['steps'])==2 and e0['find']['result']==18)
+    # Zu schwer: RDL 30 kg mit 0 in Reserve -> weiterer, leichterer Probesatz statt «gefunden»
+    if not pg.is_visible('#find-1-0'): pg.click('[data-a="block-open"][data-b="1"]'); pg.wait_for_timeout(150)
+    pg.click('#find-1-0 [data-a="fd-rate"][data-v="r0"]'); pg.wait_for_timeout(150)
+    ok('Zu schwer: nächster Probesatz mit 27.5 kg, nicht gefunden', pg.is_visible('#find-1-0') and pg.input_value('#in-fw-1-0-0')=='27.5')
+    pg.click('[data-a="tmr-stop"]')
+    pg.click('#find-1-0 [data-a="fd-rate"][data-v="r34"]'); pg.wait_for_timeout(200)
+    ok('Danach im Ziel: gefunden, Probesatz 2 zählt als Satz 1', 'gefunden' in pg.inner_text('#ex-1-0 .sugg').lower() and pg.input_value('#in-w-1-0-0')=='27.5' and pg.get_attribute('[data-a="done"][data-b="1"][data-i="0"][data-s="0"]','aria-pressed')=='true')
+    pg.click('[data-a="tmr-stop"]')
     ok('Einstellungen in Datenbank (Wiedereinstieg-Start)', db['settings'] is not None and db['settings'].get('reentryStart') is not None)
     ok('Kein Warnhinweis in der Einheit', pg.inner_text('#sync-mini')=='')
     # Service Worker bereit?
