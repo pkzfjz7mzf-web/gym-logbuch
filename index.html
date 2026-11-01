@@ -909,19 +909,29 @@ function fmtSets(sets, def, withRir){
   return txt;
 }
 
+/* Erstes Mal: Übung im Wiedereinstieg noch nicht gemacht, sonst seit 4 Wochen nicht oder nie.
+   Gilt pro Übung, nicht pro Einheit: B nach A ist für die B-Übungen trotzdem das erste Mal. */
+function isFresh(exId, ctx){
+  const last=perfHistory(exId, ctx.ts, ctx.excludeId)[0];
+  if(!last) return true;
+  if(ctx.reentry){ const rs=ctx.settings.reentryStart; return !rs || (last.s.date||'') < rs; }
+  return (ctx.ts-(last.s.startedAt||0))/864e5 >= FIND_DAYS;
+}
 function computeTarget(exId, it, ctx){
   const def=EX[exId], st=ctx.settings;
   const lo=it.reps[0], hi=it.reps[1];
   const sets = ctx.reentry ? Math.min(it.sets,2) : it.sets;
-  let rir = ctx.reentry ? (ctx.firstReentry ? [3,4] : [2,3]) : (def.rir || (def.main ? [1,2] : [1,3]));
+  const fresh = !def.noRir && isFresh(exId, ctx);
+  let rir = fresh ? [3,4] : ctx.reentry ? [2,3] : (def.rir || (def.main ? [1,2] : [1,3]));
   const notes=[];
+  if(fresh && !ctx.reentry) notes.push('Neu oder länger nicht gemacht: 3–4 Wdh. in Reserve.');
   const chk = ctx.check || {};
   if(chk.intense && def.legs && !def.noRir){ rir=[Math.min(4,rir[0]+1), Math.min(4,rir[1]+1)]; notes.push('Gestern intensiv: 1 Wdh. mehr Reserve.'); }
   const sore=((normCheck(chk)||{}).sore||[]).filter(r=>regionHits(exId, r, 1));
   if(sore.length && !def.noRir){ rir=[Math.min(4,rir[0]+1), Math.min(4,rir[1]+1)]; notes.push('Muskelkater '+sore.map(regionName).join(', ')+': 1 Wdh. mehr Reserve.'); }
   const hist = perfHistory(exId, ctx.ts, ctx.excludeId);
   const last = hist[0];
-  const base = {sets, reps:[lo,hi], rir, w:null, perSet:Array(sets).fill(lo), action:'new', reason:'', notes};
+  const base = {sets, reps:[lo,hi], rir, w:null, perSet:Array(sets).fill(lo), action:'new', reason:'', notes, fresh};
 
   if(exId==='nordic') return nordicTarget(it, ctx, hist, base);
 
@@ -1122,6 +1132,11 @@ function findStepText(st, def){
   if(st.kind==='found') return head+' → gefunden';
   if(st.kind==='down') return head+(st.rating==='tech' ? ' → leichter' : ' → zu schwer')+nx;
   return head+' → zu leicht'+nx;
+}
+/* Wie viele Übungen der Einheit sind zum ersten Mal dran? Alte Einheiten ohne target.fresh: nach reentryFirst. */
+function freshKind(s){
+  const f=[]; s.blocks.forEach(b=>b.items.forEach(e=>{ const d=EX[e.ex]; if(!e.skipped && d && !d.noRir && e.target) f.push(e.target.fresh!=null ? !!e.target.fresh : !!s.reentryFirst); }));
+  const n=f.filter(Boolean).length; return n===f.length ? 'all' : n===0 ? 'none' : 'mixed';
 }
 function findActive(s){ let n=0; s.blocks.forEach(b=>b.items.forEach(e=>{ if(!e.skipped && e.find && e.find.status==='active') n++; })); return n; }
 function findCanUndo(e){ return e.find && e.find.steps.length>0 && !e.sets.some(x=>x.done && !x.probe); }
@@ -1481,7 +1496,7 @@ async function onLoginSubmit(ev){
 function phaseText(d){
   const p=phaseOf(d);
   if(!p) return d<PHASES[0].from ? '' : 'Nach dem Z10: die nächste Phase im Briefing planen.';
-  if(p.n===0) return d<='2026-11-01' ? 'Marathon-Erholung: diese Woche nur Bewegung. Gym-Wiedereinstieg ab Montag, 2. Nov.' : 'Gym-Wiedereinstieg: 2 Sätze pro Übung, in der ersten Einheit 3–4 Wdh. in Reserve, danach 2–3. Technik vor Last.';
+  if(p.n===0) return d<='2026-11-01' ? 'Marathon-Erholung: diese Woche nur Bewegung. Gym-Wiedereinstieg ab Montag, 2. Nov.' : 'Gym-Wiedereinstieg: 2 Sätze pro Übung, beim ersten Mal pro Übung 3–4 Wdh. in Reserve, danach 2–3. Technik vor Last.';
   if(p.n===1) return 'Gym-Routine aufbauen. Baseline ist 1× pro Woche, die 2. Einheit ist Bonus.';
   if(p.n===2) return 'Gym 1–2× pro Woche. Den Qualitätslauf nicht auf den Tag nach schweren Beinen legen.';
   if(d>=addDays(Z10,-6)) return 'Z10-Woche: Gym nur locker oder auslassen.';
@@ -1504,7 +1519,7 @@ function viewHome(){
     const alt = nt==='A'?'B':'A';
     h+='<section class="hero"><div class="hero-top"><div class="plate '+plateCls(nt)+'">'+nt+'</div><div><h2>'+typeName(nt)+'</h2><div class="hero-sub">Als Nächstes dran · ca. '+estimateMin(pv)+' min</div></div></div>';
     const nf=findActive(pv);
-    if(pv.reentry || nf) h+='<div class="chips">'+(pv.reentry?'<span class="chip warn">Wiedereinstieg · 2 Sätze · RIR '+(pv.reentryFirst?'3–4':'2–3')+'</span>':'')+(nf?'<span class="chip acc">Gewicht finden bei '+nf+' '+(nf===1?'Übung':'Übungen')+'</span>':'')+'</div>';
+    if(pv.reentry || nf) h+='<div class="chips">'+(pv.reentry?'<span class="chip warn">Wiedereinstieg · 2 Sätze · RIR '+({all:'3–4',none:'2–3',mixed:'2–3, Neues 3–4'}[freshKind(pv)])+'</span>':'')+(nf?'<span class="chip acc">Gewicht finden bei '+nf+' '+(nf===1?'Übung':'Übungen')+'</span>':'')+'</div>';
     h+=planList(pv);
     h+='<button class="btn pri block" data-a="start" data-t="'+nt+'">'+typeName(nt)+' starten</button><div class="alt"><button class="link" data-a="start" data-t="'+alt+'">Stattdessen '+typeName(alt)+'</button><button class="link" data-a="start" data-t="H">Heimroutine, 10 min</button></div></section>';
   }
@@ -1575,7 +1590,7 @@ function viewSession(){
     const tips=checkTips(s.check, s.type);
     if(tips.length) h+='<div class="callout">'+I.warn+'<div>'+tips.map(t=>'<div>'+t+'</div>').join('')+'</div></div>';
   }
-  if(s.reentry && !edit) h+='<div class="callout info">'+I.info+'<div><b>Wiedereinstieg.</b> 2 Sätze pro Übung, '+(s.reentryFirst?'3–4 Wiederholungen in Reserve, weil es deine erste Einheit ist':'2–3 Wiederholungen in Reserve')+'. Technik vor Last.</div></div>';
+  if(s.reentry && !edit) h+='<div class="callout info">'+I.info+'<div><b>Wiedereinstieg.</b> 2 Sätze pro Übung, '+({all:'3–4 Wiederholungen in Reserve, weil du die Übungen zum ersten Mal machst', none:'2–3 Wiederholungen in Reserve', mixed:'2–3 Wiederholungen in Reserve, bei Übungen zum ersten Mal 3–4'}[freshKind(s)])+'. Technik vor Last.</div></div>';
 
   if(s.warmup.length){
     const dn=s.warmup.filter(Boolean).length;
@@ -1719,7 +1734,7 @@ function findRate(s, bi, ii, rating){
   const n=e.target.sets, lo=e.target.reps[0], sets=[];
   if(counted) sets.push({w:result, r, rir:Math.max(tr[0], Math.min(tr[1], FIND_RIR[rating])), done:true, t:Date.now(), probe:true});
   while(sets.length<n) sets.push({w:result, r:reps!=null?reps:e.target.perSet[sets.length]!=null?e.target.perSet[sets.length]:lo, rir:null, done:false});
-  e.sets=sets; e.target.w=result; e.target.action=action; e.target.reason=why; e.target.notes=[];
+  e.sets=sets; e.target.w=result; e.target.action=action; e.target.reason=why; e.target.notes=(e.target.notes||[]).filter(n=>!/^Grosser Sprung/.test(n));
   persist(s);
   if(counted && !state.editId) afterSetDone(s,bi,ii,0);
   else Timer.start(FIND_REST, name+' · Satz 1 · '+L(result));
@@ -1886,7 +1901,7 @@ function viewSettings(){
   h+='<div class="srow"><div class="tx"><b>Optik-Bonus</b><small>Bizeps + Trizeps als Supersatz am Ende</small></div>'+tgl('arms')+'</div></div></section>';
 
   h+='<section class="sec"><h2 class="eyebrow">Wiedereinstieg</h2><div class="sgroup">';
-  h+='<div class="srow"><div class="tx"><b>Wiedereinstieg aktiv</b><small>Die ersten 2 Wochen: 2 Sätze, in der ersten Einheit RIR 3–4, danach 2–3</small></div>'+tgl('reentry')+'</div>';
+  h+='<div class="srow"><div class="tx"><b>Wiedereinstieg aktiv</b><small>Die ersten 2 Wochen: 2 Sätze, beim ersten Mal pro Übung RIR 3–4, danach 2–3</small></div>'+tgl('reentry')+'</div>';
   h+='<div class="srow"><div class="tx"><b>Gewicht finden vorschlagen</b><small>Bei neuen Übungen und nach 4 Wochen Pause, mit bis zu 3 Probesätzen</small></div>'+tgl('autoFind')+'</div>';
   h+='<div class="srow"><div class="tx"><b>Start</b><small>'+(st.reentryStart?'Läuft bis '+fmtDate(addDays(st.reentryStart,(st.reentryDays||14)-1)):'Startet mit deiner ersten Einheit')+'</small></div><input type="date" class="sinput date" id="st-reentryStart" data-s="reentryStart" data-t="date" value="'+(st.reentryStart||'')+'"></div></div></section>';
 
@@ -2021,7 +2036,7 @@ function sheetBacklog(){
 function sheetInfo(){
   return '<h2 id="sh-t">So rechnet die App</h2><div class="prose">'
   +'<div><h3>Doppelte Progression</h3><p>Das Gewicht bleibt, bis alle Sätze das obere Ende des Wiederholungsbereichs erreichen. Dann steigt es um 2.5 %, bei viel Luft (RIR über dem Ziel) um 5 %, gerundet auf deinen kleinsten Gewichtsschritt. Danach startest du wieder am unteren Ende. Zweimal in Folge unter dem Bereich: rund 10 % leichter und neu aufbauen.</p></div>'
-  +'<div><h3>RIR</h3><p>Wiederholungen in Reserve: wie viele saubere Wiederholungen noch drin gewesen wären. Grundübungen RIR 1–2, Ergänzungsübungen 1–3. Im Wiedereinstieg in der ersten Einheit 3–4, danach 2–3: Der Muskel gewöhnt sich so ohne grossen Muskelkater wieder an die Belastung.</p><cite>Helms et al. 2016, Strength & Conditioning Journal</cite></div>'
+  +'<div><h3>RIR</h3><p>Wiederholungen in Reserve: wie viele saubere Wiederholungen noch drin gewesen wären. Grundübungen RIR 1–2, Ergänzungsübungen 1–3. Beim ersten Mal pro Übung (im Wiedereinstieg oder nach mehr als 4 Wochen Pause) 3–4, danach im Wiedereinstieg 2–3: Technik und Muskel gewöhnen sich so ohne grossen Muskelkater wieder an die Belastung.</p><cite>Helms et al. 2016, Strength & Conditioning Journal</cite></div>'
   +'<div><h3>Geschätztes 1RM</h3><p>Epley-Formel mit Reserve: Gewicht × (1 + (Wdh + RIR) / 30). Nur als Trend lesen, nicht als Maximalversuch.</p></div>'
   +'<div><h3>Pausen</h3><p>Bei Mehrgelenksübungen bringen 2–3 Minuten Pause mehr Kraft- und Muskelzuwachs als 1 Minute. Darum 2:30 als Standard für die Grundübungen.</p><cite>Schoenfeld et al. 2016, J Strength Cond Res</cite></div>'
   +'<div><h3>Supersätze</h3><p>Zwei Übungen für verschiedene Muskeln im Wechsel sparen Zeit, ohne die Leistung pro Satz merklich zu drücken.</p><cite>Robbins et al. 2010, J Strength Cond Res</cite></div>'
