@@ -27,6 +27,8 @@ with sync_playwright() as p:
     ok('Falsches Passwort zeigt Fehler', 'stimmt nicht' in pg.inner_text('#lg-err'))
     pg.fill('#lg-pw','pw123'); pg.click('#lg-go'); pg.wait_for_timeout(600)
     ok('Nach Login: Startseite', pg.is_visible('[data-a="start"][data-t="A"]'))
+    ok('Was ist neu erscheint nach dem Login', pg.is_visible('#sheet') and 'was ist neu' in pg.inner_text('#sheet').lower() and 'version 1.2' in pg.inner_text('#sheet').lower())
+    pg.click('#sheet [data-a="sheet-close"]'); pg.wait_for_timeout(150)
     pg.click('[data-a="start"][data-t="A"]')
     ok('Check zeigt Hinweis Gewicht finden', 'Gewicht finden' in pg.inner_text('#sheet'))
     pg.click('text=Ohne Check starten'); pg.click('text=Alles erledigt')
@@ -97,6 +99,9 @@ with sync_playwright() as p:
     ok('Abmelden: Login sichtbar, lokale Kopie leer', pg.is_visible('#login-form') and pg.evaluate("localStorage.getItem('gymlog.pwa.v1')") is None)
     # Neu anmelden: Daten kommen aus DB zurück
     pg.fill('#lg-email','aaron@example.ch'); pg.fill('#lg-pw','pw123'); pg.click('#lg-go'); pg.wait_for_timeout(800)
+    ok('Was ist neu kommt nicht ein zweites Mal', not pg.is_visible('#sheet'))
+    pg.click('[data-a="tab"][data-v="settings"]'); pg.click('[data-a="news-open"]'); pg.wait_for_timeout(150)
+    ok('Einstellungen: alle Versionen', 'version 1.0' in pg.inner_text('#sheet').lower()); pg.click('#sheet [data-a="sheet-close"]'); pg.wait_for_timeout(150)
     pg.click('[data-a="tab"][data-v="history"]'); pg.wait_for_timeout(200)
     ok('Nach erneutem Login: Verlauf aus DB', pg.locator('[data-a="open-detail"]').count()==1)
     print('\n'.join(res)); print('Fehler:', errs or 'keine')
