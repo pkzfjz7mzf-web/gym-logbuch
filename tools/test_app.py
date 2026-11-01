@@ -57,6 +57,12 @@ with sync_playwright() as p:
     pg.click('#find-1-0 [data-a="fd-rate"][data-v="r34"]'); pg.wait_for_timeout(200)
     ok('Danach im Ziel: gefunden, Probesatz 2 zählt als Satz 1', 'gefunden' in pg.inner_text('#ex-1-0 .sugg').lower() and pg.input_value('#in-w-1-0-0')=='27.5' and pg.get_attribute('[data-a="done"][data-b="1"][data-i="0"][data-s="0"]','aria-pressed')=='true')
     pg.click('[data-a="tmr-stop"]')
+    # Weniger Wdh. als geplant zählen mit: Rudern 12 kg × 1 mit 0 in Reserve -> 8 kg statt 10 kg
+    if not pg.is_visible('#find-2-0'): pg.click('[data-a="block-open"][data-b="2"]'); pg.wait_for_timeout(150)
+    pg.fill('#in-fr-2-0-0','1'); pg.keyboard.press('Enter'); pg.wait_for_timeout(100)
+    pg.click('#find-2-0 [data-a="fd-rate"][data-v="r0"]'); pg.wait_for_timeout(150)
+    ok('Nur 1 Wdh. geschafft: nächster Probesatz 8 kg, wieder 8 Wdh. geplant', pg.input_value('#in-fw-2-0-0')=='8' and pg.input_value('#in-fr-2-0-0')=='8')
+    pg.click('[data-a="tmr-stop"]'); pg.click('#find-2-0 [data-a="fd-undo"]'); pg.wait_for_timeout(150)
     ok('Einstellungen in Datenbank (Wiedereinstieg-Start)', db['settings'] is not None and db['settings'].get('reentryStart') is not None)
     ok('Kein Warnhinweis in der Einheit', pg.inner_text('#sync-mini')=='')
     # Service Worker bereit?

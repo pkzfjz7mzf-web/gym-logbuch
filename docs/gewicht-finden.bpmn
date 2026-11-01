@@ -22,9 +22,9 @@
 <bpmn:exclusiveGateway id="G_accept" name="Vorschlag annehmen?"><bpmn:incoming>f15</bpmn:incoming><bpmn:outgoing>f16</bpmn:outgoing><bpmn:outgoing>f17</bpmn:outgoing></bpmn:exclusiveGateway>
 <bpmn:exclusiveGateway id="G_m2"><bpmn:incoming>f16</bpmn:incoming><bpmn:incoming>f25</bpmn:incoming><bpmn:outgoing>f18</bpmn:outgoing></bpmn:exclusiveGateway>
 <bpmn:userTask id="U_probe" name="Probesatz ausführen (untere Wdh.-Grenze)"><bpmn:incoming>f18</bpmn:incoming><bpmn:outgoing>f19</bpmn:outgoing></bpmn:userTask>
-<bpmn:userTask id="U_rate" name="Reserve angeben"><bpmn:incoming>f19</bpmn:incoming><bpmn:outgoing>f20</bpmn:outgoing></bpmn:userTask>
+<bpmn:userTask id="U_rate" name="Geschaffte Wdh. und Reserve angeben"><bpmn:incoming>f19</bpmn:incoming><bpmn:outgoing>f20</bpmn:outgoing></bpmn:userTask>
 <bpmn:userTask id="U_manual" name="Arbeitsgewicht selbst eintragen"><bpmn:incoming>f17</bpmn:incoming><bpmn:outgoing>f30</bpmn:outgoing></bpmn:userTask>
-<bpmn:exclusiveGateway id="G_rate" name="Reserve im Vergleich zum Ziel?"><bpmn:incoming>f20</bpmn:incoming><bpmn:outgoing>f21</bpmn:outgoing><bpmn:outgoing>f23</bpmn:outgoing></bpmn:exclusiveGateway>
+<bpmn:exclusiveGateway id="G_rate" name="Wdh. und Reserve im Vergleich zum Ziel?"><bpmn:incoming>f20</bpmn:incoming><bpmn:outgoing>f21</bpmn:outgoing><bpmn:outgoing>f23</bpmn:outgoing></bpmn:exclusiveGateway>
 <bpmn:exclusiveGateway id="G_count" name="Unter 3 Probesätzen und Stufe frei?"><bpmn:incoming>f23</bpmn:incoming><bpmn:outgoing>f24</bpmn:outgoing><bpmn:outgoing>f26</bpmn:outgoing></bpmn:exclusiveGateway>
 <bpmn:serviceTask id="T_next" name="Leichter oder schwerer, 90 s Pause"><bpmn:incoming>f24</bpmn:incoming><bpmn:outgoing>f25</bpmn:outgoing></bpmn:serviceTask>
 <bpmn:serviceTask id="T_take" name="Bestes Gewicht übernehmen, bei Bedarf mehr Wdh."><bpmn:incoming>f26</bpmn:incoming><bpmn:outgoing>f29</bpmn:outgoing></bpmn:serviceTask>
