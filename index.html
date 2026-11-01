@@ -303,6 +303,28 @@ textarea.brief{width:100%;min-height:260px;border:0;border-radius:12px;backgroun
 .prose p{margin:0;color:var(--muted)}
 .prose cite{font-style:normal;color:var(--faint);font-size:13px}
 
+/* Gewicht finden */
+.find{display:flex;flex-direction:column;gap:12px;padding:14px;border-radius:14px;background:var(--accent-soft)}
+.find-h{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:14px;font-weight:600;color:var(--accent)}
+.find-t{margin:0;font-size:15px;line-height:1.4;color:var(--fg)}
+.find-steps{margin:0;padding-left:20px;font-size:14px;color:var(--muted);display:flex;flex-direction:column;gap:2px;font-variant-numeric:tabular-nums}
+.find-in{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:8px}
+.find-in .lab{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
+.find .num{background:var(--surface)}
+.find-q{display:flex;justify-content:space-between;gap:8px;align-items:baseline;font-weight:600;font-size:15px;line-height:1.3}
+.find-q span{font-size:13px;color:var(--accent);white-space:nowrap}
+.find-r{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.fr-b{height:50px;border-radius:11px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);font:600 20px/1 var(--f-display);text-align:center;color:var(--fg)}
+.fr-b.tgt{box-shadow:inset 0 0 0 2px var(--accent)}
+.fr-b:active{transform:scale(.97)}
+.find .ghost-btn{background:var(--surface);justify-content:center}
+.find-foot{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center}
+.find-foot .link{font-size:14px;min-height:36px}
+.tag.find{background:var(--accent);color:var(--accent-ink)}
+.tag.found{background:var(--ok-soft);color:var(--ok)}
+.sugg .act{display:inline-block;margin-top:4px;font-weight:600;color:var(--accent);min-height:32px}
+.plan-row .tg .fd{color:var(--accent)}
+
 /* Übung tauschen */
 .opts{display:flex;flex-direction:column;border-radius:14px;box-shadow:inset 0 0 0 1px var(--line);overflow:hidden}
 .opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 14px;border-top:1px solid var(--line);min-height:62px}
@@ -543,7 +565,18 @@ const WARMUP = [
 /* Stufenleiter Nordics: Plan-Einstieg 2 × 3, langsam bis 3 × 6 */
 const LADDER = [[2,3],[2,4],[2,5],[2,6],[3,4],[3,5],[3,6]];
 
-const DEFAULTS = {v:1, swaps:{}, nordicA:true, arms:false,
+/* Gewicht finden: vorsichtige Startgewichte ohne Vorwissen.
+   kg gesamt (Langhantel, Kabel, Maschine), pro Hand (Kurzhanteln), Zusatzgewicht (Körpergewicht) oder Unterstützung (assistiert). */
+const FIND_START = {goblet:12, frontsq:20, legpress:60, rdl:30, dbrdl:12, slrdl:10, csrow:12, dbrow:14, cablerow:30, machrow:30,
+  incline:12, dbbench:12, chestpress:30, pushup:0, bss:6, revlunge:6, stepup:6, facepull:15, revfly:5, hipthrust:40, bbbridge:40,
+  slhipthrust:0, pullup:0, pullupA:30, latpd:35, landmine:5, kneelpress:8, seatedpress:10, legcurl:20, latlunge:0, cossack:0,
+  adductor:30, pallof:7.5, chop:10, curl:8, hammercurl:8, cablecurl:15, pushdown:15, ohext:12.5};
+const FIND_RATINGS = [['r0','0'],['r12','1–2'],['r34','3–4'],['r57','5–7'],['r8','8+']];
+const FIND_LABEL = {r0:'0 in Reserve', r12:'1–2 in Reserve', r34:'3–4 in Reserve', r57:'5–7 in Reserve', r8:'8+ in Reserve', tech:'Technik wackelte'};
+const FIND_RIR = {r0:0, r12:2, r34:4, r57:6, r8:8};
+const FIND_MAX = 3, FIND_REST = 90, FIND_DAYS = 28;
+
+const DEFAULTS = {v:1, swaps:{}, nordicA:true, arms:false, autoFind:true,
   reentry:true, reentryStart:null, reentryDays:14, prev:{},
   barKg:20, incBB:2.5, incDB:2, incCable:2.5, incAssist:5, bodyweight:null,
   rest:{main:150, acc:90, ss:90, nordic:120, short:45}, sound:true};
@@ -968,14 +1001,82 @@ function nordicTarget(it, ctx, hist, base){
 }
 
 /* =========================================================
+   Gewicht finden (Prozess: docs/gewicht-finden.bpmn)
+   ========================================================= */
+function canFind(def, exId){ return def.load!=='reps' && exId!=='nordic'; }
+function findHigh(def, reentry){ return !!(reentry || def.ham); }
+function findTarget(high){ return high ? [3,4] : [1,2]; }
+function findMinW(def){ return def.equip==='bb' ? (+state.settings.barKg||20) : 0; }
+function findRound(w, def){
+  if(def.equip==='bw') return Math.max(0, rnd(w));
+  return Math.max(findMinW(def), roundTo(w, incFor(def, state.settings), 'near'));
+}
+function findPlan(exId, ctx){
+  const def=EX[exId], st=ctx.settings;
+  if(!canFind(def, exId) || st.autoFind===false || ctx.noFind) return null;
+  const last=perfHistory(exId, ctx.ts, ctx.excludeId)[0];
+  const inc=incFor(def, st), assist=def.equip==='assist';
+  if(last){
+    const days=(ctx.ts-(last.s.startedAt||0))/864e5;
+    if(days<FIND_DAYS) return null;
+    const topW=topWeight(last.sets, assist), wk=Math.round(days/7);
+    if(days<=84) return {start: assist ? roundTo(topW*1.15, inc, 'up') : findRound(topW*0.85, def), why:'Zuletzt vor '+wk+' Wochen mit '+fmtLoad(topW,def)+'. Start bei −15 %.'};
+    return {start: assist ? roundTo(Math.max(topW*1.5, topW+2*inc), inc, 'up') : findRound(topW*0.5, def), why:'Zuletzt vor '+wk+' Wochen. Start bei der Hälfte von '+fmtLoad(topW,def)+'.'};
+  }
+  const p=+((st.prev||{})[exId])||0;
+  if(p>0) return {start: assist ? p : findRound(p*0.5, def), why:'Start bei der Hälfte deines früheren Gewichts ('+fmtW(p)+' kg).'};
+  const s0 = FIND_START[exId]!=null ? FIND_START[exId] : findMinW(def);
+  return {start: def.equip==='bb' ? Math.max(findMinW(def), s0) : s0, why:'Noch kein Gewicht bekannt, darum ein vorsichtiger Start.'};
+}
+function findBegin(e, ctxReentry, start, why, manual){
+  const def=EX[e.ex];
+  e.find={status:'active', high:findHigh(def, ctxReentry), start, w:start, r:e.target.reps[0], steps:[], why, manual:!!manual};
+  e.target.action='find'; e.target.reason=why; e.target.w=null;
+  e.sets.forEach(x=>{ if(!x.done) x.w=null; });
+}
+function findDecide(e, rating, reps){
+  const high=e.find.high, lo=e.target.reps[0];
+  if(rating==='tech' || rating==='r0' || (reps!=null && reps<lo)) return 'down';
+  if(rating==='r12') return high ? 'down' : 'found';
+  if(rating==='r34') return high ? 'found' : 'up10';
+  if(rating==='r57') return 'up25';
+  return 'up50';
+}
+function findHeavier(w, def, pct){
+  const st=state.settings, inc=incFor(def, st);
+  if(def.equip==='assist') return Math.max(0, Math.min(rnd(w-inc), roundTo(w*(1-pct), inc, 'down')));
+  if(def.equip==='bw') return rnd(w + (pct>=0.5 ? 10 : pct>=0.25 ? 5 : 2.5));
+  if(!w) return def.equip==='db' ? 4 : def.equip==='bb' ? findMinW(def) : rnd(inc*2);
+  return Math.max(rnd(w+inc), roundTo(w*(1+pct), inc, 'near'));
+}
+function findLighter(w, def){
+  const inc=incFor(def, state.settings);
+  if(def.equip==='assist') return rnd(w+inc);
+  if(def.equip==='bw') return Math.max(0, rnd(w-2.5));
+  if(!w) return 0;
+  return Math.max(findMinW(def), Math.min(rnd(w-inc), roundTo(w*0.9, inc, 'near')));
+}
+function findStepText(st, def){
+  const head=fmtLoad(st.w,def)+' × '+st.r+' · '+FIND_LABEL[st.rating];
+  if(st.kind==='found') return head+' → gefunden';
+  if(st.kind==='down') return head+' → leichter, '+fmtLoad(st.next,def);
+  return head+' → '+fmtLoad(st.next,def);
+}
+function findActive(s){ let n=0; s.blocks.forEach(b=>b.items.forEach(e=>{ if(!e.skipped && e.find && e.find.status==='active') n++; })); return n; }
+function findCanUndo(e){ return e.find && e.find.steps.length>0 && !e.sets.some(x=>x.done && !x.probe); }
+
+/* =========================================================
    Einheit erstellen
    ========================================================= */
 function makeEntry(exId, it, ctx){
   const def = EX[exId];
   const reps = (def.reps && exId!==it.ex) ? def.reps.slice() : it.reps.slice();
   const t = computeTarget(exId, {sets:it.sets, reps}, ctx);
-  return {ex:exId, key:it.key||null, group:it.group||null, plan:{sets:it.sets, reps:reps.slice()}, target:t,
+  const e = {ex:exId, key:it.key||null, group:it.group||null, plan:{sets:it.sets, reps:reps.slice()}, target:t,
     sets:Array.from({length:t.sets}, (_,i)=>({w:t.w, r:t.perSet[i]!=null?t.perSet[i]:t.reps[0], rir:null, done:false})), skipped:false};
+  const fp = findPlan(exId, ctx);
+  if(fp) findBegin(e, ctx.reentry, fp.start, fp.why, false);
+  return e;
 }
 
 function buildSession(type, opts){
@@ -986,7 +1087,7 @@ function buildSession(type, opts){
   if(!opts.preview && type!=='H' && st.reentry && !st.reentryStart){ st.reentryStart=date; Store.saveSettings(); }
   const re = type!=='H' && isReentry(date);
   const id = opts.preview ? 'preview' : uid(date);
-  const ctx = {settings:st, reentry:re, ts, excludeId:id, check:opts.check||null};
+  const ctx = {settings:st, reentry:re, ts, excludeId:id, check:opts.check||null, noFind:!!opts.backlog};
   const blocks=[];
   PLANS[type].blocks.forEach(pb=>{
     if(pb.opt && !st[pb.opt]) return;
@@ -1088,7 +1189,7 @@ function hamThisWeek(ws){
 }
 
 function estimateMin(s){
-  const st=state.settings; let sec = s.warmup.length ? 540 : 60;
+  const st=state.settings; let sec = (s.warmup.length ? 540 : 60) + findActive(s)*120;
   s.blocks.forEach(b=>{
     const its=b.items.filter(e=>!e.skipped); if(!its.length) return;
     const rest=st.rest[b.rest]||90;
@@ -1139,7 +1240,7 @@ function briefingText(off){
     s.blocks.forEach(b=>b.items.forEach(e=>{
       const def=EX[e.ex], d=e.sets.filter(x=>x.done);
       if(e.skipped) out += '\n- '+def.name+': ausgelassen'+(e.skipWhy?' ('+e.skipWhy+')':'');
-      else if(d.length) out += '\n- '+def.name+': '+fmtSets(d, def, true);
+      else if(d.length) out += '\n- '+def.name+': '+fmtSets(d, def, true)+(e.find && e.find.status==='done' ? ' · Gewicht gefunden ('+e.find.steps.length+' '+(e.find.steps.length===1?'Probesatz':'Probesätze')+')' : '');
     }));
     if(s.feel!=null || s.fun!=null) out += '\nGefühl '+(s.feel==null?'–':s.feel)+'/5 · Spass '+(s.fun==null?'–':s.fun)+'/5';
     if(s.check) out += '\nVorher: Energie '+ENERGY[s.check.energy].toLowerCase()+', Hamstrings '+HAMS[s.check.hams].toLowerCase()+(s.check.intense?', gestern intensiv':'');
@@ -1339,7 +1440,8 @@ function viewHome(){
     const nt=nextType(), pv=buildSession(nt,{preview:true});
     const alt = nt==='A'?'B':'A';
     h+='<section class="hero"><div class="hero-top"><div class="plate '+plateCls(nt)+'">'+nt+'</div><div><h2>'+typeName(nt)+'</h2><div class="hero-sub">Als Nächstes dran · ca. '+estimateMin(pv)+' min</div></div></div>';
-    if(pv.reentry) h+='<div class="chips"><span class="chip warn">Wiedereinstieg · 2 Sätze · RIR 3–4</span></div>';
+    const nf=findActive(pv);
+    if(pv.reentry || nf) h+='<div class="chips">'+(pv.reentry?'<span class="chip warn">Wiedereinstieg · 2 Sätze · RIR 3–4</span>':'')+(nf?'<span class="chip acc">Gewicht finden bei '+nf+' '+(nf===1?'Übung':'Übungen')+'</span>':'')+'</div>';
     h+=planList(pv);
     h+='<button class="btn pri block" data-a="start" data-t="'+nt+'">'+typeName(nt)+' starten</button><div class="alt"><button class="link" data-a="start" data-t="'+alt+'">Stattdessen '+typeName(alt)+'</button><button class="link" data-a="start" data-t="H">Heimroutine, 10 min</button></div></section>';
   }
@@ -1368,7 +1470,8 @@ function planList(s){
   s.blocks.forEach(b=>b.items.forEach(e=>{
     const def=EX[e.ex], t=e.target;
     const no = b.opt ? '+' : String(++n);
-    const tgt = e.skipped ? 'ausgelassen' : t.sets+' × '+repTxt(t.reps)+(t.w!=null&&def.load!=='reps'?' · '+fmtLoad(t.w,def):'')+(t.action==='up'?' <span class="up">↑</span>':'');
+    const fd = e.find && e.find.status==='active';
+    const tgt = e.skipped ? 'ausgelassen' : t.sets+' × '+repTxt(t.reps)+(fd?' · <span class="fd">finden</span>':(t.w!=null&&def.load!=='reps'?' · '+fmtLoad(t.w,def):''))+(t.action==='up'?' <span class="up">↑</span>':'');
     h+='<div class="plan-row'+(e.skipped?' skip':'')+'"><span class="no">'+no+'</span><span class="nm">'+esc(def.name)+'</span><span class="tg">'+tgt+'</span></div>';
   }));
   return h+'</div>';
@@ -1466,10 +1569,16 @@ function entryCard(s,bi,ii){
   const grp=entryGroup(e), canSwap = s.type!=='H' && !!(grp && GROUPS[grp]) && !e.swappedTo;
   const tags=[]; if(s.blocks[bi].opt==='nordicA') tags.push('Vorschlag · optional'); if(e.swapFrom && EX[e.swapFrom]) tags.push('Heute statt '+EX[e.swapFrom].name); if(e.swappedTo && EX[e.swappedTo]) tags.push('Gewechselt zu '+EX[e.swappedTo].name);
   let h='<article class="ex'+(ro?' ro':'')+'" id="ex-'+bi+'-'+ii+'"><div class="ex-head"><div class="tx">'+(tags.length?'<span class="ex-tag">'+esc(tags.join(' · '))+'</span>':'')+'<h3>'+esc(def.name)+'</h3><div class="ex-meta">'+meta.join(' · ')+'</div></div>'+(canSwap?'<button class="swap-btn" data-a="swap-open" '+ref+' aria-label="'+esc(def.name)+' tauschen">'+I.swap+'Tauschen</button>':'')+'</div>';
-  const tagTxt={up:'↑ Mehr',hold:'= Halten',down:'↓ Leichter',new:'Neu',start:'Start'}[t.action]||'';
-  h+='<div class="sugg"><span class="tag '+t.action+'">'+tagTxt+'</span><span>'+esc(t.reason)+(t.notes&&t.notes.length?t.notes.map(n=>'<span class="note">'+esc(n)+'</span>').join(''):'')+'</span></div>';
+  const f=e.find;
+  if(f && f.status==='active' && !state.editId){ h+=findPanel(s,bi,ii)+'<div class="ex-foot"><button class="ghost-btn" data-a="fd-skip" '+ref+'>Ich kenne mein Gewicht</button><span class="sp"></span><button class="ghost-btn" data-a="skip" '+ref+'>'+I.skip+'Auslassen</button></div>'; h+='<details class="cue"><summary>'+I.info+'<span class="when-closed">Technik-Tipp anzeigen</span><span class="when-open">Technik-Tipp</span>'+I.chevD+'</summary><p>'+esc(def.cue)+'</p></details>'; return h+'</article>'; }
+  const tagTxt={up:'↑ Mehr',hold:'= Halten',down:'↓ Leichter',new:'Neu',start:'Start',found:'Gefunden'}[t.action]||'';
+  let extra='';
+  if(f && f.status==='done') extra='<span class="note" style="color:var(--muted)">'+esc(f.steps.map(st=>findStepText(st,def)).join(' · '))+'</span>'+(findCanUndo(e)&&!state.editId?'<button class="act" data-a="fd-undo" '+ref+'>Letzten Probesatz zurücknehmen</button>':'');
+  else if(canFind(def, e.ex) && !e.sets.some(x=>x.done) && !state.editId && s.type!=='H') extra='<button class="act" data-a="fd-start" '+ref+'>Gewicht neu finden</button>';
+  h+='<div class="sugg"><span class="tag '+t.action+'">'+tagTxt+'</span><span>'+esc(t.reason)+(t.notes&&t.notes.length?t.notes.map(n=>'<span class="note">'+esc(n)+'</span>').join(''):'')+(extra?'<br>'+extra:'')+'</span></div>';
+  if(f && f.suggestAssist && !state.editId) h+='<div class="callout">'+I.warn+'<div><b>Weniger als '+t.reps[0]+' saubere Wdh.</b> Mit Unterstützung kommst du in den Zielbereich.<div><button class="link" data-a="fd-assist" '+ref+'>Heute Klimmzüge assistiert</button></div></div></div>';
   const wNow = firstOpen>-1 ? e.sets[firstOpen].w : (e.sets.length?e.sets[e.sets.length-1].w:null);
-  const pl=plateHtml(wNow, def), wu=state.editId?'':warmupSets(t.w, def);
+  const pl=plateHtml(wNow, def), wu=(state.editId || (f && f.status==='done'))?'':warmupSets(t.w, def);
   if(pl || wu) h+='<div class="aux">'+(pl?'<div class="aux-row" id="pl-'+bi+'-'+ii+'">'+pl+'</div>':'')+(wu?'<div>'+wu+'</div>':'')+'</div>';
   h+='<div class="sets"><div class="set-h"><span>Satz</span>'+(ro?'':'<span>'+eq.col+'</span>')+'<span>'+(def.side?'Wdh/S':'Wdh')+'</span><span></span></div>';
   e.sets.forEach((x,si)=>{
@@ -1488,6 +1597,63 @@ function entryCard(s,bi,ii){
   h+='</div><div class="ex-foot"><div class="setctl" role="group" aria-label="Anzahl Sätze"><button data-a="rm-set" '+ref+' aria-label="Satz entfernen"'+(e.sets.length<=1||lastDone?' disabled':'')+'>−</button><span>'+e.sets.length+' '+(e.sets.length===1?'Satz':'Sätze')+'</span><button data-a="add-set" '+ref+' aria-label="Satz hinzufügen">+</button></div><span class="sp"></span><button class="ghost-btn" data-a="skip" '+ref+'>'+I.skip+'Auslassen</button></div>';
   h+='<details class="cue"><summary>'+I.info+'<span class="when-closed">Technik-Tipp anzeigen</span><span class="when-open">Technik-Tipp</span>'+I.chevD+'</summary><p>'+esc(def.cue)+'</p></details>';
   return h+'</article>';
+}
+
+function findPanel(s,bi,ii){
+  const e=s.blocks[bi].items[ii], def=EX[e.ex], f=e.find, k=f.steps.length+1, tr=findTarget(f.high), eq=EQUIP[def.equip];
+  const ref='data-b="'+bi+'" data-i="'+ii+'"', sref=ref+' data-s="0"';
+  const tgtKey = f.high ? 'r34' : 'r12';
+  let h='<div class="find" id="find-'+bi+'-'+ii+'"><div class="find-h"><span class="tag find">Gewicht finden</span><span>Probesatz '+k+' von max. '+FIND_MAX+'</span></div>';
+  h+='<p class="find-t">'+(k===1 ? esc(f.why)+' Mach '+e.target.reps[0]+' Wdh.'+(def.side?' pro Seite':'')+' und sag danach, wie viele noch drin gewesen wären.' : 'Gleiche Wiederholungen mit dem neuen Gewicht.')+'</p>';
+  if(f.steps.length) h+='<ol class="find-steps">'+f.steps.map(st=>'<li>'+esc(findStepText(st,def))+'</li>').join('')+'</ol>';
+  h+='<div class="find-in"><div><div class="lab">'+(eq.col==='Hilfe'?'Hilfe kg':eq.col==='+kg'?'Zusatz kg':(def.pair?'kg pro Hand':'kg'))+'</div>'+numBox('fw', f.w, sref, bi,ii,0, 'kg')+'</div><div><div class="lab">'+(def.side?'Wdh/Seite':'Wdh')+'</div>'+numBox('fr', f.r, sref, bi,ii,0, 'Wdh')+'</div></div>';
+  const pl=plateHtml(f.w, def); if(pl) h+='<div class="aux"><div class="aux-row" id="pl-'+bi+'-'+ii+'">'+pl+'</div></div>';
+  h+='<div class="find-q">Wie viele Wdh. wären noch drin gewesen?<span>Ziel '+tr[0]+'–'+tr[1]+'</span></div>';
+  h+='<div class="find-r" role="group" aria-label="Wiederholungen in Reserve">'+FIND_RATINGS.map(([v,l])=>'<button class="fr-b'+(v===tgtKey?' tgt':'')+'" data-a="fd-rate" '+ref+' data-v="'+v+'" aria-label="'+FIND_LABEL[v]+'">'+l+'</button>').join('')+'</div>';
+  h+='<button class="ghost-btn" data-a="fd-rate" '+ref+' data-v="tech">Technik wackelte</button>';
+  if(f.steps.length) h+='<div class="find-foot"><button class="link" data-a="fd-undo" '+ref+'>Letzten Probesatz zurücknehmen</button></div>';
+  return h+'</div>';
+}
+
+function findRate(s, bi, ii, rating){
+  const e=s.blocks[bi].items[ii], def=EX[e.ex], f=e.find, name=EX[e.ex].short||EX[e.ex].name;
+  if(f.w==null && def.equip!=='bw' && !def.zero){ toast('Bitte zuerst das Gewicht eintragen.'); return; }
+  const w=f.w==null?0:f.w, r=f.r!=null?f.r:e.target.reps[0];
+  const kind=findDecide(e, rating, r), step={w, r, rating, kind, t:Date.now()};
+  f.steps.push(step);
+  let result, counted=false;
+  if(kind==='found'){ result=w; counted=true; }
+  else if(kind==='down'){ result=findLighter(w, def); if(e.ex==='pullup' && r<e.target.reps[0]) f.suggestAssist=true; }
+  else {
+    const nw=findHeavier(w, def, kind==='up10'?0.10:kind==='up25'?0.25:0.5);
+    step.next=nw;
+    if(f.steps.length<FIND_MAX){
+      f.w=nw; persist(s);
+      Timer.start(FIND_REST, 'Probesatz '+(f.steps.length+1)+' · '+fmtLoad(nw,def));
+      return 'next';
+    }
+    result=nw;
+  }
+  step.next=result;
+  f.status='done'; f.result=result; f.counted=counted;
+  const n=e.target.sets, lo=e.target.reps[0], sets=[];
+  if(counted) sets.push({w:result, r, rir:FIND_RIR[rating], done:true, t:Date.now(), probe:true});
+  while(sets.length<n) sets.push({w:result, r:e.target.perSet[sets.length]!=null?e.target.perSet[sets.length]:lo, rir:null, done:false});
+  e.sets=sets; e.target.w=result; e.target.action='found';
+  e.target.reason = 'Arbeitsgewicht '+fmtLoad(result,def)+(counted ? '. Probesatz '+f.steps.length+' zählt als Satz 1.' : kind==='down' ? ', etwas leichter als der letzte Probesatz.' : ', nach 3 Probesätzen übernommen.');
+  persist(s);
+  if(counted && !state.editId) afterSetDone(s,bi,ii,0);
+  else Timer.start(FIND_REST, name+' · Satz 1 · '+fmtLoad(result,def));
+  return 'found';
+}
+
+function findUndo(s, bi, ii){
+  const e=s.blocks[bi].items[ii], f=e.find; if(!findCanUndo(e)) return;
+  const last=f.steps.pop();
+  f.status='active'; f.w=last.w; f.r=last.r; delete f.result; delete f.counted; delete f.suggestAssist;
+  e.target.action='find'; e.target.reason=f.why; e.target.w=null;
+  e.sets=Array.from({length:e.target.sets}, (_,i)=>({w:null, r:e.target.perSet[i]!=null?e.target.perSet[i]:e.target.reps[0], rir:null, done:false}));
+  persist(s);
 }
 
 function numBox(f, val, sref, bi,ii,si, ph){
@@ -1534,7 +1700,7 @@ function viewDetail(){
   h+='</section><section class="panel" style="gap:0">';
   s.blocks.forEach(b=>b.items.forEach(e=>{
     const def=EX[e.ex], d=e.sets.filter(x=>x.done);
-    h+='<div class="det-ex"><b>'+esc(def.name)+(e.swapFrom&&EX[e.swapFrom]?' <span class="muted" style="font-weight:400">statt '+esc(EX[e.swapFrom].name)+'</span>':'')+'</b><span>'+(e.skipped?'Ausgelassen'+(e.skipWhy?' · '+esc(e.skipWhy):''):d.length?esc(fmtSets(d,def,true)):'Keine Sätze abgehakt')+'</span></div>';
+    h+='<div class="det-ex"><b>'+esc(def.name)+(e.swapFrom&&EX[e.swapFrom]?' <span class="muted" style="font-weight:400">statt '+esc(EX[e.swapFrom].name)+'</span>':'')+'</b><span>'+(e.skipped?'Ausgelassen'+(e.skipWhy?' · '+esc(e.skipWhy):''):d.length?esc(fmtSets(d,def,true)):'Keine Sätze abgehakt')+'</span>'+(e.find && e.find.status==='done'?'<span>Gewicht gefunden: '+esc(e.find.steps.map(st=>fmtLoad(st.w,def)+' × '+st.r+' ('+FIND_LABEL[st.rating]+')').join(', '))+'</span>':'')+'</div>';
   }));
   h+='</section><section class="sec"><div class="row-btns"><button class="btn sec" data-a="detail-edit">Bearbeiten</button>'+(state.delArm?'<button class="btn bad" data-a="detail-del-ok">Endgültig löschen</button><button class="link" data-a="detail-del-cancel">Abbrechen</button>':'<button class="btn bad" data-a="detail-del">Löschen</button>')+'</div></section>';
   return h;
@@ -1641,6 +1807,7 @@ function viewSettings(){
 
   h+='<section class="sec"><h2 class="eyebrow">Wiedereinstieg</h2><div class="sgroup">';
   h+='<div class="srow"><div class="tx"><b>Wiedereinstieg aktiv</b><small>2 Sätze, RIR 3–4, die ersten 2 Wochen</small></div>'+tgl('reentry')+'</div>';
+  h+='<div class="srow"><div class="tx"><b>Gewicht finden vorschlagen</b><small>Bei neuen Übungen und nach 4 Wochen Pause, mit bis zu 3 Probesätzen</small></div>'+tgl('autoFind')+'</div>';
   h+='<div class="srow"><div class="tx"><b>Start</b><small>'+(st.reentryStart?'Läuft bis '+fmtDate(addDays(st.reentryStart,(st.reentryDays||14)-1)):'Startet mit deiner ersten Einheit')+'</small></div><input type="date" class="sinput date" id="st-reentryStart" data-s="reentryStart" data-t="date" value="'+(st.reentryStart||'')+'"></div></div></section>';
 
   h+='<section class="sec"><h2 class="eyebrow">Frühere Gewichte · optional</h2><div class="sgroup"><div class="srow"><div class="tx"><small>Nur für den allerersten Vorschlag pro Übung: Die App startet mit 65 % davon. Danach rechnet sie mit deinen echten Sätzen.</small></div></div>';
@@ -1710,6 +1877,10 @@ function sheetCheck(){
   if(type!=='H') h+='<div class="srow" style="padding:0;border:0"><div class="tx"><b>Kurzversion, ca. 35 min</b><small>Grundübungen und erster Supersatz, Hamstring-Übungen bleiben drin</small></div><label class="tgl"><input type="checkbox" id="ck-short" data-f="ck-short"'+(c.short?' checked':'')+'><span></span></label></div>';
   const tips=checkTips({energy:c.energy, hams:c.hams, intense:!!c.intense}, type);
   if(tips.length) h+='<div class="callout">'+I.warn+'<div>'+tips.map(t=>'<div>'+t+'</div>').join('')+'</div></div>';
+  if(type!=='H'){
+    const nf=findActive(buildSession(type,{preview:true}));
+    if(nf){ const min=Math.max(5, Math.round(nf*2/5)*5); h+='<div class="callout info">'+I.info+'<div><b>Gewicht finden:</b> Bei '+nf+' '+(nf===1?'Übung':'Übungen')+' findest du heute das Gewicht mit Probesätzen neu. Plane ca. '+min+' Minuten mehr ein.</div></div>'; }
+  }
   h+='<button class="btn pri block" data-a="ck-go">'+typeName(type)+' starten</button><button class="link" style="align-self:center" data-a="ck-skip">Ohne Check starten</button>';
   return h;
 }
@@ -1775,6 +1946,7 @@ function sheetInfo(){
   +'<div><h3>Supersätze</h3><p>Zwei Übungen für verschiedene Muskeln im Wechsel sparen Zeit, ohne die Leistung pro Satz merklich zu drücken.</p><cite>Robbins et al. 2010, J Strength Cond Res</cite></div>'
   +'<div><h3>Wochenvolumen</h3><p>Mehr harte Sätze pro Muskel und Woche bringen tendenziell mehr Muskelaufbau, ab etwa 10 Sätzen deutlich. Indirekte Beanspruchung zählt hier halb. In dieser Phase ist das nur Orientierung.</p><cite>Schoenfeld et al. 2017, J Sports Sci</cite></div>'
   +'<div><h3>Nordics</h3><p>Programme mit Nordics halbieren in Studien etwa das Risiko für Hamstring-Verletzungen. Für den Erhalt setzen Protokolle rund 1× pro Woche an. Die App steigert in Stufen von 2 × 3 bis 3 × 6 und geht nach über 3 Wochen Pause eine Stufe zurück, weil der Muskelkater-Schutz dann nachlässt.</p><cite>van Dyk et al. 2019, BJSM · Petersen et al. 2011, AJSM</cite></div>'
+  +'<div><h3>Gewicht finden</h3><p>Bei neuen Übungen und nach mehr als 4 Wochen Pause tastet sich die App mit bis zu 3 Probesätzen an dein Arbeitsgewicht heran. Bis etwa 4 Wochen bleibt die Maximalkraft weitgehend erhalten, danach nimmt sie schneller ab. Nach jedem Probesatz gibst du die Reserve an: zu leicht bedeutet +10, +25 oder +50 %, im Ziel ist gefunden, darunter −10 %. Passt der Probesatz, zählt er als erster Arbeitssatz.</p><cite>Bosquet et al. 2013, Scand J Med Sci Sports</cite></div>'
   +'<div><h3>Aufwärmsätze</h3><p>Vor schweren Grundübungen schlägt die App 2–3 Rampensätze bei ca. 50, 70 und 85 % vor. Sie zählen nicht als Arbeitssätze.</p></div>'
   +'</div><button class="btn sec block" data-a="sheet-close">Schliessen</button>';
 }
@@ -1953,6 +2125,12 @@ function onClick(ev){
     case 'nav': { const c=curBlock(s), min=s.warmup.length?-1:0; const n=Math.max(min, Math.min(s.blocks.length-1, c+(+d.d))); if(n!==c){ setCur(s,n); render(); scrollToBlock(n); } break; }
 
     case 'step': {
+      if(d.f==='fw' || d.f==='fr'){
+        const e=s.blocks[bi].items[ii], def=EX[e.ex], fd=e.find; if(!fd) break;
+        if(d.f==='fw'){ const inc=incFor(def, state.settings); fd.w=Math.max(0, rnd((fd.w==null?(FIND_START[e.ex]||0):fd.w)+(+d.d)*inc)); const inp=document.getElementById('in-fw-'+bi+'-'+ii+'-0'); if(inp){ inp.value=fmtW(fd.w); } const pl=document.getElementById('pl-'+bi+'-'+ii); if(pl) pl.innerHTML=plateHtml(fd.w, def); }
+        else { fd.r=Math.max(1, (fd.r==null?e.target.reps[0]:fd.r)+(+d.d)); const inp=document.getElementById('in-fr-'+bi+'-'+ii+'-0'); if(inp) inp.value=fd.r; }
+        persist(s); break;
+      }
       const e=s.blocks[bi].items[ii], x=e.sets[si], def=EX[e.ex], f=d.f;
       if(f==='w'){
         const inc=incFor(def, state.settings), old=x.w;
@@ -1985,6 +2163,18 @@ function onClick(ev){
       break;
     }
     case 'rir': { const x=s.blocks[bi].items[ii].sets[si]; const v=+d.v; x.rir = x.rir===v ? null : v; persist(s); renderMain(); renderDock(); break; }
+    case 'fd-rate': {
+      const e=s.blocks[bi].items[ii], def=EX[e.ex];
+      const res=findRate(s, bi, ii, d.v);
+      if(res==='found') toast('Arbeitsgewicht gefunden: '+fmtLoad(e.find.result, def));
+      renderMain(); renderTop(); renderDock();
+      const card=document.getElementById(res==='next'?'find-'+bi+'-'+ii:'ex-'+bi+'-'+ii); if(card && res==='next') card.scrollIntoView({block:'nearest'});
+      break;
+    }
+    case 'fd-undo': { findUndo(s, bi, ii); Timer.stop(); renderMain(); renderTop(); renderDock(); break; }
+    case 'fd-skip': { const e=s.blocks[bi].items[ii]; e.find.status='skipped'; e.target.action='new'; e.target.reason='Arbeitsgewicht selbst eintragen.'; persist(s); renderMain(); break; }
+    case 'fd-start': { const e=s.blocks[bi].items[ii], def=EX[e.ex]; const w0=e.sets.find(x=>x.w!=null); const start = w0 ? w0.w : (e.target.w!=null ? e.target.w : (FIND_START[e.ex]!=null?FIND_START[e.ex]:findMinW(def))); findBegin(e, s.reentry, start, 'Von dir gestartet.', true); persist(s); renderMain(); renderTop(); break; }
+    case 'fd-assist': { swapEntry(s, bi, ii, 'pullupA', 'once'); persist(s); render(); toast('Heute Klimmzüge assistiert'); break; }
     case 'rir-fix': { const cs=curSession(); if(!cs) break; const i=cs.blocks.findIndex(b=>missingRir(b)>0); state.sheet=null; if(i>-1) setCur(cs,i); render(); if(i>-1) scrollToBlock(i); break; }
     case 'swap-open': {
       const e=s.blocks[bi].items[ii], g=entryGroup(e); if(!g || !GROUPS[g]) break;
@@ -2090,6 +2280,13 @@ function onInput(ev){
     x[f]=v;
     persist(s);
     if(f==='w') updatePlates(s,bi,ii);
+  } else if(f==='fw' || f==='fr'){
+    const s=curSession(); if(!s) return;
+    const e=s.blocks[+el.dataset.b].items[+el.dataset.i], fd=e.find; if(!fd) return;
+    let v=parseNum(el.value); if(v!=null && v<0) v=0;
+    if(f==='fw'){ fd.w=v; const pl=document.getElementById('pl-'+el.dataset.b+'-'+el.dataset.i); if(pl) pl.innerHTML=plateHtml(v, EX[e.ex]); }
+    else fd.r = v==null ? null : Math.max(1, Math.round(v));
+    persist(s);
   } else if(f==='fin-note'){ state.finish.note=el.value; }
   else if(f==='ed-note'){ const s=curSession(); if(s){ s.note=el.value; persist(s); } }
 }
@@ -2107,7 +2304,8 @@ function onChange(ev){
     persist(s);
     return;
   }
-  if(f==='r' || f==='fin-note' || f==='ed-note') return;
+  if(f==='r' || f==='fin-note' || f==='ed-note' || f==='fr') return;
+  if(f==='fw'){ const s=curSession(); if(!s) return; const fd=s.blocks[+el.dataset.b].items[+el.dataset.i].find; if(fd) el.value=fd.w==null?'':fmtW(fd.w); return; }
   if(f==='ck-short'){ state.check.short=el.checked; state.check.shortTouched=true; return; }
   if(f==='bl-date'){ state.backlog.date=el.value; return; }
   if(f==='ed-date'){

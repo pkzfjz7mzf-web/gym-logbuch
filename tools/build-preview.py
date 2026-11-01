@@ -17,8 +17,8 @@ css = css.replace('body{margin:0;min-height:100%;padding-top:env(safe-area-inset
 css += """
 /* Nur Testumgebung */
 .test-band{background:var(--warn-soft);color:var(--warn)}
-.test-band .wrap{display:flex;align-items:center;gap:10px;padding-block:8px;font-size:13px;font-weight:600;line-height:1.3}
-.test-band span{flex:1;min-width:0}
+.test-band .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;padding-block:8px;font-size:13px;font-weight:600;line-height:1.3}
+.test-band span{flex:1 1 220px;min-width:0}
 .test-band button{flex:none;min-height:34px;padding:0 12px;border-radius:9px;background:var(--surface);color:var(--fg);font-size:13px;font-weight:600}
 """
 body = src[src.index('<div id="app">'):src.rindex('<script>')]
@@ -28,8 +28,9 @@ assert js.count(sw) == 1, 'Service-Worker-Zeile nicht gefunden'
 js = js.replace(sw, '')
 
 band = ('<div class="test-band" role="note"><div class="wrap"><span>Testumgebung mit Demo-Daten. '
-        'Deine echte App und deine Daten bleiben unberührt.</span>'
-        '<button type="button" onclick="window.__resetDemo&&window.__resetDemo()">Demo zurücksetzen</button></div></div>\n')
+        'Deine echte App und deine Daten bleiben unberührt. Neu starten:</span>'
+        '<button type="button" onclick="window.__resetDemo&&window.__resetDemo(\'history\')">Mit Verlauf</button>'
+        '<button type="button" onclick="window.__resetDemo&&window.__resetDemo(\'empty\')">Ohne Verlauf</button></div></div>\n')
 
 page = ('<title>Gym-Logbuch Test</title>\n'
         '<meta name="claude:viewport-fit-sides" content="cover">\n'

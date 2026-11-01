@@ -53,13 +53,17 @@ window.GYM_CONFIG = { supabaseUrl: 'https://demo.invalid', supabaseKey: 'demo' }
       barKg:20, incBB:2.5, incDB:2, incCable:2.5, incAssist:5, bodyweight:null, rest:{main:150, acc:90, ss:90, nordic:120, short:45}, sound:true}};
   }
 
+  var MODE_KEY = 'gymlog.preview.mode';
+  function emptySeed(){ var s=seed(); s.sessions={}; s.settings.reentryStart=null; return s; }
   var store;
   try{ store = JSON.parse(lsGet(DB_KEY) || 'null'); }catch(e){ store=null; }
-  if(!store){ store = seed(); lsSet(DB_KEY, JSON.stringify(store)); }
+  if(!store){ store = (lsGet(MODE_KEY)==='empty') ? emptySeed() : seed(); lsSet(DB_KEY, JSON.stringify(store)); }
+  window.__demoMode = lsGet(MODE_KEY)==='empty' ? 'empty' : 'history';
   function save(){ lsSet(DB_KEY, JSON.stringify(store)); }
   var session = {user:{id:'demo-user', email:'demo@testumgebung'}};
 
-  window.__resetDemo = function(){
+  window.__resetDemo = function(mode){
+    lsSet(MODE_KEY, mode==='empty' ? 'empty' : 'history');
     ['gymlog.preview.db','gymlog.pwa.v1','gymlog.ui','gymlog.auth'].forEach(lsDel);
     try{ sessionStorage.removeItem('gymlog.timer'); }catch(e){}
     location.reload();
