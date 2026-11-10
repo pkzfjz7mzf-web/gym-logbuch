@@ -347,6 +347,8 @@ textarea.brief{width:100%;min-height:260px;border:0;border-radius:12px;backgroun
 .opt .tx b{display:block;font-weight:600}
 .opt .tx small{display:block;font-size:13px;color:var(--muted);line-height:1.35;font-variant-numeric:tabular-nums}
 .opt .chips{flex:none;flex-direction:column;align-items:flex-end}
+.sw-sec{display:flex;flex-direction:column;gap:8px}
+.sw-sub{margin:-2px 0 0;font-size:13px;line-height:1.4;color:var(--muted)}
 
 /* Anmeldung */
 .login-f{display:flex;flex-direction:column;gap:8px}
@@ -513,27 +515,90 @@ const EX = {
   chop:     {name:'Holzhacker am Kabel', equip:'cable', side:true, rir:[2,3], m:{core:1}, cue:'Bewegung kommt aus Hüfte und Rumpf, Arme bleiben lang. Kontrolliert zurück, Becken stabil.'},
   hammercurl:{name:'Hammer-Curls', equip:'db', pair:true, m:{arms:1}, cue:'Daumen zeigen nach oben, Ellbogen bleiben am Körper.'},
   cablecurl:{name:'Bizeps-Curls am Kabel', equip:'cable', m:{arms:1}, cue:'Ellbogen fix, oben kurz anspannen, langsam ablassen.'},
-  ohext:    {name:'Trizepsstrecken über Kopf', equip:'cable', m:{arms:1}, cue:'Ellbogen zeigen nach vorne, Rippen unten. Unten volle Dehnung.'}
+  ohext:    {name:'Trizepsstrecken über Kopf', equip:'cable', m:{arms:1}, cue:'Ellbogen zeigen nach vorne, Rippen unten. Unten volle Dehnung.'},
+  /* Weitere Alternativen: gleiche Bewegung in anderer Ausführung oder gleiche Muskeln mit anderer Mechanik */
+  hacksquat:{name:'Hackenschmidt-Kniebeuge', short:'Hackenschmidt', equip:'machine', main:true, legs:true, m:{quads:1, glutes:.5}, cue:'Rücken ganz an der Lehne, Füsse schulterbreit mittig auf der Platte. Kontrolliert tief, ohne dass das Becken abkippt.'},
+  legext:   {name:'Beinstrecker', equip:'machine', legs:true, reps:[10,15], m:{quads:1}, cue:'Knie auf Höhe der Drehachse. Oben 1 s halten, langsam ablassen, Gesäss bleibt im Sitz.'},
+  splitsq:  {name:'Split Squat KH', equip:'db', pair:true, side:true, legs:true, m:{quads:1, glutes:.5}, cue:'Schrittstellung bleibt stehen, das hintere Knie senkt sich senkrecht Richtung Boden. Vorderer Fuss ganz am Boden.'},
+  walklunge:{name:'Ausfallschritte gehend', equip:'db', pair:true, side:true, legs:true, m:{quads:1, glutes:1}, cue:'Langer Schritt, hinteres Knie knapp über den Boden. Aus der vorderen Ferse hochdrücken und weitergehen.'},
+  goodmorning:{name:'Good Mornings Langhantel', short:'Good Mornings', equip:'bb', main:true, legs:true, ham:true, m:{hams:1, glutes:.5}, cue:'Stange auf dem oberen Rücken, Knie leicht gebeugt. Hüfte nach hinten, Rücken neutral, nur so tief, bis die Hamstrings deutlich ziehen. Leicht beginnen.'},
+  backext:  {name:'Rückenstrecker 45°', short:'Hyperextensions', equip:'bw', legs:true, ham:true, reps:[8,12], m:{hams:1, glutes:1}, cue:'Polster knapp unter dem Hüftknochen. Aus der Hüfte beugen, Rücken neutral, oben Gesäss anspannen, nicht überstrecken. Zusatzgewicht als Scheibe vor der Brust.'},
+  seatcurl: {name:'Beinbeuger sitzend', equip:'machine', ham:true, legs:true, reps:[8,12], m:{hams:1}, cue:'Oberschenkelpolster fest, Oberkörper leicht nach vorne. Zügig beugen, 3 s langsam zurück.'},
+  ballcurl: {name:'Beinbeuger am Gymnastikball', equip:'none', gear:'Gymnastikball', load:'reps', noRir:true, ham:true, legs:true, reps:[8,12], m:{hams:1, glutes:.5}, cue:'Rückenlage, Fersen auf dem Ball, Hüfte oben halten. Ball heranziehen und langsam wieder wegrollen.'},
+  pullthrough:{name:'Cable Pull-Through', equip:'cable', legs:true, reps:[10,12], m:{glutes:1, hams:.5}, cue:'Rücken zum Kabel, Seil zwischen den Beinen. Hüfte nach hinten schieben, dann über das Gesäss nach vorne strecken.'},
+  cablekick:{name:'Kickbacks am Kabel', equip:'cable', side:true, reps:[10,15], m:{glutes:1}, cue:'Leicht vorgeneigt, Bein nach hinten-oben strecken, ohne ins Hohlkreuz auszuweichen. Oben kurz halten.'},
+  abduction:{name:'Abduktoren-Maschine', equip:'machine', reps:[12,15], m:{glutes:1}, cue:'Oberkörper leicht nach vorne, Beine kontrolliert öffnen, 1 s halten, langsam schliessen.'},
+  bbrow:    {name:'Langhantelrudern vorgebeugt', short:'LH-Rudern', equip:'bb', main:true, m:{upback:1, lats:.5}, cue:'Oberkörper etwa 45° vorgeneigt, Rücken neutral. Stange zum unteren Brustbein ziehen, ohne Schwung.'},
+  invrow:   {name:'Inverted Rows', equip:'bw', gear:'Stange im Rack oder Schlingentrainer', m:{upback:1, lats:.5, arms:.5}, cue:'Körper bleibt ein Brett. Brust zur Stange ziehen, Schulterblätter zusammen. Je flacher, desto schwerer.'},
+  revpec:   {name:'Reverse Butterfly Maschine', short:'Reverse Butterfly', equip:'machine', reps:[12,15], m:{upback:1, shoulders:.5}, cue:'Brust am Polster, Arme leicht gebeugt. Weit nach hinten führen, Schultern bleiben tief.'},
+  chinup:   {name:'Klimmzüge Untergriff', short:'Chin-ups', equip:'bw', bwLoad:true, main:true, m:{lats:1, arms:.5, upback:.5}, cue:'Schulterbreiter Untergriff. Schulterblätter zuerst nach unten, dann Brust zur Stange.'},
+  latpdn:   {name:'Latzug enger Griff', equip:'cable', main:true, m:{lats:1, upback:.5, arms:.5}, cue:'Neutralgriff, zur oberen Brust ziehen. Ellbogen Richtung Hüfte, Oberkörper ruhig.'},
+  straightarm:{name:'Lat-Überzüge am Kabel', equip:'cable', reps:[10,15], m:{lats:1}, cue:'Arme fast gestreckt, leicht vorgeneigt. Stange oder Seil im Bogen bis zu den Oberschenkeln ziehen, Rippen unten.'},
+  dbpullover:{name:'Überzüge KH', equip:'db', gear:'eine Kurzhantel', reps:[10,12], m:{lats:1, chest:.5}, cue:'Rücken auf der Bank, Hantel mit beiden Händen. Arme leicht gebeugt im Bogen hinter den Kopf, nur so weit, wie die Rippen unten bleiben.'},
+  bbbench:  {name:'Bankdrücken Langhantel', short:'Bankdrücken', equip:'bb', main:true, m:{chest:1, shoulders:.5, arms:.5}, cue:'Schulterblätter zusammen und unten, Füsse fest. Stange kontrolliert zur unteren Brust, Ellbogen etwa 45°.'},
+  dips:     {name:'Dips', equip:'bw', bwLoad:true, m:{chest:1, arms:.5, shoulders:.5}, cue:'Leicht vorgeneigt, Schultern tief. Nur so tief, wie es in der Schulter angenehm bleibt.'},
+  cablefly: {name:'Fliegende am Kabel', equip:'cable', reps:[10,15], m:{chest:1, shoulders:.5}, cue:'Leicht vorgeneigt, Arme leicht gebeugt und fixiert. Im Bogen vor der Brust zusammenführen, langsam öffnen.'},
+  pecdeck:  {name:'Butterfly Maschine', short:'Butterfly', equip:'machine', reps:[10,15], m:{chest:1}, cue:'Griffe auf Brusthöhe, Schulterblätter an der Lehne. Arme im Bogen zusammenführen, langsam zurück in die Dehnung.'},
+  dbfly:    {name:'Fliegende KH', equip:'db', pair:true, reps:[10,15], m:{chest:1, shoulders:.5}, cue:'Flach- oder Schrägbank, Arme leicht gebeugt. Nur so tief, wie es in der Schulter angenehm ist.'},
+  ohp:      {name:'Schulterdrücken stehend LH', short:'Overhead Press', equip:'bb', main:true, m:{shoulders:1, arms:.5, core:.5}, cue:'Gesäss und Bauch fest, Rippen unten. Stange nah am Gesicht vorbei nach oben, Kopf am Ende durchschieben.'},
+  machpress:{name:'Schulterpresse Maschine', short:'Schulterpresse', equip:'machine', m:{shoulders:1, arms:.5}, cue:'Sitz so einstellen, dass die Griffe auf Schulterhöhe starten. Rücken bleibt an der Lehne.'},
+  latraise: {name:'Seitheben KH', equip:'db', pair:true, reps:[12,15], m:{shoulders:1}, cue:'Arme leicht gebeugt, seitlich bis Schulterhöhe heben. Kontrolliert ablassen, ohne Schwung.'},
+  cablelat: {name:'Seitheben am Kabel', equip:'cable', side:true, reps:[12,15], m:{shoulders:1}, cue:'Kabel von unten, vor dem Körper. Arm seitlich bis Schulterhöhe, Oberkörper ruhig.'},
+  kneeraise:{name:'Knieheben hängend', equip:'none', gear:'Klimmzugstange', load:'reps', noRir:true, reps:[8,12], m:{core:1}, cue:'Aus dem ruhigen Hang Knie zur Brust, Becken einrollen. Langsam absenken, kein Schwung.'},
+  cablecrunch:{name:'Kabel-Crunch', equip:'cable', reps:[10,15], m:{core:1}, cue:'Kniend, Seil neben dem Kopf. Rippen Richtung Becken einrollen, die Hüfte bleibt ruhig.'},
+  copenhagen:{name:'Copenhagen Adduktion', short:'Copenhagen', equip:'none', gear:'Bank', load:'reps', side:true, noRir:true, reps:[6,10], m:{adductors:1, core:.5}, cue:'Seitstütz, oberes Bein auf der Bank. Unteres Bein zur Bank heben und langsam senken. Leichter mit dem Knie statt dem Fuss auf der Bank.'},
+  cableadd: {name:'Adduktion am Kabel', equip:'cable', side:true, reps:[10,15], m:{adductors:1}, cue:'Fussschlaufe am inneren Bein, seitlich zum Kabel. Bein vor dem Standbein vorbeiziehen, langsam zurück.'},
+  sumosq:   {name:'Sumo Goblet Squat', equip:'db', gear:'eine Kurzhantel', legs:true, m:{adductors:1, quads:.5, glutes:.5}, cue:'Breiter Stand, Fussspitzen nach aussen. Knie folgen den Zehen, Oberkörper aufrecht.'},
+  inclinecurl:{name:'Schrägbank-Curls', equip:'db', pair:true, m:{arms:1}, cue:'Bank etwa 45°, Arme hängen hinter dem Körper. Ellbogen bleiben hinten, unten ganz strecken.'},
+  preacher: {name:'Scott-Curls', equip:'machine', gear:'Scott-Maschine', m:{arms:1}, cue:'Oberarme ganz auf dem Polster. Unten fast strecken, oben ohne Schwung.'},
+  skull:    {name:'French Press KH', equip:'db', pair:true, m:{arms:1}, cue:'Rückenlage, Oberarme senkrecht. Hanteln neben den Kopf absenken, nur die Ellbogen bewegen sich.'},
+  kickback: {name:'Trizeps-Kickbacks am Kabel', equip:'cable', side:true, m:{arms:1}, cue:'Vorgeneigt, Oberarm parallel zum Boden. Unterarm nach hinten strecken, kurz halten.'},
+  cgbench:  {name:'Enges Bankdrücken', equip:'bb', reps:[8,10], m:{arms:1, chest:.5, shoulders:.5}, cue:'Griff etwas enger als schulterbreit, Ellbogen nah am Körper. Stange zur unteren Brust.'}
 };
 
-/* Alternativen nach Bewegungsmuster */
+/* Alternativen nach Bewegungsmuster (ex) und nach Zielmuskel (mus, siehe FAMILIES) */
 const GROUPS = {
-  squat:   {label:'Kniebeuge', ex:['goblet','frontsq','legpress']},
-  hinge:   {label:'Hüftbeuge, Hamstrings', ex:['rdl','dbrdl','slrdl'], note:'Alle Alternativen trainieren die Hamstrings unter Dehnung.'},
-  hrow:    {label:'Horizontales Ziehen', ex:['csrow','dbrow','cablerow','machrow']},
-  incline: {label:'Drücken, Brust', ex:['incline','dbbench','chestpress','pushup']},
-  single:  {label:'Einbeinig', ex:['bss','revlunge','stepup']},
-  rear:    {label:'Hintere Schulter', ex:['facepull','revfly','pullapart']},
-  antiext: {label:'Rumpf gegen Hohlkreuz', ex:['deadbug','birddog','rollout']},
-  glute:   {label:'Gesäss', ex:['hipthrust','bbbridge','slhipthrust']},
-  vpull:   {label:'Vertikales Ziehen', ex:['pullup','pullupA','latpd']},
-  press:   {label:'Drücken, Schulter', ex:['landmine','kneelpress','seatedpress']},
-  eccHam:  {label:'Exzentrisch Hamstrings', ex:['nordic','legcurl','hamslide'], note:'Nordics haben die beste Evidenz gegen Hamstring-Verletzungen. Die Alternativen sind ein Kompromiss für Tage, an denen Nordics nicht gehen.'},
-  lateral: {label:'Seitlich, Adduktoren', ex:['latlunge','cossack','adductor']},
-  antirot: {label:'Rumpf, Stabilität', ex:['pallof','chop','birddog']},
-  curl:    {label:'Bizeps', ex:['curl','hammercurl','cablecurl']},
-  tri:     {label:'Trizeps', ex:['pushdown','ohext']}
+  squat:   {label:'Kniebeuge', mus:['quads'], ex:['goblet','frontsq','legpress','hacksquat']},
+  hinge:   {label:'Hüftbeuge, Hamstrings', mus:['hams'], ex:['rdl','dbrdl','slrdl','goodmorning','backext'], note:'Die Hüftbeuge-Varianten trainieren die Hamstrings unter Dehnung.'},
+  hrow:    {label:'Horizontales Ziehen', mus:['upback','lats'], ex:['csrow','dbrow','cablerow','machrow','bbrow','invrow']},
+  incline: {label:'Drücken, Brust', mus:['chest'], ex:['incline','dbbench','chestpress','pushup','bbbench','dips']},
+  single:  {label:'Einbeinig', mus:['quads'], ex:['bss','revlunge','stepup','splitsq','walklunge']},
+  rear:    {label:'Hintere Schulter', mus:['upback'], ex:['facepull','revfly','pullapart','revpec']},
+  antiext: {label:'Rumpf gegen Hohlkreuz', mus:['core'], ex:['deadbug','birddog','rollout']},
+  glute:   {label:'Gesäss', mus:['glutes'], ex:['hipthrust','bbbridge','slhipthrust']},
+  vpull:   {label:'Vertikales Ziehen', mus:['lats'], ex:['pullup','pullupA','latpd','chinup','latpdn']},
+  press:   {label:'Drücken, Schulter', mus:['shoulders'], ex:['landmine','kneelpress','seatedpress','ohp','machpress']},
+  eccHam:  {label:'Exzentrisch Hamstrings', mus:['hams'], ex:['nordic','legcurl','seatcurl','hamslide','ballcurl'], note:'Nordics haben die beste Evidenz gegen Hamstring-Verletzungen. Die Alternativen sind ein Kompromiss für Tage, an denen Nordics nicht gehen.'},
+  lateral: {label:'Seitlich, Adduktoren', mus:['adductors'], ex:['latlunge','cossack','adductor']},
+  antirot: {label:'Rumpf, Stabilität', mus:['core'], ex:['pallof','chop','birddog']},
+  curl:    {label:'Bizeps', mus:['biceps'], ex:['curl','hammercurl','cablecurl','inclinecurl','preacher']},
+  tri:     {label:'Trizeps', mus:['triceps'], ex:['pushdown','ohext','skull','kickback']}
 };
+/* Gleiche Muskeln, andere Mechanik: pro Zielmuskel die Übungen, die ihn hauptsächlich trainieren. */
+const FAMILIES = {
+  quads:    {label:'Beine vorne', ex:['goblet','frontsq','hacksquat','legpress','bss','splitsq','revlunge','walklunge','stepup','legext']},
+  glutes:   {label:'Gesäss', ex:['hipthrust','bbbridge','slhipthrust','pullthrough','cablekick','abduction','backext','rdl','dbrdl']},
+  hams:     {label:'Hamstrings', ex:['rdl','dbrdl','slrdl','goodmorning','backext','nordic','legcurl','seatcurl','hamslide','ballcurl']},
+  upback:   {label:'Oberer Rücken', ex:['csrow','dbrow','cablerow','machrow','bbrow','invrow','facepull','revfly','revpec','pullapart']},
+  lats:     {label:'Latissimus', ex:['pullup','pullupA','chinup','latpd','latpdn','straightarm','dbpullover','dbrow']},
+  chest:    {label:'Brust', ex:['incline','dbbench','bbbench','chestpress','pushup','dips','cablefly','pecdeck','dbfly']},
+  shoulders:{label:'Schultern', ex:['landmine','kneelpress','seatedpress','ohp','machpress','latraise','cablelat']},
+  core:     {label:'Rumpf', ex:['deadbug','birddog','rollout','pallof','chop','kneeraise','cablecrunch']},
+  adductors:{label:'Adduktoren', ex:['latlunge','cossack','adductor','sumosq','copenhagen','cableadd']},
+  biceps:   {label:'Bizeps', ex:['curl','hammercurl','cablecurl','inclinecurl','preacher','chinup']},
+  triceps:  {label:'Trizeps', ex:['pushdown','ohext','skull','kickback','cgbench','dips']}
+};
+function swapChoices(group){
+  const g=GROUPS[group]; if(!g) return {same:[], other:[], fams:[]};
+  const other=[], fams=[];
+  (g.mus||[]).forEach(m=>{
+    const f=FAMILIES[m]; if(!f) return;
+    const ex=f.ex.filter(id=>EX[id] && !g.ex.includes(id) && !other.includes(id));
+    other.push(...ex); if(ex.length) fams.push({label:f.label, ex});
+  });
+  return {same:g.ex.slice(), other, fams};
+}
+function swapAllowed(group, id){ const c=swapChoices(group); return c.same.includes(id) || c.other.includes(id); }
 const EX_GROUP = {};
 Object.keys(GROUPS).forEach(g=>GROUPS[g].ex.forEach(id=>{ if(!EX_GROUP[id]) EX_GROUP[id]=g; }));
 
@@ -581,7 +646,11 @@ const LADDER = [[2,3],[2,4],[2,5],[2,6],[3,4],[3,5],[3,6]];
 const FIND_START = {goblet:12, frontsq:20, legpress:60, rdl:30, dbrdl:12, slrdl:10, csrow:12, dbrow:14, cablerow:30, machrow:30,
   incline:12, dbbench:12, chestpress:30, pushup:0, bss:6, revlunge:6, stepup:6, facepull:15, revfly:5, hipthrust:40, bbbridge:40,
   slhipthrust:0, pullup:0, pullupA:30, latpd:35, landmine:5, kneelpress:8, seatedpress:10, legcurl:20, latlunge:0, cossack:0,
-  adductor:30, pallof:7.5, chop:10, curl:8, hammercurl:8, cablecurl:15, pushdown:15, ohext:12.5};
+  adductor:30, pallof:7.5, chop:10, curl:8, hammercurl:8, cablecurl:15, pushdown:15, ohext:12.5,
+  hacksquat:40, legext:20, splitsq:6, walklunge:6, goodmorning:20, backext:0, seatcurl:20, pullthrough:15, cablekick:5, abduction:30,
+  bbrow:30, invrow:0, revpec:15, chinup:0, latpdn:35, straightarm:15, dbpullover:10, bbbench:30, dips:0, cablefly:7.5, pecdeck:25,
+  dbfly:6, ohp:20, machpress:20, latraise:4, cablelat:2.5, cablecrunch:20, cableadd:5, sumosq:12, inclinecurl:6, preacher:15,
+  skull:6, kickback:5, cgbench:30};
 const FIND_RATINGS = [['r0','0'],['r12','1–2'],['r34','3–4'],['r57','5–7'],['r8','8+']];
 const FIND_LABEL = {r0:'0 in Reserve', r12:'1–2 in Reserve', r34:'3–4 in Reserve', r57:'5–7 in Reserve', r8:'8+ in Reserve', tech:'Technik wackelte'};
 const FIND_RIR = {r0:0, r12:2, r34:4, r57:6, r8:8};
@@ -596,7 +665,7 @@ const ENERGY = ['Tief','Mittel','Gut'];
 const HAMS = ['Unauffällig','Muskelkater','Ziehen/Schmerz']; // nur für alte Einheiten
 const REGIONS = [['shoulders','Schultern'],['upback','Oberer Rücken'],['lowback','Unterer Rücken'],['arms','Arme'],['hips','Gesäss/Hüfte'],['front','Beine vorne'],['back','Beine hinten'],['core','Bauch']];
 const REGION_MUSCLES = {shoulders:['shoulders','chest'], upback:['upback','lats'], arms:['arms'], hips:['glutes','adductors'], front:['quads'], back:['hams'], core:['core']};
-const LOWBACK = ['rdl','dbrdl','slrdl','frontsq','goblet','dbrow','rollout','legpress'];
+const LOWBACK = ['rdl','dbrdl','slrdl','frontsq','goblet','dbrow','rollout','legpress','goodmorning','backext','bbrow','sumosq','ohp'];
 function regionHits(exId, region, minW){ if(region==='lowback') return LOWBACK.includes(exId); const m=(EX[exId]||{}).m||{}; return (REGION_MUSCLES[region]||[]).some(k=>(m[k]||0)>=minW); }
 function regionName(id){ const r=REGIONS.find(x=>x[0]===id); return r ? r[1] : id; }
 function normCheck(c){
@@ -646,7 +715,7 @@ function exName(id){ return EX[id] ? EX[id].name : id; }
 function typeName(t){ return PLANS[t] ? PLANS[t].name : t; }
 function plateCls(t){ return t==='B'?'b':t==='H'?'h':''; }
 function gearOf(def){ return def.gear || EQUIP_LABEL[def.equip] || ''; }
-function resolveEx(it){ const sw=(state.settings.swaps||{})[it.key]; return (it.key && sw && EX[sw] && GROUPS[it.group] && GROUPS[it.group].ex.includes(sw)) ? sw : it.ex; }
+function resolveEx(it){ const sw=(state.settings.swaps||{})[it.key]; return (it.key && sw && EX[sw] && swapAllowed(it.group, sw)) ? sw : it.ex; }
 function entryGroup(e){ return e.group || EX_GROUP[e.ex] || null; }
 function entryKey(s, e){
   if(e.key) return e.key;
@@ -679,8 +748,15 @@ const state = {
 
 /* Versionen: Bei jeder Live-Version APP_VERSION erhöhen und oben in CHANGELOG einen Eintrag ergänzen.
    Die App zeigt danach einmal pro Gerät «Was ist neu». */
-const APP_VERSION = '1.3';
+const APP_VERSION = '1.5';
 const CHANGELOG = [
+  {v:'1.5', date:'2026-11-09', items:[
+    'Übung tauschen: deutlich mehr Auswahl. Oben stehen Varianten der gleichen Bewegung, darunter Übungen mit anderer Mechanik für dieselben Muskeln, z. B. Beinbeuger statt RDL oder Seitheben statt Schulterdrücken.',
+    '37 neue Übungen, u. a. Beinstrecker, Hackenschmidt, Good Mornings, Langhantelrudern, Chin-ups, Bankdrücken, Dips, Fliegende, Seitheben und Copenhagen Adduktion.',
+    'Übungen, die schon in der Einheit vorkommen, werden beim Tauschen nicht doppelt angeboten.']},
+  {v:'1.4', date:'2026-11-09', items:[
+    'Nach dem letzten Satz bleibt die Übung offen, bis du die RIR eingetragen hast. Danach wechselt die App automatisch zur nächsten Übung, auch wenn du die RIR erst im Pausen-Timer eingibst.',
+    'Übungen ohne RIR (z. B. Nordics, Dead Bug) wechseln wie bisher direkt nach dem letzten Satz.']},
   {v:'1.3', date:'2026-11-01', items:[
     'Nach einem Update zeigt die App einmal, was neu ist. Alle Versionen findest du unter Einstellungen.']},
   {v:'1.2', date:'2026-11-01', items:[
@@ -1833,7 +1909,13 @@ function viewDetail(){
 /* =========================================================
    Ansicht: Fortschritt
    ========================================================= */
-const ORDER = ['goblet','frontsq','legpress','rdl','dbrdl','slrdl','hipthrust','bbbridge','slhipthrust','pullup','pullupA','latpd','csrow','dbrow','cablerow','machrow','incline','dbbench','chestpress','pushup','landmine','kneelpress','seatedpress','bss','revlunge','stepup','latlunge','cossack','adductor','facepull','revfly','pullapart','pallof','chop','nordic','legcurl','hamslide','deadbug','birddog','rollout','curl','hammercurl','cablecurl','pushdown','ohext','slbridge'];
+const ORDER = ['goblet','frontsq','hacksquat','legpress','legext','rdl','dbrdl','slrdl','goodmorning','backext','hipthrust','bbbridge','slhipthrust','pullthrough','cablekick','abduction',
+  'pullup','pullupA','chinup','latpd','latpdn','straightarm','dbpullover','csrow','dbrow','cablerow','machrow','bbrow','invrow',
+  'incline','dbbench','bbbench','chestpress','pushup','dips','cablefly','pecdeck','dbfly','landmine','kneelpress','seatedpress','ohp','machpress','latraise','cablelat',
+  'bss','splitsq','revlunge','walklunge','stepup','latlunge','cossack','sumosq','adductor','copenhagen','cableadd','facepull','revfly','revpec','pullapart',
+  'pallof','chop','kneeraise','cablecrunch','nordic','legcurl','seatcurl','hamslide','ballcurl','deadbug','birddog','rollout',
+  'curl','hammercurl','cablecurl','inclinecurl','preacher','pushdown','ohext','skull','kickback','cgbench','slbridge'];
+Object.keys(EX).forEach(id=>{ if(!ORDER.includes(id)) ORDER.push(id); });
 
 function metricFor(exId){
   const def=EX[exId], bw=+state.settings.bodyweight||0;
@@ -2028,18 +2110,43 @@ function sheetFinish(){
   return h;
 }
 
+function swapUsedElsewhere(w){
+  const used=new Set(), st=state.settings;
+  if(w.mode==='session'){
+    const cs=curSession(); if(!cs) return used;
+    cs.blocks.forEach((b,bi)=>b.items.forEach((e,ii)=>{
+      if(e.skipped || (bi===w.bi && ii===w.ii)) return;
+      if(w.key && entryKey(cs,e)===w.key) return;
+      used.add(e.ex);
+    }));
+  } else {
+    ['A','B'].forEach(t=>{
+      if(!planItemIn(t, w.key)) return;
+      PLANS[t].blocks.forEach(b=>{
+        if((b.opt==='arms' && !st.arms) || (b.opt==='nordicA' && !st.nordicA)) return;
+        b.items.forEach(it=>{ if(it.key!==w.key) used.add(resolveEx(it)); });
+      });
+    });
+  }
+  return used;
+}
+
 function sheetSwap(){
   const w=state.swap, g=w && GROUPS[w.group]; if(!g) return '';
   const pit=planItemAny(w.key), orig=pit?pit.ex:null, planCur=pit?resolveEx(pit):null;
-  let h='<h2 id="sh-t">Übung tauschen</h2><p class="lead">'+(w.mode==='settings'?'Gilt ab der nächsten Einheit. ':'')+'Alternativen mit gleicher Funktion: '+esc(g.label)+'.</p>';
-  if(g.note) h+='<div class="callout info">'+I.info+'<div>'+esc(g.note)+'</div></div>';
-  h+='<div class="opts" role="radiogroup" aria-label="Alternativen">';
-  g.ex.forEach(id=>{
+  const ch=swapChoices(w.group), used=swapUsedElsewhere(w), hidden=[];
+  const keep=id=>{ if(id===w.cur || id===orig || !used.has(id)) return true; hidden.push(id); return false; };
+  const same=ch.same.filter(keep), fams=ch.fams.map(f=>({label:f.label, ex:f.ex.filter(keep)})).filter(f=>f.ex.length);
+  const opt=id=>{
     const def=EX[id], last=perfHistory(id, Infinity, null)[0];
     const tg=[]; if(id===orig) tg.push('<span class="chip">Original</span>'); if(id===w.cur) tg.push('<span class="chip acc">'+(w.mode==='settings'?'Im Plan':'Aktuell')+'</span>');
-    h+='<button class="opt'+(w.sel===id?' on':'')+'" role="radio" aria-checked="'+(w.sel===id)+'" data-a="sw-sel" data-v="'+id+'"><span class="radio"></span><span class="tx"><b>'+esc(def.name)+'</b><small>'+esc(gearOf(def))+' · '+(last?'zuletzt '+fmtShort(last.s.date)+': '+esc(fmtSets(last.sets,def,false)):'noch nie gemacht')+'</small></span>'+(tg.length?'<span class="chips">'+tg.join('')+'</span>':'')+'</button>';
-  });
-  h+='</div>';
+    return '<button class="opt'+(w.sel===id?' on':'')+'" role="radio" aria-checked="'+(w.sel===id)+'" data-a="sw-sel" data-v="'+id+'"><span class="radio"></span><span class="tx"><b>'+esc(def.name)+'</b><small>'+esc(gearOf(def))+' · '+(last?'zuletzt '+fmtShort(last.s.date)+': '+esc(fmtSets(last.sets,def,false)):'noch nie gemacht')+'</small></span>'+(tg.length?'<span class="chips">'+tg.join('')+'</span>':'')+'</button>';
+  };
+  let h='<h2 id="sh-t">Übung tauschen</h2><p class="lead">'+(w.mode==='settings'?'Gilt ab der nächsten Einheit. ':'')+'Gleiche Bewegung oder andere Übungen für dieselben Muskeln.</p>';
+  if(g.note) h+='<div class="callout info">'+I.info+'<div>'+esc(g.note)+'</div></div>';
+  h+='<div class="sw-sec"><h3 class="eyebrow" id="sw-h1">Gleiche Bewegung · '+esc(g.label)+'</h3><div class="opts" role="radiogroup" aria-labelledby="sw-h1">'+same.map(opt).join('')+'</div></div>';
+  fams.forEach((f,fi)=>{ h+='<div class="sw-sec"><h3 class="eyebrow" id="sw-h'+(fi+2)+'">Andere Bewegung · '+esc(f.label)+'</h3><div class="opts" role="radiogroup" aria-labelledby="sw-h'+(fi+2)+'">'+f.ex.map(opt).join('')+'</div></div>'; });
+  if(hidden.length) h+='<p class="sw-sub">Nicht aufgeführt, weil schon in der Einheit: '+esc(hidden.map(id=>EX[id].short||EX[id].name).join(', '))+'.</p>';
   if(w.mode==='session'){
     if(w.key) h+='<div class="q"><div class="q-l">Gilt für</div>'+segRow('sw-scope', [['once','Nur heute'],['always','Dauerhaft im Plan']], w.scope)+'</div>';
     if(w.doneN) h+='<p class="muted" style="margin:0;font-size:14px">'+(w.doneN===1?'Dein erledigter Satz bleibt':'Deine '+w.doneN+' erledigten Sätze bleiben')+' bei '+esc(EX[w.cur].name)+'. Die restlichen Sätze machst du mit der neuen Übung.</p>';
@@ -2164,18 +2271,41 @@ function afterSetDone(s,bi,ii,si){
   }
   const rest=restOf(b);
   if(blockDone(b)){
-    let nb=-1; for(let k=bi+1;k<s.blocks.length;k++){ if(!blockDone(s.blocks[k])){ nb=k; break; } }
-    if(nb<0){ for(let k=0;k<bi;k++){ if(!blockDone(s.blocks[k])){ nb=k; break; } } }
+    const nb=nextOpenBlock(s,bi);
     if(nb<0){ Timer.stop(); toast('Alle Sätze erledigt. Stark!'); return; }
-    setCur(s, nb);
     const nx=s.blocks[nb].items.filter(e=>!e.skipped).map(e=>EX[e.ex].short||EX[e.ex].name).join(' + ');
     Timer.start(rest, nx);
+    // Fehlt noch eine RIR, bleibt der Block offen. Gewechselt wird, sobald sie eingetragen ist (siehe advanceIfReady).
+    if(missingRir(b)) return;
+    setCur(s, nb);
     scrollToBlock(nb);
     return;
   }
   let label='';
   for(const e of b.items){ if(e.skipped) continue; const i=e.sets.findIndex(x=>!x.done); if(i>-1){ label=(EX[e.ex].short||EX[e.ex].name)+', Satz '+(i+1); break; } }
   Timer.start(rest, label);
+}
+
+function nextOpenBlock(s,bi){
+  for(let k=bi+1;k<s.blocks.length;k++){ if(!blockDone(s.blocks[k])) return k; }
+  for(let k=0;k<bi;k++){ if(!blockDone(s.blocks[k])) return k; }
+  return -1;
+}
+// Wechselt zum nächsten offenen Block, wenn der aktuelle fertig ist und keine RIR mehr fehlt.
+// Kurze Verzögerung, damit die gewählte RIR sichtbar wird, bevor der Block zuklappt.
+let advTimer=null;
+function advanceIfReady(s,bi,delay){
+  clearTimeout(advTimer);
+  advTimer=setTimeout(()=>{
+    const cs=curSession();
+    if(!cs || cs.id!==s.id || state.editId || state.view!=='session') return;
+    const b=cs.blocks[bi];
+    if(!b || curBlock(cs)!==bi || !blockDone(b) || missingRir(b)) return;
+    const nb=nextOpenBlock(cs,bi); if(nb<0) return;
+    setCur(cs, nb);
+    if(Timer.t && !Timer.t.ended){ Timer.t.next=cs.blocks[nb].items.filter(e=>!e.skipped).map(e=>EX[e.ex].short||EX[e.ex].name).join(' + '); Timer.save(); }
+    renderMain(); renderDock(); scrollToBlock(nb);
+  }, delay==null?450:delay);
 }
 
 function updatePlates(s,bi,ii){
@@ -2298,7 +2428,7 @@ function onClick(ev){
       renderMain(); renderTop(); renderDock();
       break;
     }
-    case 'rir': { const x=s.blocks[bi].items[ii].sets[si]; const v=+d.v; x.rir = x.rir===v ? null : v; persist(s); renderMain(); renderDock(); break; }
+    case 'rir': { const b=s.blocks[bi], x=b.items[ii].sets[si]; const v=+d.v; const miss=missingRir(b); x.rir = x.rir===v ? null : v; persist(s); renderMain(); renderDock(); if(miss && x.rir!=null && !state.editId) advanceIfReady(s,bi); break; }
     case 'fd-rate': {
       const e=s.blocks[bi].items[ii], def=EX[e.ex];
       const res=findRate(s, bi, ii, d.v);
@@ -2333,7 +2463,7 @@ function onClick(ev){
       break;
     }
     case 'add-set': { const e=s.blocks[bi].items[ii]; const l=e.sets[e.sets.length-1]||{w:e.target.w,r:e.target.reps[0]}; e.sets.push({w:l.w, r:l.r, rir:null, done:false}); persist(s); renderMain(); renderTop(); break; }
-    case 'rm-set': { const e=s.blocks[bi].items[ii]; if(e.sets.length>1 && !e.sets[e.sets.length-1].done){ e.sets.pop(); persist(s); renderMain(); renderTop(); } break; }
+    case 'rm-set': { const e=s.blocks[bi].items[ii]; if(e.sets.length>1 && !e.sets[e.sets.length-1].done){ e.sets.pop(); persist(s); renderMain(); renderTop(); if(!state.editId && blockDone(s.blocks[bi])) advanceIfReady(s,bi); } break; }
     case 'skip': { const e=s.blocks[bi].items[ii]; e.skipped=true; e.skipWhy='von dir ausgelassen'; persist(s); if(blockDone(s.blocks[bi]) && !state.editId){ afterSetDoneSkip(s,bi); } renderMain(); renderTop(); renderDock(); break; }
     case 'unskip': { const e=s.blocks[bi].items[ii]; e.skipped=false; delete e.skipWhy; persist(s); setCur(s,bi); renderMain(); renderTop(); renderDock(); break; }
     case 'ed-feel': if(s){ s.feel = s.feel===+d.v ? null : +d.v; persist(s); renderMain(); } break;
