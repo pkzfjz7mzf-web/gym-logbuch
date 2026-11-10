@@ -184,6 +184,7 @@ function buildPlan(profile, EX, CAT){
       let sets = baseSets(slot); if(LEG.includes(slot.pattern) && enduranceFirst) sets = Math.max(2, sets-1);
       const n = d.items.filter(x => x.pattern===slot.pattern).length;
       const it = {key:d.id+'.'+slot.pattern+(n?n+1:''), group:GROUP[slot.pattern]||slot.pattern, pattern:slot.pattern, ex:r.best.id, sets, reps:repsFor(slot, r.best.id, p), main:slot.main, prio:slot.prio, alts:r.alts};
+      if(primary(it, EX).some(m => (p.focus||[]).includes(m))){ it.sets = Math.min(4, it.sets+1); it.prio = Math.min(it.prio, 2); }
       if(r.best.caution){ it.caution = r.best.caution; why.push({topic:'vorsicht', text:EX[it.ex].name+': '+r.best.caution+'.'}); }
       const first = r.rejected.find(x => (BASE[x.id]||1) > (BASE[it.ex]||1));
       if(first) why.push({topic:'ersatz', text:EX[it.ex].name+' statt '+EX[first.id].name+': '+first.why+'.'});
@@ -215,6 +216,12 @@ function buildPlan(profile, EX, CAT){
     for(let guard=0; guard<12 && over(); guard++){
       const its = [].concat(...d.blocks.map(b=>b.items)).filter(x => x.sets>2).sort((a,b) => b.prio-a.prio || b.sets-a.sets);
       if(!its.length) break; its[0].sets--; trimmed = true;
+    }
+    // Letzter Ausweg bei sehr kurzen Einheiten: Ergänzungen von hinten streichen, mindestens 3 Übungen bleiben
+    for(let i=d.blocks.length-1; i>=0 && over(); i--){
+      const b = d.blocks[i]; if(b.items.some(x=>x.main)) continue;
+      if([].concat(...d.blocks.map(x=>x.items)).length - b.items.length < 3) break;
+      d.blocks.splice(i,1); trimmed = true;
     }
     delete d.items;
   });
