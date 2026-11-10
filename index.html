@@ -746,15 +746,16 @@ const state = {
   cur: {}, delArm: false
 };
 
-/* Versionen: Bei jeder Live-Version APP_VERSION erhöhen und oben in CHANGELOG einen Eintrag ergänzen.
-   Die App zeigt danach einmal pro Gerät «Was ist neu». */
-const APP_VERSION = '1.5';
+/* Versionen: APP_VERSION ist die Nummer der nächsten bzw. aktuellen Live-Version. Sie zählt nur einmal pro
+   Release hoch, nicht pro Änderung. Alle Änderungen bis zum Release sammeln sich im obersten CHANGELOG-Eintrag
+   (date: null, solange er nicht live ist). In der Testumgebung kommt «Test n» dazu (tools/build-preview.py).
+   Die echte App zeigt nach einem Release einmal pro Gerät «Was ist neu». */
+const APP_VERSION = '1.4';
 const CHANGELOG = [
-  {v:'1.5', date:'2026-11-09', items:[
+  {v:'1.4', date:'2026-11-10', items:[
     'Übung tauschen: deutlich mehr Auswahl. Oben stehen Varianten der gleichen Bewegung, darunter Übungen mit anderer Mechanik für dieselben Muskeln, z. B. Beinbeuger statt RDL oder Seitheben statt Schulterdrücken.',
     '37 neue Übungen, u. a. Beinstrecker, Hackenschmidt, Good Mornings, Langhantelrudern, Chin-ups, Bankdrücken, Dips, Fliegende, Seitheben und Copenhagen Adduktion.',
-    'Übungen, die schon in der Einheit vorkommen, werden beim Tauschen nicht doppelt angeboten.']},
-  {v:'1.4', date:'2026-11-09', items:[
+    'Übungen, die schon in der Einheit vorkommen, werden beim Tauschen nicht doppelt angeboten.',
     'Nach dem letzten Satz bleibt die Übung offen, bis du die RIR eingetragen hast. Danach wechselt die App automatisch zur nächsten Übung, auch wenn du die RIR erst im Pausen-Timer eingibst.',
     'Übungen ohne RIR (z. B. Nordics, Dead Bug) wechseln wie bisher direkt nach dem letzten Satz.']},
   {v:'1.3', date:'2026-11-01', items:[
@@ -769,6 +770,8 @@ const CHANGELOG = [
   {v:'1.0', date:'2026-10-31', items:['Erste Version: Einheiten A und B, Progressionsvorschläge mit RIR, Pausen-Timer, Speicherung in Supabase, offline nutzbar.']},
 ];
 const SEEN_KEY = 'gymlog.seenVersion', NEWS_BASE = '1.1';
+/* Anzeige der Version. In der Testumgebung setzt tools/build-preview.py window.__TEST_BUILD, z. B. «Test 2». */
+function verLabel(){ const t=window.__TEST_BUILD; return APP_VERSION+(t?' '+t:''); }
 function verCmp(a,b){ const x=String(a).split('.').map(Number), y=String(b).split('.').map(Number); for(let i=0;i<Math.max(x.length,y.length);i++){ const d=(x[i]||0)-(y[i]||0); if(d) return d; } return 0; }
 const LS_KEY = 'gymlog.pwa.v1';
 const UI_KEY = 'gymlog.ui';
@@ -2041,7 +2044,7 @@ function viewSettings(){
   h+='<section class="sec"><h2 class="eyebrow">Daten</h2><div class="sgroup">';
   h+='<button class="srow" style="width:100%;text-align:left" data-a="brief-open"><div class="tx"><b>Briefing-Text</b><small>Wochenzusammenfassung zum Kopieren ins Weekly Briefing</small></div><span class="chev">'+I.chev+'</span></button>';
   h+='<button class="srow" style="width:100%;text-align:left" data-a="csv"><div class="tx"><b>Als CSV exportieren</b><small>Alle Sätze, z.B. für Excel oder Numbers</small></div><span class="chev">'+I.chev+'</span></button>';
-  h+='<button class="srow" style="width:100%;text-align:left" data-a="news-open"><div class="tx"><b>Version '+APP_VERSION+'</b><small>Was ist neu, alle Versionen</small></div><span class="chev">'+I.chev+'</span></button>';
+  h+='<button class="srow" style="width:100%;text-align:left" data-a="news-open"><div class="tx"><b>Version '+esc(verLabel())+'</b><small>Was ist neu, alle Versionen</small></div><span class="chev">'+I.chev+'</span></button>';
   h+='<button class="srow" style="width:100%;text-align:left" data-a="info-open"><div class="tx"><b>So rechnet die App</b><small>Progression, RIR, Pausen, Nordics, Quellen</small></div><span class="chev">'+I.chev+'</span></button>';
   h+='<div class="srow"><div class="tx"><b>Speicherort</b><small>In deiner Supabase-Datenbank, auf allen Geräten gleich. Ohne Netz bleibt alles auf dem iPhone und wird später hochgeladen. Claude liest die Daten über den Connector.</small></div><span class="sync '+cls+'"><i></i><span>'+txt+'</span></span></div>';
   h+='</div></section>';
@@ -2174,8 +2177,8 @@ function sheetBacklog(){
 function sheetNews(){
   const seen=state.newsSeen;
   const list = state.newsAll ? CHANGELOG : CHANGELOG.filter(c=>verCmp(c.v, seen||NEWS_BASE)>0 && verCmp(c.v, APP_VERSION)<=0);
-  let h='<h2 id="sh-t">'+(state.newsAll?'Versionen':'Was ist neu')+'</h2><p class="lead">'+(state.newsAll?'Du nutzt Version '+APP_VERSION+'.':'Die App ist auf Version '+APP_VERSION+' aktualisiert.')+'</p><div class="prose news">';
-  h+=list.map(c=>'<div><h3>Version '+esc(c.v)+'<small>'+fmtDate(c.date)+'</small></h3><ul>'+c.items.map(i=>'<li>'+esc(i)+'</li>').join('')+'</ul></div>').join('');
+  let h='<h2 id="sh-t">'+(state.newsAll?'Versionen':'Was ist neu')+'</h2><p class="lead">'+(state.newsAll?'Du nutzt Version '+esc(verLabel())+'.':'Die App ist auf Version '+esc(verLabel())+' aktualisiert.')+'</p><div class="prose news">';
+  h+=list.map(c=>'<div><h3>Version '+esc(c.v)+'<small>'+(c.date?fmtDate(c.date):'noch nicht live')+'</small></h3><ul>'+c.items.map(i=>'<li>'+esc(i)+'</li>').join('')+'</ul></div>').join('');
   h+='</div>';
   if(!state.newsAll && list.length<CHANGELOG.length) h+='<button class="link" data-a="news-all">Alle Versionen anzeigen</button>';
   return h+'<button class="btn pri block" data-a="sheet-close">Alles klar</button>';

@@ -6,6 +6,8 @@ Aufruf: python3 tools/test_app.py   (braucht Playwright mit Chromium)
 import threading, http.server, functools, json, time, shutil, tempfile, pathlib
 from playwright.sync_api import sync_playwright
 REPO=pathlib.Path(__file__).resolve().parent.parent
+import re as _re
+APP_VERSION = _re.search(r"const APP_VERSION = '([^']+)'", (REPO/'index.html').read_text(encoding='utf-8')).group(1)
 ROOT=tempfile.mkdtemp(prefix='gymtest-')
 shutil.copytree(REPO, ROOT, dirs_exist_ok=True, ignore=shutil.ignore_patterns('.git','tools'))
 pathlib.Path(ROOT,'config.js').write_text("window.GYM_CONFIG = { supabaseUrl: 'https://mock.supabase.co', supabaseKey: 'sb_publishable_mock' };\n", encoding='utf-8')
@@ -27,7 +29,7 @@ with sync_playwright() as p:
     ok('Falsches Passwort zeigt Fehler', 'stimmt nicht' in pg.inner_text('#lg-err'))
     pg.fill('#lg-pw','pw123'); pg.click('#lg-go'); pg.wait_for_timeout(600)
     ok('Nach Login: Startseite', pg.is_visible('[data-a="start"][data-t="A"]'))
-    ok('Was ist neu erscheint nach dem Login', pg.is_visible('#sheet') and 'was ist neu' in pg.inner_text('#sheet').lower() and 'version 1.2' in pg.inner_text('#sheet').lower())
+    ok('Was ist neu erscheint nach dem Login, mit Version '+APP_VERSION, pg.is_visible('#sheet') and 'was ist neu' in pg.inner_text('#sheet').lower() and 'version '+APP_VERSION in pg.inner_text('#sheet').lower() and 'version 1.2' in pg.inner_text('#sheet').lower())
     pg.click('#sheet [data-a="sheet-close"]'); pg.wait_for_timeout(150)
     pg.click('[data-a="start"][data-t="A"]')
     ok('Check zeigt Hinweis Gewicht finden', 'Gewicht finden' in pg.inner_text('#sheet'))
