@@ -17,6 +17,11 @@ Aarons persönliche Trainings-Web-App (Einheit A/B, Progressionsvorschläge, RIR
 4. **Erst nach Aarons Freigabe live:** `python3 tools/test_app.py` muss komplett OK sein, dann `test` per Fast-Forward in `main` übernehmen und pushen. Pages veröffentlicht in 1–2 Minuten. Prüfen über die Actions-Runs (`pages build and deployment` auf dem neuen Commit).
 5. Unfertige Arbeit zwischendurch auf Branch `test` pushen. Der Container ist flüchtig.
 
+## Coach-Projekt (10.–16.11.2026)
+- Plan in `docs/coach/PLAN.md`, Stand in `docs/coach/STATUS.md`. **Jede Session liest zuerst STATUS.md und macht dort weiter.**
+- Limit-sicher arbeiten (von Aaron verlangt, gilt besonders mit Fable): kleine Pakete, nach jedem Paket committen, auf `test` pushen und STATUS.md nachführen. Grosse Dateien stückweise schreiben und zwischendurch sichern.
+- Aaron sagt an, wenn er zu Fable wechselt oder davon weg.
+
 ## Versionen und Rollback
 - **Die Versionsnummer zählt nur einmal pro Release hoch, nicht pro Änderung.** Mit der ersten Änderung nach einem Release `APP_VERSION` in `index.html` auf die nächste Nummer setzen (z.B. 1.4 → 1.5) und oben in `CHANGELOG` einen Eintrag mit `date: null` anlegen. Alle weiteren Änderungen bis zum Release kommen in diesen einen Eintrag, kurz und aus Aarons Sicht. Beim Release nur das Datum setzen.
 - **Testversionen** heissen «<APP_VERSION> Test n», z.B. «1.5 Test 2». `tools/build-preview.py` zählt n automatisch (`tools/test-build.json`: +1 bei jeder Änderung an `index.html`, Neustart bei 1 mit neuer Version) und zeigt es im Test-Band und in den Einstellungen. Gleicher Stand wie live: «Stand wie live». Der Build bricht ab, wenn `index.html` von live abweicht, `APP_VERSION` aber noch die Live-Nummer hat.
