@@ -1,6 +1,6 @@
 # Coach: Konzept (Entwurf 1, 10.11.2026)
 
-Status: Entwurf zur Freigabe durch Aaron. Abschnitte 1–3 fertig, 4–7 folgen im nächsten Commit.
+Status: Entwurf zur Freigabe durch Aaron.
 
 ## 1. Leitidee
 
@@ -54,6 +54,113 @@ die konkreten Zahlen sind meine praktische Übersetzung. **Praxis** = Coaching-S
 | Eingeschränkte Beweglichkeit: Krafttraining über den vollen Bewegungsweg verbessert die Beweglichkeit ähnlich wie Dehnen. Also passende Variante wählen und gezielte Mobility ins Aufwärmen. | Afonso et al. 2021, Meta-Analyse (Studien sehr unterschiedlich) | mittel |
 | Haltung: gezieltes Kräftigen kann Haltungswinkel etwas verändern. Der Zusammenhang zwischen Haltung und Schmerz ist schwach. Die App formuliert darum «kräftigen und beweglich halten», nicht «Haltung reparieren». | Review in Sports Medicine Open 2024, **noch im Volltext zu prüfen** | offen |
 | Vorverletzung: schmerzgeführt belasten, auslösende Bewegungen ersetzen, vorsichtiger Einstieg, dann normal steigern. | Coaching- und Reha-Standard | Praxis |
+
+## 4. Planlogik: vom Profil zum Plan
+
+Die Plan-Erstellung ist eine reine Funktion `Profil + Katalog → Plan`. Gleiches Profil ergibt immer den
+gleichen Plan. Das macht sie testbar und nachvollziehbar.
+
+**Schritt 1: Struktur der Woche**
+
+| Tage pro Woche | Aufteilung |
+|---|---|
+| 1 | 1× Ganzkörper |
+| 2 | 2× Ganzkörper (wie heute A/B) |
+| 3 | 3× Ganzkörper mit wechselnden Schwerpunkten |
+| 4 | 2× Oberkörper, 2× Unterkörper |
+| 5 | Oberkörper, Unterkörper, dann Drücken, Ziehen, Beine |
+| 6 | 2× Drücken, Ziehen, Beine |
+
+Mit Ausdauersport: Beintage liegen nicht auf Tagen mit harter Ausdauer und nicht am Tag davor. Geht das
+nicht auf, kommt Kraft vor Ausdauer in den Tag, mit Hinweis.
+
+**Schritt 2: Volumen**
+- Wochensätze pro Muskel nach Erfahrung und Ziel (Abschnitt 3), Schwerpunkt-Muskeln plus 30 %.
+- Beine minus 30–50 %, wenn Ausdauer Vorrang hat oder über 4 Stunden pro Woche läuft. In den letzten zwei
+  Wochen vor einem Wettkampf nur Erhalt.
+- Zeitbudget: Aufwärmen 8 min, Grundübung mit 3 Sätzen rund 9 min, Ergänzung rund 6 min, Supersatz-Paar
+  rund 8 min. Reicht die Zeit nicht, wird zuerst gepaart, dann Ergänzungen gekürzt, zuletzt Sätze reduziert.
+  Grundmuster fallen nie weg.
+
+**Schritt 3: Bewegungsmuster verteilen**
+Jede Woche deckt ab: Kniebeuge, Hüftbeuge, horizontales und vertikales Drücken, horizontales und vertikales
+Ziehen, einbeinig, Rumpf. Dazu je nach Profil: hintere Schulter und oberer Rücken (Rundrücken, sitzende
+Arbeit), Gesäss und Rumpf gegen Überstreckung (Hohlkreuz), seitlich und Rotation (Spielsport),
+Waden und exzentrische Hamstrings (Laufen).
+
+**Schritt 4: Übung pro Platz wählen**
+Jede Übung im Katalog bekommt Punkte. Die höchste Punktzahl gewinnt, die nächsten zwei sind die
+vorgeschlagenen Alternativen beim Tauschen.
+1. Ausschluss: fehlendes Gerät, von der Verletzung ausgelöste Bewegung, verlangte Beweglichkeit fehlt
+   (z.B. Überkopf-Test «geht nicht» schliesst Schulterdrücken stehend aus).
+2. Punkte: passt zum Ziel, passt zum Niveau (Einsteiger: stabile, leicht lernbare Varianten), trainiert den
+   Muskel unter Dehnung, Vorliebe des Nutzers, keine Dopplung in derselben Einheit.
+3. Bei «ausgeheilt, aber empfindlich»: Übung bleibt, startet aber mit RIR 3–4 und ohne Sprung beim Gewicht.
+
+**Schritt 5: Aufwärmen**
+Allgemein (5 min) plus höchstens drei gezielte Mobility-Übungen aus den Selbsttests und dem Tagesinhalt.
+
+**Schritt 6: Begründung**
+Der Plan speichert zu jeder Entscheidung einen Satz: «3 Tage → Ganzkörper», «Schulterdrücken ersetzt durch
+Landmine Press, weil der Überkopf-Test knapp war». Diese Sätze zeigt die App unter «Warum dieser Plan?».
+
+## 5. Datenmodell (abwärtskompatibel)
+
+Alles liegt im bestehenden `settings`-Dokument, es braucht keine neue Tabelle.
+
+    settings.profile = { v:1, done:'2026-11-12', goal:'muscle', goal2:null, focus:['glutes'],
+      years:3, pauseWeeks:40, skill:{squat:2, hinge:2, push:2, pull:1},
+      days:3, minutes:60, weekdays:[1,3,6], equip:'gym', gear:[],
+      sports:[{kind:'run', perWeek:2, hours:2, hard:0, race:'2027-04-11'}], priority:'both',
+      issues:[{region:'hams', status:'healed', triggers:['sprint']}],
+      mobility:{squat:2, overhead:1, toes:2, hipflex:1, wall:1}, work:'sit', posture:['kyphosis','lordosis'],
+      like:[], avoid:[], supersets:true }
+
+    settings.plan = { v:1, created:'2026-11-12', source:'coach',
+      days:[ { id:'P1', name:'Ganzkörper 1', focus:'Beine, Ziehen',
+               warmup:[['5 min locker',''], ...],
+               blocks:[ {rest:'main', items:[{key:'P1.squat', group:'squat', ex:'goblet', sets:3, reps:[6,8]}]}, ... ] } ],
+      why:[ {topic:'split', text:'3 Tage pro Woche: Ganzkörper mit wechselndem Schwerpunkt.'}, ... ] }
+
+- Die Tage haben dieselbe Form wie die heutigen `PLANS.A` und `PLANS.B`. Der bestehende Code für Einheit,
+  Progression, Tauschen und Gewicht finden läuft damit unverändert.
+- `session.type` enthält neu die Tages-ID (`P1`, `P2` …). Alte Einheiten mit `A`, `B`, `H` bleiben gültig.
+  Die Auswertungs-Views lesen `type` als Text und brauchen keine Änderung.
+- Ohne `settings.plan` gilt der Standardplan A/B. Ein Rollback auf 1.4 ignoriert die neuen Felder.
+- Planwechsel: Der alte Plan wandert nach `settings.planHistory` (max. 5), der Verlauf pro Übung bleibt,
+  weil er an der Übung hängt und nicht am Plan.
+
+## 6. Architektur
+
+- **Katalog und Engine in eigene Dateien.** `index.html` hat heute 200 KB mit 83 Übungen. Mit 200+ Übungen,
+  langen Erklärungen und Animationen wird eine Datei unhandlich. Neu:
+  - `coach/catalog.js`: Übungsdaten (Attribute, Erklärung, Animationsdaten).
+  - `coach/engine.js`: Planlogik als reine Funktionen, in Node testbar (`tools/test_engine.js`).
+  - `index.html`: Oberfläche und Logging wie bisher.
+- Der Service Worker lädt beide Dateien network-first wie `index.html`, damit Updates ohne Cache-Zähler ankommen.
+  Die Vorschau (`build-preview.py`) bettet sie ein.
+- **Katalog-Attribute pro Übung:** Muster, Muskeln mit Anteil, Gerät, Niveau (1–3), Stabilität, verlangte
+  Beweglichkeit, belastete Regionen und Auslöser (für Ausschlüsse), unter Dehnung ja/nein, Erklärung in drei
+  Teilen (Aufbau, Ausführung, häufige Fehler).
+- **Animation:** Strichfigur mit Gelenken als SVG. Pro Übung 2–3 Schlüsselposen als Gelenkwinkel, ein kleiner
+  Renderer blendet dazwischen. Vorteil: Winkel und Bewegungsbahn sind Daten, die ich gegen die
+  Technikbeschreibung prüfen kann. Wenige KB pro Übung, funktioniert offline. Die Qualität entscheidet Aaron
+  am Prototyp (P8).
+
+## 7. Grenzen
+
+- Kein Ersatz für Physio oder Arzt. Die App schliesst aus und ersetzt, sie behandelt nicht.
+- Die Selbsttests sind grob. Sie steuern die Übungswahl, sie messen nichts.
+- Die Zahlen für Volumen und Zeit sind begründete Startwerte. Die spätere Anpassung (P10) korrigiert sie
+  anhand der geloggten Daten.
+- Ausdauer wird berücksichtigt, aber nicht geplant: Die App erstellt keinen Lauf- oder Radplan.
+
+## 8. Offene Fragen an Aaron
+
+1. Onboarding-Umfang: Passen die neun Schritte, oder ist das zu viel beziehungsweise fehlt dir etwas?
+2. Standardplan: Soll dein heutiges A/B bestehen bleiben, bis du selbst das Onboarding startest? (Mein Vorschlag: ja.)
+3. Ausdauer: Reicht «berücksichtigen» für jetzt, also kein eigener Lauf- oder Radplan in der App?
+4. Eigene Dateien für Katalog und Engine statt alles in `index.html`: technisch mein Entscheid, ausser du hast Einwände.
 
 Quellen:
 - Remmert, Pelland, Robinson, Hinson, Zourdos 2025, Per-Session Volume, SportRxiv: https://sportrxiv.org/index.php/server/preprint/download/537/1148/1071
