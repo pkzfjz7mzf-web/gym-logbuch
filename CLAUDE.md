@@ -22,7 +22,7 @@ Aarons persönliche Trainings-Web-App (Einheit A/B, Progressionsvorschläge, RIR
 - **Testversionen** heissen «<APP_VERSION> Test n», z.B. «1.5 Test 2». `tools/build-preview.py` zählt n automatisch (`tools/test-build.json`: +1 bei jeder Änderung an `index.html`, Neustart bei 1 mit neuer Version) und zeigt es im Test-Band und in den Einstellungen. Gleicher Stand wie live: «Stand wie live». Der Build bricht ab, wenn `index.html` von live abweicht, `APP_VERSION` aber noch die Live-Nummer hat.
 - Die Versionsnummern von claude.ai beim Test-Artefakt (Version 9, 10 …) sind nur der Speicherverlauf der Testseite, nicht die App-Version.
 - Die echte App zeigt nach einem Release einmal pro Gerät «Was ist neu», alle Versionen unter Einstellungen. `tools/test_app.py` liest die Nummer selbst aus `index.html`.
-- Versionen bisher: 1.0 = `713505e`, 1.1 = `7e04ebe`, 1.2 = `b67c662`, 1.3 = `e2edfc2`. Neue Versionen hier nachtragen. Tags lassen sich aus der Session nicht pushen (403).
+- Versionen bisher: 1.0 = `713505e`, 1.1 = `7e04ebe`, 1.2 = `b67c662`, 1.3 = `e2edfc2`, 1.4 = `6687455`. Neue Versionen hier nachtragen. Tags lassen sich aus der Session nicht pushen (403).
 - Rollback: alten Stand der App-Dateien holen (`git checkout <commit> -- index.html sw.js manifest.webmanifest icons`), als neuen Commit «Rollback auf Version x» in `main` pushen. Kein Force-Push. Weil die Datenstruktur nur abwärtskompatibel wächst, kann die ältere Version die Daten weiter lesen.
 - Datenbank: Der Gratis-Tarif von Supabase hat keine automatischen Backups. Sicherung über den CSV-Export in der App.
 
