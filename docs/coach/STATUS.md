@@ -8,7 +8,7 @@ Letzte Aktualisierung: 10.11.2026
 - P0 Setup: Arbeitsplan, Stand-Datei, Regel in CLAUDE.md.
 
 ## In Arbeit
-- P1 Konzept: noch nicht begonnen. Datei: `docs/coach/konzept.md`.
+- P1 Konzept: Abschnitte 1–3 (Leitidee, Onboarding, Regeln mit Belegen) geschrieben. Es fehlen 4 Planlogik, 5 Datenmodell, 6 Architektur, 7 Grenzen und offene Fragen. Datei: `docs/coach/konzept.md`.
 
 ## Als Nächstes
 1. P1 Konzept schreiben (abschnittsweise committen: Onboarding, Datenmodell, Planlogik, Architektur).
