@@ -12,6 +12,7 @@ Ausdauersport, später laufende Anpassung.
 - Visualisierung: schematische animierte Figuren. Zuerst Prototyp mit 2–3 Übungen, Aaron entscheidet über Qualität.
 - Verletzungen: abfragen, Übungen ausschliessen/ersetzen, Korrekturübungen einplanen. Keine Diagnosen,
   bei Warnzeichen Verweis an Physio/Arzt.
+- 10.11., 16:54: A/B ist der aktive Plan, Onboarding erst bei «neuen Plan erstellen». Coach soll auch beim Gewicht finden helfen und auf reale Situationen reagieren (krank, Ferien, verpasst, verschoben). Ausdauer vorerst nur berücksichtigen, eigener Ausdauerplan soll später kommen, Datenmodell dafür offen halten.
 - Umfang ist für 6 Tage gross: Was nicht fertig wird, bleibt hier dokumentiert.
 
 ## Arbeitsweise (limit-sicher)
@@ -30,6 +31,7 @@ Ausdauersport, später laufende Anpassung.
 | P3 | Plan-Engine | reine Funktion Profil → Plan, mit Node-Tests für typische Profile | Tests OK |
 | P4 | Onboarding-UI | Fragenstrecke in der Testumgebung, speichert Profil | Aaron testet |
 | P5 | Plan in der App | Plan-Ansicht, Einheiten aus dem Plan starten und loggen, bestehendes A/B bleibt als Standardplan | Aaron testet, test_app OK |
+| P5b | Coach reagiert | Knopf «Etwas ist dazwischengekommen»: verpasst, verschieben, Ferien, krank, Pause (konzept.md Abschnitt 10). Gewicht finden mit Schätzung aus verwandten Übungen (Abschnitt 9) | Aaron testet |
 | P6 | Katalog erweitern | weitere Übungen inkl. Korrektur- und Mobility-Übungen | Prüfskript OK |
 | P7 | Übungserklärungen | pro Übung: Aufbau, Ausführung, häufige Fehler | Stichprobe durch Aaron |
 | P8 | Visualisierung Prototyp | 2–3 animierte Übungen | Aaron entscheidet über Qualität |

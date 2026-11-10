@@ -6,19 +6,18 @@ Letzte Aktualisierung: 10.11.2026
 
 ## Fertig
 - P0 Setup: Arbeitsplan, Stand-Datei, Regel in CLAUDE.md.
+- P1 Konzept: `docs/coach/konzept.md`, inkl. Aarons Entscheide, Gewicht finden mit Coach, Reaktion auf Situationen.
 
 ## In Arbeit
-- P1 Konzept: Entwurf 1 vollständig (`docs/coach/konzept.md`). Wartet auf Aarons Freigabe und Antworten auf die 4 Fragen in Abschnitt 8.
-- Offen in P1: Quelle zur Haltung (Sports Medicine Open 2024) im Volltext prüfen, Pelland 2024 direkt verlinken.
+- P2 Katalog-Schema: noch nicht begonnen.
 
 ## Als Nächstes
-1. Aarons Rückmeldung zum Konzept einarbeiten.
-2. P2 Katalog-Schema: Attribute definieren, `coach/catalog.js` anlegen, die 83 bestehenden Übungen überführen, Prüfskript.
-3. P3 Plan-Engine in `coach/engine.js` mit `tools/test_engine.js`.
-(P2 und P3 können ohne Freigabe beginnen, sie hängen nicht an den offenen Fragen.)
+1. P2: `coach/catalog.js` anlegen. Ansatz mit wenig Risiko: Die Übungen bleiben vorerst in `index.html` (`EX`), der Katalog ergänzt pro Übungs-ID die Coach-Attribute (Muster, Niveau, verlangte Beweglichkeit, Auslöser, unter Dehnung). Prüfskript `tools/check_catalog.js`: jede ID in `EX` hat Attribute und umgekehrt.
+2. P3 Plan-Engine in `coach/engine.js` mit `tools/test_engine.js`. Erster Test: Aarons Profil muss einen Plan nahe am heutigen A/B ergeben.
+3. P1-Reste: Quellen zu Haltung und Nackenregel prüfen, Pelland 2024 direkt verlinken.
 
 ## Offene Fragen an Aaron
-- Die 4 Fragen in `konzept.md`, Abschnitt 8 (gestellt am 10.11.).
+- keine. Konzept ist mit den Entscheiden vom 10.11. (konzept.md Abschnitt 8–10) freigegeben.
 
 ## Notizen
 - Live ist Version 1.4 (`6687455`). Coach-Arbeit läuft auf Branch `test` als Version 1.5.

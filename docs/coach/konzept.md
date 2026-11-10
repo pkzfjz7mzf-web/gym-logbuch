@@ -155,12 +155,47 @@ Alles liegt im bestehenden `settings`-Dokument, es braucht keine neue Tabelle.
   anhand der geloggten Daten.
 - Ausdauer wird berücksichtigt, aber nicht geplant: Die App erstellt keinen Lauf- oder Radplan.
 
-## 8. Offene Fragen an Aaron
+## 8. Entscheide von Aaron (10.11., 16:54)
 
-1. Onboarding-Umfang: Passen die neun Schritte, oder ist das zu viel beziehungsweise fehlt dir etwas?
-2. Standardplan: Soll dein heutiges A/B bestehen bleiben, bis du selbst das Onboarding startest? (Mein Vorschlag: ja.)
-3. Ausdauer: Reicht «berücksichtigen» für jetzt, also kein eigener Lauf- oder Radplan in der App?
-4. Eigene Dateien für Katalog und Engine statt alles in `index.html`: technisch mein Entscheid, ausser du hast Einwände.
+- **Aktiver Plan:** Das heutige A/B wird als Trainingsplan geführt und ist der aktive Plan. Das Onboarding
+  startet erst, wenn Aaron einen neuen Plan erstellen will. Technisch: A/B wird beim Start als
+  `settings.plan` mit `source:'standard'` dargestellt, es gibt nur noch einen Codepfad «aktiver Plan».
+- **Ausdauer:** Berücksichtigen reicht vorerst. Ein eigener Lauf- oder Radplan soll später kommen. Das
+  Datenmodell hält dafür Platz frei: `plan.days` bekommen ein Feld `kind` (`gym` heute, später `run`, `ride`),
+  `profile.sports` speichert schon Umfang, harte Einheiten und Wettkampf.
+- **Eigene Dateien** für Katalog und Engine: kein Einwand.
+- Onboarding-Umfang: keine Einwände genannt, gilt als angenommen.
+
+## 9. Gewicht finden mit Coach (neu verlangt)
+
+Heute startet «Gewicht finden» bei unbekannten Übungen mit einem festen Startwert. Neu schätzt der Coach
+den Start, damit weniger Probesätze nötig sind:
+1. **Aus verwandten Übungen:** Gibt es Verlauf in einer Übung desselben Musters (z.B. Goblet Squat bekannt,
+   Front Squat neu), wird über die geschätzte Maximalkraft (Epley inkl. RIR, wie heute) und ein
+   Übungsverhältnis umgerechnet. Die Verhältnisse sind Erfahrungswerte, keine Studienwerte. Darum startet
+   die App 10–15 % darunter und lässt den Probesatz entscheiden.
+2. **Aus dem Profil:** Ohne Verlauf ein Startwert nach Erfahrung und Körpergewicht (falls angegeben), bewusst tief.
+3. **Nach Pause:** bis 4 Wochen gleiches Gewicht (Kraft bleibt etwa 4 Wochen erhalten, Bosquet et al. 2013,
+   bereits in der App), 4–12 Wochen minus 15 %, danach neu finden. Bleibt wie heute.
+Sicherheit: Epley und RIR-Umrechnung mittel, Übungsverhältnisse Praxis. Die App sagt das so.
+
+## 10. Der Coach reagiert auf das Leben (neu verlangt)
+
+Ein Plan ist eine Reihenfolge von Einheiten, kein Kalender mit Pflichtterminen. Darauf bauen alle Regeln:
+
+| Situation | Reaktion des Coachs | Grundlage |
+|---|---|---|
+| Einheit verpasst | Nichts nachholen. Die nächste Einheit ist die verpasste, die Reihenfolge läuft weiter. Bei 2+ verpassten in Folge prüft der Coach, ob weniger Tage pro Woche realistischer sind. | Wochenvolumen zählt, nicht der Wochentag (Abschnitt 3) |
+| Einheit verschieben | Frei verschiebbar. Warnung nur, wenn zwei Einheiten mit denselben Muskeln unter 48 h liegen oder ein Beintag auf harte Ausdauer fällt. | Praxis, Schumann 2022 |
+| Wenig Zeit heute | Kurzversion: Grundübungen bleiben, Ergänzungen fallen weg oder werden gepaart (gibt es heute schon). | Erhaltungsdosis, Spiering 2021 |
+| Ferien oder Reise | Modus «Unterwegs» mit Datum: Erhaltungsplan mit 1–2 kurzen Einheiten pro Woche für das verfügbare Gerät (Hotel-Gym, Körpergewicht) oder bewusst Pause. Danach Rückkehr nach Dauer. | Spiering 2021: Kraft hält mit rund einem Drittel des Volumens, wenn die Intensität bleibt |
+| Krank | Fieber oder Symptome unterhalb des Halses (Husten in der Brust, Gliederschmerzen, Magen-Darm): Pause. Nur leichter Schnupfen: lockere Einheit möglich. Rückkehr gestuft: erste Einheit 2 Sätze und RIR 3–4, dann normal. | «Nackenregel», sportmedizinischer Konsens, **Quelle noch zu prüfen** |
+| Pause egal aus welchem Grund | bis 2 Wochen: weiter wie vorher. 2–4 Wochen: erste Einheit mit mehr Reserve. Über 4 Wochen: Wiedereinstieg wie heute. | Bosquet 2013, Wiedereinstieg bereits in der App |
+| Schlecht geschlafen, Stress, Muskelkater, Schmerz | Check vor der Einheit (gibt es heute): mehr Reserve, Übung ersetzen oder weglassen. | bereits in der App |
+| Stagnation oder zu viel | Fortschritts-Check alle 4–6 Wochen: Volumen, Übungswahl oder Entlastungswoche anpassen. | Paket «Anpassung» |
+
+Umsetzung: ein Knopf «Etwas ist dazwischengekommen» auf der Startseite mit diesen Situationen. Jede Reaktion
+zeigt ihre Begründung und ändert nie still den Plan.
 
 Quellen:
 - Remmert, Pelland, Robinson, Hinson, Zourdos 2025, Per-Session Volume, SportRxiv: https://sportrxiv.org/index.php/server/preprint/download/537/1148/1071
