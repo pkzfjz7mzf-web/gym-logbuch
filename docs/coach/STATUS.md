@@ -8,6 +8,7 @@ Letzte Aktualisierung: 11.11.2026
 - P0 Setup: Arbeitsplan, Stand-Datei, Regel in CLAUDE.md.
 - P1 Konzept: `docs/coach/konzept.md`, inkl. Aarons Entscheide, Gewicht finden mit Coach, Reaktion auf Situationen.
 - P2 Katalog-Schema: `coach/catalog.js` mit Attributen für alle 83 Übungen (Muster, Niveau, Beweglichkeit, Auslöser, Regionen, Dehnung). `tools/check_catalog.js` OK. `tools/extract.js` liest Konstanten aus `index.html`.
+- P5b Coach reagiert (1.5 Test 6): `sheetLife`/`lifeAction`/`lifeBanner`. Verpasst, verschieben, wenig Zeit (Kurzversion), Ferien/Reise (`settings.away`, Reise-Einheit `T` aus der Engine für Kurzhanteln und Bank), krank (`settings.sick`, danach `settings.comeback='hard'`: 2 Sätze, RIR 3–4). Automatisch `comeback='soft'` (+1 RIR) bei 14–27 Tagen Pause. Mobility-Block heisst «Mobility», Kurzversion zählt ihn nicht mit. `test_app.py` 37 OK. Kommentar-Thread vom 9.11. beantwortet (1.4 live).
 - P5 Plan in der App (1.5 Test 5): `syncPlans()` füllt `PLANS` aus `settings.plan` (Tage `P1`…, Routine `M`) oder dem Standard A/B. `isAux`, `planIds`, `warmupOf`, `plateTxt`, `nextType` rotiert über alle Tage. Onboarding endet mit «Plan übernehmen» (`planActivate`, alter Plan in `settings.planHistory`). Einstellungen → Coach: Plan ansehen (`sheetPlan`), zurück zu A/B. Fehlende Tauschgruppen werden aus dem Katalog erzeugt. Haltezeiten als «Sek». `test_app.py` 35 OK.
 - P4 Onboarding (App 1.5 Test 3): `coach/*.js` werden geladen (Script-Tags, `sw.js` v3, `build-preview.py` bettet ein). Einstellungen → Coach → «Neuen Plan erstellen»: 9 Schritte (`sheetOb`, `obAction`, Entwurf in `state.ob`), Plan-Vorschau mit «Warum dieser Plan?», speichert `settings.profile` und `settings.planProposal`. `test_app.py` 31 OK.
 - P3c Mobility: 21 Mobility- und Korrekturübungen in `EX` (`mob:true`, `hold:true` = Sekunden) und Katalog (Muster `mob_*`). Engine: `mobNeeds()` aus Selbsttests, Haltung, Alltag. Jeder Tag hat als ersten Block `{mob:true, rest:'short'}` mit 2–4 Übungen, dazu `plan.routine` (Tag `M`, `kind:'mobility'`, ohne Geräte). `test_engine.js` 32 OK.
@@ -15,15 +16,15 @@ Letzte Aktualisierung: 11.11.2026
 - P3 Plan-Engine: `coach/engine.js` (`buildPlan`, `standardPlan`). `node tools/test_engine.js`: 25 Tests OK mit 11 Profilen. Aarons Profil ergibt einen Plan mit allen Übungen aus A/B.
 
 ## In Arbeit
-- nichts offen. P5 ist in der Testumgebung (1.5 Test 5), wartet auf Aarons Rückmeldung.
+- nichts offen. Stand in der Testumgebung: 1.5 Test 6.
 
 ## Als Nächstes
-1. Aarons Rückmeldung zu Onboarding und Coach-Plan einarbeiten (Kommentare im Test-Artefakt mit ArtifactComments lesen).
-2. Politur P5: Mobility-Block in der Einheit heisst noch «1+2+3+4» statt «Mobility» und zählt in der Nummerierung mit. Mobility-Übungen aus Fortschritts-Auswahl (`ORDER`) und Statistik heraushalten. Kurzversion (`opts.short`: erste drei Blöcke) passt nicht zu Coach-Plänen mit Mobility-Block. Phasen-Text auf der Startseite («Baseline 1× pro Woche») ist auf Aarons A/B gemünzt.
-3. P5b Coach reagiert (konzept.md Abschnitt 9 und 10): Knopf «Etwas ist dazwischengekommen», Gewicht finden mit Schätzung aus verwandten Übungen.
-4. P6 Katalog erweitern (Waden, Körpergewicht, Bizeps/Trizeps trennen), P7 Erklärungen (Aufbau, Ausführung, Fehler), P8 Animation Prototyp mit 2–3 Übungen.
+1. P5b Rest: Gewicht finden mit Schätzung aus verwandten Übungen (konzept.md Abschnitt 9). Heute startet eine neue Übung mit festem `FIND_START` oder 50 % des früheren Gewichts. Neu: Startwert aus dem e1RM einer Übung desselben Musters mal Verhältnis, minus 10–15 %. Dafür Verhältnis-Tabelle pro Muster in `coach/engine.js` und Aufruf in `findPlan()`.
+2. P6 Katalog erweitern: Waden, Körpergewichtsübungen (Kniebeuge, Liegestütz-Varianten, Ziehen ohne Stange), Bizeps und Trizeps als eigene Muskeln statt `arms`. Danach Reise-Modus «ohne Geräte» ergänzen (heute nur Hotel-Gym und Pause).
+3. P7 Erklärungen pro Übung in drei Teilen (Aufbau, Ausführung, häufige Fehler) statt einem `cue`. P8 Animation Prototyp mit 2–3 Übungen, Aaron entscheidet über Qualität.
+4. Politur: Mobility-Übungen nicht in Statistik und Briefing-Volumen mitzählen. Phasen-Chips auf der Startseite sind auf Aarons Z10 gemünzt.
 5. P1-Reste: Quellen zu Haltung und Nackenregel prüfen, Pelland 2024 direkt verlinken.
-6. Für das Release 1.5: SQL für die 21 Mobility-Übungen in `supabase-setup.sql` und an Aaron. `sw.js` CACHE ist bereits v3. Auswertungs-View `v_einheiten`: `type` enthält neu auch `P1`…, `M`.
+6. Für das Release 1.5: SQL für die 21 Mobility-Übungen in `supabase-setup.sql` und an Aaron. `sw.js` CACHE ist bereits v3. `type` enthält neu auch `P1`…, `M`, `T`.
 
 ## Bekannte Schwächen der Engine (für P6 oder später)
 - Nur Körpergewicht: Der Katalog hat zu wenig Übungen ohne Gerät (keine Kniebeuge, kein Ziehen ohne Stange). Der Plan zeigt die Lücken ehrlich an. Lösung: Katalog erweitern.

@@ -8,7 +8,7 @@
 /* ---------- Vorlagen: Muster pro Tag. m = Grundübung, p = Priorität (1 bleibt, 3 fällt zuerst weg) ---------- */
 const S = (pattern, m, p) => ({pattern, main:!!m, prio:p});
 const DAYS = {
-  ONE:  {name:'Ganzkörper', type:'fb', slots:[S('squat',1,1),S('hinge',1,1),S('hpush',0,1),S('vpull',0,1),S('hpull',0,2),S('antiext',0,2)]},
+  ONE:  {name:'Ganzkörper', type:'fb', slots:[S('squat',1,1),S('hinge',1,1),S('hpush',0,1),S('hpull',0,1),S('vpull',0,2),S('antiext',0,2)]},
   FB_A: {name:'Ganzkörper', type:'fb', slots:[S('squat',1,1),S('hinge',1,1),S('hpull',0,1),S('hpush',0,1),S('single',0,2),S('rear',0,2),S('antiext',0,2)]},
   FB_B: {name:'Ganzkörper', type:'fb', slots:[S('glute',1,1),S('vpull',1,1),S('vpush',0,1),S('kneeflex',0,2),S('hpull',0,1),S('lateral',0,2),S('antirot',0,2)]},
   FB_C: {name:'Ganzkörper', type:'fb', slots:[S('single',1,1),S('hpush',1,1),S('vpull',0,1),S('hinge',0,1),S('deltiso',0,3),S('coreflex',0,2)]},

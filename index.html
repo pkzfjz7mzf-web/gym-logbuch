@@ -673,15 +673,17 @@ const PLANS = {
 const STD_PLANS = {A:PLANS.A, B:PLANS.B};
 let planStamp = null;
 function syncPlans(){
-  const pl=state.settings.plan, stamp = pl && pl.days && pl.days.length ? 'c'+(pl.created||'')+'/'+pl.days.length : 'std';
+  const pl=state.settings.plan, aw=state.settings.away, trip = aw && aw.day && aw.until>=todayStr() ? aw.day : null;
+  const base = pl && pl.days && pl.days.length ? 'c'+(pl.created||'')+'/'+pl.days.length : 'std', stamp = base+(trip?'/T'+aw.until:'');
   if(stamp===planStamp) return; planStamp=stamp;
   Object.keys(PLANS).forEach(k=>{ if(k!=='H') delete PLANS[k]; });
-  if(stamp==='std'){ PLANS.A=STD_PLANS.A; PLANS.B=STD_PLANS.B; return; }
+  if(trip) PLANS.T={name:trip.name, blocks:trip.blocks, warmup:trip.warmup||null};
+  if(base==='std'){ PLANS.A=STD_PLANS.A; PLANS.B=STD_PLANS.B; return; }
   pl.days.forEach(d=>{ PLANS[d.id]={name:d.name, blocks:d.blocks, warmup:d.warmup||null}; });
   if(pl.routine) PLANS.M={name:pl.routine.name, blocks:pl.routine.blocks, warmup:[]};
 }
 function isAux(t){ return t==='H' || t==='M'; }                       // Routinen neben dem Plan
-function planIds(){ return Object.keys(PLANS).filter(k=>!isAux(k)); }
+function planIds(){ return Object.keys(PLANS).filter(k=>!isAux(k) && k!=='T'); }   // T = Reise-Einheit, läuft neben der Reihenfolge
 function warmupOf(t){ const d=PLANS[t]||STD_PLANS[t]; return (d && d.warmup) || WARMUP; }
 function plateTxt(t){ return /^P\d/.test(t) ? t.slice(1) : t; }
 function planItemIn(type, key){ if(!key || !PLANS[type]) return null; for(const b of PLANS[type].blocks) for(const it of b.items) if(it.key===key) return it; return null; }
@@ -769,7 +771,7 @@ function parseNum(v){ if(v==null) return null; const t=String(v).trim().replace(
 function roundTo(x,inc,mode){ const q=x/inc; const n = mode==='up'?Math.ceil(q-1e-9) : mode==='down'?Math.floor(q+1e-9) : Math.round(q); return rnd(n*inc); }
 function uid(date){ return 's'+date.replace(/-/g,'')+'-'+Math.random().toString(36).slice(2,8); }
 function exName(id){ return EX[id] ? EX[id].name : id; }
-function typeName(t){ const d=PLANS[t]||STD_PLANS[t]; return d ? d.name : t==='M' ? 'Mobility' : /^P\d/.test(t) ? 'Einheit '+t.slice(1) : t; }
+function typeName(t){ const d=PLANS[t]||STD_PLANS[t]; return d ? d.name : t==='T' ? 'Reise-Einheit' : t==='M' ? 'Mobility' : /^P\d/.test(t) ? 'Einheit '+t.slice(1) : t; }
 function plateCls(t){ return isAux(t) ? 'h' : (t==='B' || (/^P\d/.test(t) && +t.slice(1)%2===0)) ? 'b' : ''; }
 function gearOf(def){ return def.gear || EQUIP_LABEL[def.equip] || ''; }
 function resolveEx(it){ const sw=(state.settings.swaps||{})[it.key]; return (it.key && sw && EX[sw] && swapAllowed(it.group, sw)) ? sw : it.ex; }
@@ -823,6 +825,7 @@ const CHANGELOG = [
   {v:'1.5', date:null, items:[
     'Coach: Unter Einstellungen → «Neuen Plan erstellen» fragt der Coach Ziel, Erfahrung, Zeit, Sport, Beschwerden, Beweglichkeit und Alltag ab und erstellt daraus deinen Trainingsplan mit Begründung.',
     'Jede Einheit im Coach-Plan beginnt mit einem Mobility-Block. Dazu gibt es eine kurze Mobility-Routine für freie Tage. 21 neue Mobility-Übungen.',
+    '«Etwas ist dazwischengekommen» auf der Startseite: verpasst, verschieben, wenig Zeit, Ferien oder Reise (mit Reise-Einheit fürs Hotel-Gym), krank. Der Coach sagt, was zu tun ist und warum. Nach 2–4 Wochen Pause startet die erste Einheit automatisch mit mehr Reserve.',
     'Dein bisheriges A/B bleibt der aktive Plan, bis du einen neuen übernimmst. Zurückwechseln geht jederzeit.',
     'Gewichtsschritte pro Übung: Unter «Schritte» legst du fest, in welchen Schritten und in welchem Bereich das Gewicht an diesem Gerät wählbar ist, z. B. 0.75 kg von 2 bis 80 kg. Vorschläge, Gewicht finden und die Plus/Minus-Tasten halten sich daran.']},
   {v:'1.4', date:'2026-11-10', items:[
@@ -1093,10 +1096,12 @@ function computeTarget(exId, it, ctx){ const b=computeTargetRaw(exId, it, ctx); 
 function computeTargetRaw(exId, it, ctx){
   const def=EX[exId], st=ctx.settings;
   const lo=it.reps[0], hi=it.reps[1];
-  const sets = ctx.reentry ? Math.min(it.sets,2) : it.sets;
+  const sets = (ctx.reentry || ctx.comeback==='hard') ? Math.min(it.sets,2) : it.sets;
   const fresh = !def.noRir && isFresh(exId, ctx);
   let rir = fresh ? [3,4] : ctx.reentry ? [2,3] : (def.rir || (def.main ? [1,2] : [1,3]));
   const notes=[];
+  if(!def.noRir && ctx.comeback==='hard'){ rir=[3,4]; notes.push('Rückkehr nach Krankheit: 2 Sätze, 3–4 Wdh. Reserve.'); }
+  else if(!def.noRir && ctx.comeback==='soft'){ rir=[Math.min(4,rir[0]+1), Math.min(4,rir[1]+1)]; notes.push(ctx.gap ? 'Nach '+ctx.gap+' Tagen Pause: 1 Wdh. mehr Reserve.' : 'Heute vorsichtiger: 1 Wdh. mehr Reserve.'); }
   if(fresh && !ctx.reentry) notes.push('Neu oder länger nicht gemacht: 3–4 Wdh. in Reserve.');
   const chk = ctx.check || {};
   if(chk.intense && def.legs && !def.noRir){ rir=[Math.min(4,rir[0]+1), Math.min(4,rir[1]+1)]; notes.push('Gestern intensiv: 1 Wdh. mehr Reserve.'); }
@@ -1340,15 +1345,18 @@ function buildSession(type, opts){
   const re = !isAux(type) && isReentry(date);
   const firstRe = re && !Object.values(state.sessions).some(x=>x.status==='done' && !isAux(x.type) && x.date>=(st.reentryStart||date));
   const id = opts.preview ? 'preview' : uid(date);
-  const ctx = {settings:st, reentry:re, firstReentry:firstRe, ts, excludeId:id, check:opts.check||null, noFind:!!opts.backlog};
+  const lastGym=doneSessions().find(x=>!isAux(x.type) && x.id!==id), gap=lastGym ? daysBetween(lastGym.date, date) : null;
+  const comeback = isAux(type) ? null : (st.comeback || (!re && gap!=null && gap>=14 && gap<FIND_DAYS ? 'soft' : null));
+  if(!opts.preview && !isAux(type) && st.comeback){ delete st.comeback; Store.saveSettings(); }
+  const ctx = {settings:st, comeback, gap:st.comeback?null:gap, reentry:re, firstReentry:firstRe, ts, excludeId:id, check:opts.check||null, noFind:!!opts.backlog};
   const blocks=[];
   PLANS[type].blocks.forEach(pb=>{
     if(pb.opt && !st[pb.opt]) return;
     const items = pb.items.map(it=> makeEntry(resolveEx(it), it, ctx));
-    blocks.push({ss:!!pb.ss, opt:pb.opt||null, rest:pb.rest, items});
+    blocks.push(Object.assign({ss:!!pb.ss, opt:pb.opt||null, rest:pb.rest, items}, pb.mob ? {mob:true} : {}));
   });
   if(opts.short && !isAux(type)){
-    blocks.forEach((b,i)=>{ if(i>2) b.items.forEach(e=>{ e.skipped=true; e.skipWhy='Kurzversion'; }); });
+    let k=0; blocks.forEach(b=>{ if(b.mob) return; if(k++>2) b.items.forEach(e=>{ e.skipped=true; e.skipWhy='Kurzversion'; }); });
   }
   const pain=((normCheck(opts.check)||{}).pain)||[];
   if(pain.length){
@@ -1682,6 +1690,7 @@ function phaseText(d){
   const p=phaseOf(d);
   if(!p) return d<PHASES[0].from ? '' : 'Nach dem Z10: die nächste Phase im Briefing planen.';
   if(p.n===0) return d<='2026-11-01' ? 'Marathon-Erholung: diese Woche nur Bewegung. Gym-Wiedereinstieg ab Montag, 2. Nov.' : 'Gym-Wiedereinstieg: 2 Sätze pro Übung, beim ersten Mal pro Übung 3–4 Wdh. in Reserve, danach 2–3. Technik vor Last.';
+  if(state.settings.plan) return 'Coach-Plan aktiv: '+planIds().length+' '+(planIds().length===1?'Einheit':'Einheiten')+' pro Woche, dazu Mobility an freien Tagen.';
   if(p.n===1) return 'Gym-Routine aufbauen. Baseline ist 1× pro Woche, die 2. Einheit ist Bonus.';
   if(p.n===2) return 'Gym 1–2× pro Woche. Den Qualitätslauf nicht auf den Tag nach schweren Beinen legen.';
   if(d>=addDays(Z10,-6)) return 'Z10-Woche: Gym nur locker oder auslassen.';
@@ -1700,13 +1709,14 @@ function viewHome(){
     const [d,n]=totalSets(act);
     h+='<section class="hero"><div class="hero-top"><div class="plate '+plateCls(act.type)+'">'+plateTxt(act.type)+'</div><div><h2>'+typeName(act.type)+' läuft</h2><div class="hero-sub">Gestartet '+fmtDate(act.date)+', '+new Date(act.startedAt).toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'})+' · '+d+' von '+n+' Sätzen</div></div></div><button class="btn pri block" data-a="resume">Weitertrainieren</button><div class="alt"><button class="link" data-a="discard">Einheit verwerfen</button></div></section>';
   } else {
+    h+=lifeBanner();
     const nt=nextType(), pv=buildSession(nt,{preview:true});
     const alts = planIds().filter(x=>x!==nt);
     h+='<section class="hero"><div class="hero-top"><div class="plate '+plateCls(nt)+'">'+plateTxt(nt)+'</div><div><h2>'+typeName(nt)+'</h2><div class="hero-sub">Als Nächstes dran · ca. '+estimateMin(pv)+' min</div></div></div>';
     const nf=findActive(pv);
     if(pv.reentry || nf) h+='<div class="chips">'+(pv.reentry?'<span class="chip warn">Wiedereinstieg · 2 Sätze · RIR '+({all:'3–4',none:'2–3',mixed:'2–3, Neues 3–4'}[freshKind(pv)])+'</span>':'')+(nf?'<span class="chip acc">Gewicht finden bei '+nf+' '+(nf===1?'Übung':'Übungen')+'</span>':'')+'</div>';
     h+=planList(pv);
-    h+='<button class="btn pri block" data-a="start" data-t="'+nt+'">'+typeName(nt)+' starten</button><div class="alt">'+alts.map(x=>'<button class="link" data-a="start" data-t="'+x+'">Stattdessen '+esc(typeName(x))+'</button>').join('')+(PLANS.M?'<button class="link" data-a="start" data-t="M">Mobility für freie Tage</button>':'')+'<button class="link" data-a="start" data-t="H">Heimroutine, 10 min</button></div></section>';
+    h+='<button class="btn pri block" data-a="start" data-t="'+nt+'">'+typeName(nt)+' starten</button><div class="alt">'+alts.map(x=>'<button class="link" data-a="start" data-t="'+x+'">Stattdessen '+esc(typeName(x))+'</button>').join('')+(PLANS.M?'<button class="link" data-a="start" data-t="M">Mobility für freie Tage</button>':'')+'<button class="link" data-a="start" data-t="H">Heimroutine, 10 min</button><button class="link" data-a="life-open">Etwas ist dazwischengekommen</button></div></section>';
   }
 
   // Woche
@@ -1750,7 +1760,7 @@ function sessionRow(s){
    Ansicht: Einheit
    ========================================================= */
 function blockLabels(s){
-  let n=0; return s.blocks.map(b=> b.opt ? (b.opt==='arms'?'Bonus':'Erhalt') : b.items.map(()=>++n).join('+'));
+  let n=0; return s.blocks.map(b=> b.mob ? 'Mobility' : b.opt ? (b.opt==='arms'?'Bonus':'Erhalt') : b.items.map(()=>++n).join('+'));
 }
 function blockLabel(s,bi){ return blockLabels(s)[bi]; }
 function blockDone(b){ return b.items.every(e=>e.skipped || e.sets.every(x=>x.done)); }
@@ -1806,7 +1816,8 @@ function closedBlock(b,bi,label){
 function openBlock(s,b,bi,label){
   const rest=restOf(b);
   let head;
-  if(b.ss) head='Supersatz · abwechselnd, '+fmtClock(rest)+' Pause nach jeder Runde';
+  if(b.mob) head='Der Reihe nach, ohne Eile. Qualität vor Menge';
+  else if(b.ss) head='Supersatz · abwechselnd, '+fmtClock(rest)+' Pause nach jeder Runde';
   else if(b.opt==='nordicA') head='Nordics-Erhalt · optional, damit die Nordics jede Woche drankommen';
   else head=fmtClock(rest)+' Pause zwischen den Sätzen';
   if(b.opt==='arms') head='Optik-Bonus · '+head;
@@ -2159,6 +2170,7 @@ function renderSheet(){
   else if(t==='steps') h=sheetSteps();
   else if(t==='ob') h=sheetOb();
   else if(t==='plan') h=sheetPlan();
+  else if(t==='life') h=sheetLife();
   const prevScroll = wrap.firstElementChild ? wrap.firstElementChild.scrollTop : 0;
   wrap.innerHTML='<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-t"><div class="grab"></div>'+h+'</div>';
   wrap.hidden=false;
@@ -2431,6 +2443,76 @@ function obAction(a, d){
   renderSheet();
   if(a==='ob-next' || a==='ob-back'){ const sh=document.querySelector('#sheet .sheet'); if(sh) sh.scrollTop=0; }
   return true;
+}
+
+/* =========================================================
+   Coach reagiert: «Etwas ist dazwischengekommen» (konzept.md Abschnitt 10)
+   settings.away = {until, mode:'pause'|'hotel', day}, settings.sick = {since}, settings.comeback = 'soft'|'hard'
+   ========================================================= */
+function awayActive(){ const a=state.settings.away; return a && a.until>=todayStr() ? a : null; }
+function lifeOpen(){ state.life={view:'menu', mode:'hotel'}; openSheet('life'); }
+function sheetLife(){
+  const L=state.life||{view:'menu'}, st=state.settings, back='<button class="link" data-a="life-view" data-v="menu" style="align-self:center">Zurück</button>';
+  const opt=(v,t,sub)=>'<button class="opt" data-a="life-view" data-v="'+v+'"><span class="tx"><b>'+t+'</b><small>'+sub+'</small></span><span class="chev">'+I.chev+'</span></button>';
+  if(L.view==='menu') return '<h2 id="sh-t">Was ist los?</h2><p class="lead">Ein Plan ist eine Reihenfolge, kein Pflichtkalender. Der Coach passt sich an.</p><div class="opts">'
+    +opt('missed','Einheit verpasst','Nichts nachholen, einfach weitermachen')+opt('move','Einheit verschieben','Heute nicht, dafür an einem anderen Tag')
+    +opt('short','Heute wenig Zeit','Kurzversion mit den wichtigsten Übungen')+opt('away','Ferien oder Reise','Erhalten oder bewusst pausieren')+opt('sick','Ich bin krank','Wann pausieren, wie zurückkommen')
+    +'</div><button class="link" data-a="sheet-close" style="align-self:center">Schliessen</button>';
+  if(L.view==='missed'){
+    const ids=planIds(), from=addDays(todayStr(),-13), n=doneSessions().filter(s=>!isAux(s.type) && s.date>=from).length, want=ids.length*2;
+    let h='<h2 id="sh-t">Einheit verpasst</h2><div class="prose"><p><b>Du holst nichts nach.</b> Die nächste Einheit ist einfach die, die jetzt dran ist: '+esc(typeName(nextType()))+'. Die Reihenfolge läuft weiter.</p><p>Für Kraft und Muskelaufbau zählt, was du über Wochen zusammenbringst, nicht der einzelne Tag. Eine verpasste Einheit ändert daran nichts.</p>';
+    h+='<p>Letzte 2 Wochen: '+n+' von '+want+' geplanten Einheiten.</p></div>';
+    if(st.plan && want>=4 && n<=want/2) h+='<div class="callout">'+I.info+'<div><b>Der Plan passt gerade nicht zu deinem Alltag.</b> Ein Plan mit weniger Tagen, den du einhältst, bringt mehr.</div></div><button class="btn sec block" data-a="ob-start">Plan mit weniger Tagen erstellen</button>';
+    return h+back;
+  }
+  if(L.view==='move') return '<h2 id="sh-t">Einheit verschieben</h2><div class="prose"><p><b>Verschieb frei.</b> Die App plant nach Reihenfolge, nicht nach Wochentag. Du startest die Einheit einfach am Tag, an dem es passt.</p><p>Zwei Dinge lohnt es sich zu beachten:</p><p>1. Zwischen zwei Einheiten mit denselben Muskeln liegen am besten 48 Stunden. Bei Ganzkörper-Plänen heisst das: ein Tag Pause dazwischen.</p><p>2. Beintraining nicht am selben Tag wie eine harte Ausdauereinheit, und wenn möglich nicht am Tag davor.</p><cite>Punkt 2 nach Schumann et al. 2022. Punkt 1 ist Coaching-Standard.</cite></div>'+back;
+  if(L.view==='away'){
+    const until=L.until||addDays(todayStr(),7);
+    let h='<h2 id="sh-t">Ferien oder Reise</h2><p class="lead">Kraft hält sich erstaunlich gut: Mit rund einem Drittel des Umfangs bleibt sie über Wochen erhalten, solange die Sätze anstrengend bleiben.</p>';
+    h+='<label class="q"><span class="q-l">Unterwegs bis</span><input class="field" type="date" id="life-until" min="'+todayStr()+'" value="'+until+'"></label>';
+    h+='<div class="q"><span class="q-l">Was passt?</span><div class="seg">'+[['hotel','Hotel-Gym'],['pause','Bewusst Pause']].map(o=>'<button class="'+(L.mode===o[0]?'on':'')+'" data-a="life-mode" data-v="'+o[0]+'">'+o[1]+'</button>').join('')+'</div></div>';
+    h+='<p class="ob-sub">'+(L.mode==='hotel'?'Du bekommst eine kurze Reise-Einheit für Kurzhanteln und Bank, rund 40 Minuten. 1–2 davon pro Woche reichen für den Erhalt.':'Auch gut. Bis 2 Wochen Pause machst du danach normal weiter. Bei 2–4 Wochen startet die erste Einheit mit mehr Reserve, darüber führt dich die App neu ans Gewicht.')+' Die Mobility-Routine geht überall.</p>';
+    h+='<cite class="ob-sub">Erhaltungsdosis nach Spiering et al. 2021. Kraft bleibt etwa 4 Wochen erhalten (Bosquet et al. 2013).</cite>';
+    return h+'<button class="btn pri block" data-a="life-away-save">Speichern</button>'+back;
+  }
+  if(L.view==='sick') return '<h2 id="sh-t">Krank</h2><p class="lead">Faustregel aus der Sportmedizin, keine Diagnose. Im Zweifel pausieren.</p><div class="opts">'
+    +'<button class="opt" data-a="life-sick" data-v="rest"><span class="tx"><b>Fieber, Husten in der Brust, Gliederschmerzen oder Magen-Darm</b><small>Pause, bis du symptomfrei bist. Danach gestufter Einstieg.</small></span><span class="chev">'+I.chev+'</span></button>'
+    +'<button class="opt" data-a="life-sick" data-v="light"><span class="tx"><b>Nur leichter Schnupfen, sonst fit</b><small>Lockere Einheit möglich, mit mehr Reserve</small></span><span class="chev">'+I.chev+'</span></button>'
+    +'</div><p class="ob-sub">Die Regel «Symptome nur oberhalb des Halses: locker möglich, unterhalb oder Fieber: Pause» ist verbreiteter Konsens, aber schwach durch Studien belegt. Bei Brustschmerz, Atemnot oder Herzstolpern: nicht trainieren und abklären lassen.</p>'+back;
+  return '';
+}
+function lifeAction(a, d){
+  const L=state.life||(state.life={view:'menu', mode:'hotel'}), st=state.settings;
+  const keep=()=>{ const el=document.getElementById('life-until'); if(el && el.value) L.until=el.value; };
+  if(a==='life-view'){
+    if(d.v==='short'){ closeSheet(); if(activeSession()){ toast('Es läuft schon eine Einheit.'); return; } state.check={type:nextType(), energy:null, sore:[], pain:[], intense:null, short:true, shortTouched:true}; openSheet('check'); return; }
+    L.view=d.v; renderSheet(); return;
+  }
+  if(a==='life-mode'){ keep(); L.mode=d.v; renderSheet(); return; }
+  if(a==='life-away-save'){
+    keep(); const until=L.until||addDays(todayStr(),7); let day=null;
+    if(L.mode==='hotel' && COACH && COACH_CAT){
+      const pl=COACH.buildPlan(Object.assign({}, obProfile(st.profile||obDefault()), {equip:'home', gear:['db','bench'], days:1, minutes:40}), EX, COACH_CAT);
+      day=pl.days[0]; day.id='T'; day.name='Reise-Einheit';
+      day.blocks.forEach(b=>b.items.forEach(it=>{ it.key=it.key.replace(/^P1\./,'T.'); }));
+    }
+    st.away={until, mode:L.mode, day}; Store.saveSettings(); closeSheet(); render(); toast('Unterwegs bis '+fmtDate(until)+' gespeichert.'); return;
+  }
+  if(a==='life-away-end'){ delete st.away; Store.saveSettings(); render(); toast('Willkommen zurück.'); return; }
+  if(a==='life-sick'){
+    if(d.v==='rest'){ st.sick={since:todayStr()}; delete st.comeback; toast('Gute Besserung. Melde dich auf der Startseite zurück, wenn du gesund bist.'); }
+    else { st.comeback='soft'; toast('Nächste Einheit mit 1 Wdh. mehr Reserve.'); }
+    Store.saveSettings(); closeSheet(); render(); return;
+  }
+  if(a==='life-well'){ delete st.sick; st.comeback='hard'; Store.saveSettings(); render(); toast('Schön, dass du zurück bist. Die erste Einheit ist bewusst leicht.'); return; }
+}
+/* Hinweise auf der Startseite: unterwegs, krank, Rückkehr */
+function lifeBanner(){
+  const st=state.settings, a=awayActive(); let h='';
+  if(st.sick) h+='<div class="callout">'+I.info+'<div><b>Krank seit '+fmtDate(st.sick.since)+'.</b> Erhol dich zuerst. Die erste Einheit danach hat 2 Sätze pro Übung und 3–4 Wdh. Reserve.<br><button class="link" data-a="life-well">Ich bin wieder gesund</button></div></div>';
+  else if(st.comeback) h+='<div class="callout info">'+I.info+'<div>'+(st.comeback==='hard'?'<b>Rückkehr nach Krankheit:</b> nächste Einheit mit 2 Sätzen pro Übung und 3–4 Wdh. Reserve.':'<b>Heute etwas vorsichtiger:</b> nächste Einheit mit 1 Wdh. mehr Reserve.')+'</div></div>';
+  if(a) h+='<div class="callout info">'+I.info+'<div><b>Unterwegs bis '+fmtDate(a.until)+'.</b> '+(a.mode==='hotel'?'1–2 kurze Einheiten pro Woche reichen für den Erhalt.':'Pause ist eingeplant. Danach geht es normal weiter.')+'<br>'+(a.day?'<button class="link" data-a="start" data-t="T" style="margin-right:18px">Reise-Einheit starten</button>':'')+'<button class="link" data-a="life-away-end">Ich bin zurück</button></div></div>';
+  return h;
 }
 
 function sheetSteps(){
@@ -2721,6 +2803,8 @@ function onClick(ev){
     case 'ob-start': obStart(); break;
     case 'ob-set': case 'ob-tog': case 'ob-next': case 'ob-back': case 'ob-save': case 'ob-apply': obAction(a, d); break;
     case 'plan-open': openSheet('plan'); break;
+    case 'life-open': lifeOpen(); break;
+    case 'life-view': case 'life-mode': case 'life-away-save': case 'life-away-end': case 'life-sick': case 'life-well': lifeAction(a, d); break;
     case 'plan-std': if(planActivate(null)){ render(); toast('Ganzkörper A/B ist wieder aktiv.'); } break;
     case 'steps-open': { const e=s.blocks[bi].items[ii]; state.stepsRef={ex:e.ex}; openSheet('steps'); break; }
     case 'steps-save': case 'steps-reset': {
