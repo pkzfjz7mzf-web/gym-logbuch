@@ -668,8 +668,24 @@ const PLANS = {
   ]}
 };
 
+/* Aktiver Plan: PLANS enthält immer die Tage des aktiven Plans. Ohne settings.plan ist das der Standardplan A/B.
+   Mit Coach-Plan: Tage P1…Pn und die Mobility-Routine M. H (Heimroutine) bleibt immer. syncPlans() läuft vor jedem Render. */
+const STD_PLANS = {A:PLANS.A, B:PLANS.B};
+let planStamp = null;
+function syncPlans(){
+  const pl=state.settings.plan, stamp = pl && pl.days && pl.days.length ? 'c'+(pl.created||'')+'/'+pl.days.length : 'std';
+  if(stamp===planStamp) return; planStamp=stamp;
+  Object.keys(PLANS).forEach(k=>{ if(k!=='H') delete PLANS[k]; });
+  if(stamp==='std'){ PLANS.A=STD_PLANS.A; PLANS.B=STD_PLANS.B; return; }
+  pl.days.forEach(d=>{ PLANS[d.id]={name:d.name, blocks:d.blocks, warmup:d.warmup||null}; });
+  if(pl.routine) PLANS.M={name:pl.routine.name, blocks:pl.routine.blocks, warmup:[]};
+}
+function isAux(t){ return t==='H' || t==='M'; }                       // Routinen neben dem Plan
+function planIds(){ return Object.keys(PLANS).filter(k=>!isAux(k)); }
+function warmupOf(t){ const d=PLANS[t]||STD_PLANS[t]; return (d && d.warmup) || WARMUP; }
+function plateTxt(t){ return /^P\d/.test(t) ? t.slice(1) : t; }
 function planItemIn(type, key){ if(!key || !PLANS[type]) return null; for(const b of PLANS[type].blocks) for(const it of b.items) if(it.key===key) return it; return null; }
-function planItemAny(key){ return planItemIn('A',key) || planItemIn('B',key); }
+function planItemAny(key){ for(const t of Object.keys(PLANS)){ const it=planItemIn(t,key); if(it) return it; } return null; }
 
 const WARMUP = [
   ['5 min Rudergerät locker', ''],
@@ -753,8 +769,8 @@ function parseNum(v){ if(v==null) return null; const t=String(v).trim().replace(
 function roundTo(x,inc,mode){ const q=x/inc; const n = mode==='up'?Math.ceil(q-1e-9) : mode==='down'?Math.floor(q+1e-9) : Math.round(q); return rnd(n*inc); }
 function uid(date){ return 's'+date.replace(/-/g,'')+'-'+Math.random().toString(36).slice(2,8); }
 function exName(id){ return EX[id] ? EX[id].name : id; }
-function typeName(t){ return PLANS[t] ? PLANS[t].name : t; }
-function plateCls(t){ return t==='B'?'b':t==='H'?'h':''; }
+function typeName(t){ const d=PLANS[t]||STD_PLANS[t]; return d ? d.name : t==='M' ? 'Mobility' : /^P\d/.test(t) ? 'Einheit '+t.slice(1) : t; }
+function plateCls(t){ return isAux(t) ? 'h' : (t==='B' || (/^P\d/.test(t) && +t.slice(1)%2===0)) ? 'b' : ''; }
 function gearOf(def){ return def.gear || EQUIP_LABEL[def.equip] || ''; }
 function resolveEx(it){ const sw=(state.settings.swaps||{})[it.key]; return (it.key && sw && EX[sw] && swapAllowed(it.group, sw)) ? sw : it.ex; }
 function entryGroup(e){ return e.group || EX_GROUP[e.ex] || null; }
@@ -1017,7 +1033,7 @@ function saveUi(){ try{ localStorage.setItem(UI_KEY, JSON.stringify({cur:state.c
 function doneSessions(){ return Object.values(state.sessions).filter(s=>s.status==='done').sort((a,b)=>(b.startedAt||0)-(a.startedAt||0)); }
 function activeSession(){ const a=Object.values(state.sessions).filter(s=>s.status==='active').sort((a,b)=>(b.startedAt||0)-(a.startedAt||0)); return a[0]||null; }
 function curSession(){ return state.editId ? (state.sessions[state.editId]||null) : activeSession(); }
-function nextType(){ const l=doneSessions().find(s=>s.type==='A'||s.type==='B'); return l ? (l.type==='A'?'B':'A') : 'A'; }
+function nextType(){ const ids=planIds(), l=doneSessions().find(s=>ids.includes(s.type)); return l ? ids[(ids.indexOf(l.type)+1)%ids.length] : ids[0]; }
 
 function perfHistory(exId, beforeTs, excludeId){
   const out=[];
@@ -1318,9 +1334,9 @@ function buildSession(type, opts){
   const st = state.settings;
   const date = opts.date || todayStr();
   const ts = opts.date && opts.date!==todayStr() ? parseYmd(date).getTime()+18*3600e3 : Date.now();
-  if(!opts.preview && type!=='H' && st.reentry && !st.reentryStart){ st.reentryStart=date; Store.saveSettings(); }
-  const re = type!=='H' && isReentry(date);
-  const firstRe = re && !Object.values(state.sessions).some(x=>x.status==='done' && x.type!=='H' && x.date>=(st.reentryStart||date));
+  if(!opts.preview && !isAux(type) && st.reentry && !st.reentryStart){ st.reentryStart=date; Store.saveSettings(); }
+  const re = !isAux(type) && isReentry(date);
+  const firstRe = re && !Object.values(state.sessions).some(x=>x.status==='done' && !isAux(x.type) && x.date>=(st.reentryStart||date));
   const id = opts.preview ? 'preview' : uid(date);
   const ctx = {settings:st, reentry:re, firstReentry:firstRe, ts, excludeId:id, check:opts.check||null, noFind:!!opts.backlog};
   const blocks=[];
@@ -1329,7 +1345,7 @@ function buildSession(type, opts){
     const items = pb.items.map(it=> makeEntry(resolveEx(it), it, ctx));
     blocks.push({ss:!!pb.ss, opt:pb.opt||null, rest:pb.rest, items});
   });
-  if(opts.short && type!=='H'){
+  if(opts.short && !isAux(type)){
     blocks.forEach((b,i)=>{ if(i>2) b.items.forEach(e=>{ e.skipped=true; e.skipWhy='Kurzversion'; }); });
   }
   const pain=((normCheck(opts.check)||{}).pain)||[];
@@ -1338,7 +1354,7 @@ function buildSession(type, opts){
   }
   return {id, v:1, type, status: opts.backlog ? 'backlog' : 'active', date, startedAt:ts, endedAt:null,
     reentry:re, reentryFirst:firstRe, short:!!opts.short, check:opts.check||null,
-    warmup: type==='H' ? [] : WARMUP.map(()=>false), blocks, feel:null, fun:null, note:''};
+    warmup: isAux(type) ? [] : warmupOf(type).map(()=>false), blocks, feel:null, fun:null, note:''};
 }
 
 function swapEntry(s, bi, ii, exId, scope){
@@ -1467,7 +1483,7 @@ function warmupSets(w, def){
 function briefingText(off){
   const ws = addDays(weekStart(todayStr()), -7*off), we = addDays(ws,6);
   const list = doneSessions().filter(s=>s.date>=ws && s.date<=we).sort((a,b)=>a.startedAt-b.startedAt);
-  const gym = list.filter(s=>s.type!=='H').length, home = list.length-gym;
+  const gym = list.filter(s=>!isAux(s.type)).length, home = list.length-gym;
   let out = 'Gym KW '+isoWeek(ws)+' ('+fmtShort(ws)+'–'+fmtShort(we)+'): '+gym+' '+(gym===1?'Einheit':'Einheiten')+(home?', '+home+'× Heimroutine':'');
   if(!list.length) return out+'\nKeine Einheit erfasst.';
   list.forEach(s=>{
@@ -1527,7 +1543,7 @@ function softRender(){
 }
 document.addEventListener('focusout', ()=>{ if(needsRender){ needsRender=false; setTimeout(()=>{ const a=document.activeElement; if(!(a && /^(INPUT|TEXTAREA)$/.test(a.tagName))) render(); else needsRender=true; }, 50); } });
 
-function render(){ renderTop(); renderMain(); renderDock(); maybeNews(); renderSheet(); }
+function render(){ syncPlans(); renderTop(); renderMain(); renderDock(); maybeNews(); renderSheet(); }
 /* «Was ist neu»: einmal pro Gerät und Version, nur auf der Startseite, nie mitten in einer Einheit. */
 function maybeNews(){
   if(state.view!=='home' || state.sheet || !Store.cacheUid || activeSession()) return;
@@ -1680,25 +1696,25 @@ function viewHome(){
   const act=activeSession();
   if(act){
     const [d,n]=totalSets(act);
-    h+='<section class="hero"><div class="hero-top"><div class="plate '+plateCls(act.type)+'">'+act.type+'</div><div><h2>'+typeName(act.type)+' läuft</h2><div class="hero-sub">Gestartet '+fmtDate(act.date)+', '+new Date(act.startedAt).toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'})+' · '+d+' von '+n+' Sätzen</div></div></div><button class="btn pri block" data-a="resume">Weitertrainieren</button><div class="alt"><button class="link" data-a="discard">Einheit verwerfen</button></div></section>';
+    h+='<section class="hero"><div class="hero-top"><div class="plate '+plateCls(act.type)+'">'+plateTxt(act.type)+'</div><div><h2>'+typeName(act.type)+' läuft</h2><div class="hero-sub">Gestartet '+fmtDate(act.date)+', '+new Date(act.startedAt).toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'})+' · '+d+' von '+n+' Sätzen</div></div></div><button class="btn pri block" data-a="resume">Weitertrainieren</button><div class="alt"><button class="link" data-a="discard">Einheit verwerfen</button></div></section>';
   } else {
     const nt=nextType(), pv=buildSession(nt,{preview:true});
-    const alt = nt==='A'?'B':'A';
-    h+='<section class="hero"><div class="hero-top"><div class="plate '+plateCls(nt)+'">'+nt+'</div><div><h2>'+typeName(nt)+'</h2><div class="hero-sub">Als Nächstes dran · ca. '+estimateMin(pv)+' min</div></div></div>';
+    const alts = planIds().filter(x=>x!==nt);
+    h+='<section class="hero"><div class="hero-top"><div class="plate '+plateCls(nt)+'">'+plateTxt(nt)+'</div><div><h2>'+typeName(nt)+'</h2><div class="hero-sub">Als Nächstes dran · ca. '+estimateMin(pv)+' min</div></div></div>';
     const nf=findActive(pv);
     if(pv.reentry || nf) h+='<div class="chips">'+(pv.reentry?'<span class="chip warn">Wiedereinstieg · 2 Sätze · RIR '+({all:'3–4',none:'2–3',mixed:'2–3, Neues 3–4'}[freshKind(pv)])+'</span>':'')+(nf?'<span class="chip acc">Gewicht finden bei '+nf+' '+(nf===1?'Übung':'Übungen')+'</span>':'')+'</div>';
     h+=planList(pv);
-    h+='<button class="btn pri block" data-a="start" data-t="'+nt+'">'+typeName(nt)+' starten</button><div class="alt"><button class="link" data-a="start" data-t="'+alt+'">Stattdessen '+typeName(alt)+'</button><button class="link" data-a="start" data-t="H">Heimroutine, 10 min</button></div></section>';
+    h+='<button class="btn pri block" data-a="start" data-t="'+nt+'">'+typeName(nt)+' starten</button><div class="alt">'+alts.map(x=>'<button class="link" data-a="start" data-t="'+x+'">Stattdessen '+esc(typeName(x))+'</button>').join('')+(PLANS.M?'<button class="link" data-a="start" data-t="M">Mobility für freie Tage</button>':'')+'<button class="link" data-a="start" data-t="H">Heimroutine, 10 min</button></div></section>';
   }
 
   // Woche
-  const ws=weekStart(t), wsess=weekSessions(ws), gym=wsess.filter(s=>s.type!=='H');
+  const ws=weekStart(t), wsess=weekSessions(ws), gym=wsess.filter(s=>!isAux(s.type));
   const ham=hamThisWeek(ws);
   h+='<section class="sec"><div class="sec-h"><h2 class="eyebrow">Diese Woche · KW '+isoWeek(t)+'</h2></div><div class="week">';
   for(let i=0;i<7;i++){
     const d=addDays(ws,i), ds=wsess.filter(s=>s.date===d);
     const dd=parseYmd(d);
-    h+='<div class="day'+(d===t?' today':'')+'"><span>'+WD[dd.getDay()]+'</span>'+(ds.length?'<span class="plate xs '+plateCls(ds[0].type)+'" title="'+esc(typeName(ds[0].type))+'">'+ds[0].type+'</span>':'<span class="slot"></span>')+'<span class="tnum" style="font-weight:500">'+dd.getDate()+'</span></div>';
+    h+='<div class="day'+(d===t?' today':'')+'"><span>'+WD[dd.getDay()]+'</span>'+(ds.length?'<span class="plate xs '+plateCls(ds[0].type)+'" title="'+esc(typeName(ds[0].type))+'">'+plateTxt(ds[0].type)+'</span>':'<span class="slot"></span>')+'<span class="tnum" style="font-weight:500">'+dd.getDate()+'</span></div>';
   }
   h+='</div><div class="chips"><span class="chip '+(gym.length>=1?'ok':'')+'">'+(gym.length>=1?'Gym '+gym.length+'× · Baseline ✓':'Gym 0 von 1 (Baseline)')+'</span></div></section>';
 
@@ -1725,7 +1741,7 @@ function planList(s){
 function sessionRow(s){
   const st=sessionStats(s);
   const bits=[st.ex+' Übungen', st.sets+' Sätze']; if(st.dur) bits.push(st.dur+' min');
-  return '<button class="li" data-a="open-detail" data-id="'+s.id+'"><span class="plate sm '+plateCls(s.type)+'">'+s.type+'</span><span class="tx"><span class="t1">'+fmtDate(s.date)+'</span><span class="t2 tnum" style="display:block">'+bits.join(' · ')+'</span></span>'+(s.feel?'<span class="score" title="Gefühl">'+s.feel+'/5</span>':'')+'<span class="chev">'+I.chev+'</span></button>';
+  return '<button class="li" data-a="open-detail" data-id="'+s.id+'"><span class="plate sm '+plateCls(s.type)+'">'+plateTxt(s.type)+'</span><span class="tx"><span class="t1">'+fmtDate(s.date)+'</span><span class="t2 tnum" style="display:block">'+bits.join(' · ')+'</span></span>'+(s.feel?'<span class="score" title="Gefühl">'+s.feel+'/5</span>':'')+'<span class="chev">'+I.chev+'</span></button>';
 }
 
 /* =========================================================
@@ -1762,9 +1778,9 @@ function viewSession(){
   if(s.warmup.length){
     const dn=s.warmup.filter(Boolean).length;
     if(cur===-1){
-      h+='<section class="blk" id="blk--1"><div class="blk-head"><span class="blk-no">0</span><span>Aufwärmen · 8–10 min, Hüfte und Brustwirbelsäule</span></div><div class="warm">'+WARMUP.map((w,i)=>'<button class="warm-i'+(s.warmup[i]?' on':'')+'" data-a="warm" data-i="'+i+'" aria-pressed="'+s.warmup[i]+'"><span class="cb">'+I.check+'</span><span class="wt">'+w[0]+(w[1]?'<small>'+w[1]+'</small>':'')+'</span></button>').join('')+'</div>'+(dn===WARMUP.length?'':'<button class="btn sec block" data-a="warm-all">Alles erledigt</button>')+'</section>';
+      h+='<section class="blk" id="blk--1"><div class="blk-head"><span class="blk-no">0</span><span>'+(state.settings.plan?'Aufwärmen':'Aufwärmen · 8–10 min, Hüfte und Brustwirbelsäule')+'</span></div><div class="warm">'+warmupOf(s.type).map((w,i)=>'<button class="warm-i'+(s.warmup[i]?' on':'')+'" data-a="warm" data-i="'+i+'" aria-pressed="'+s.warmup[i]+'"><span class="cb">'+I.check+'</span><span class="wt">'+w[0]+(w[1]?'<small>'+w[1]+'</small>':'')+'</span></button>').join('')+'</div>'+(dn===warmupOf(s.type).length?'':'<button class="btn sec block" data-a="warm-all">Alles erledigt</button>')+'</section>';
     } else {
-      h+='<button class="blk-row'+(dn===WARMUP.length?' done':'')+'" data-a="block-open" data-b="-1"><span class="blk-no">0</span><span class="blk-names">Aufwärmen</span><span class="blk-prog">'+dn+'/'+WARMUP.length+'</span></button>';
+      h+='<button class="blk-row'+(dn===warmupOf(s.type).length?' done':'')+'" data-a="block-open" data-b="-1"><span class="blk-no">0</span><span class="blk-names">Aufwärmen</span><span class="blk-prog">'+dn+'/'+warmupOf(s.type).length+'</span></button>';
     }
   }
   s.blocks.forEach((b,bi)=>{ h += bi===cur ? openBlock(s,b,bi,labels[bi]) : closedBlock(b,bi,labels[bi]); });
@@ -1811,7 +1827,7 @@ function entryCard(s,bi,ii){
   if(!def.noRir && t.rir) meta.push('RIR '+rirTxt(t.rir));
   if(t.level!=null) meta.push('Stufe '+(t.level+1)+' von '+LADDER.length);
   if(eq.hint) meta.push(eq.hint);
-  const grp=entryGroup(e), canSwap = s.type!=='H' && !!(grp && GROUPS[grp]) && !e.swappedTo;
+  const grp=entryGroup(e), canSwap = !isAux(s.type) && !!(grp && GROUPS[grp]) && !e.swappedTo;
   const tags=[]; if(s.blocks[bi].opt==='nordicA') tags.push('Vorschlag · optional'); if(e.swapFrom && EX[e.swapFrom]) tags.push('Heute statt '+EX[e.swapFrom].name); if(e.swappedTo && EX[e.swappedTo]) tags.push('Gewechselt zu '+EX[e.swappedTo].name);
   let h='<article class="ex'+(ro?' ro':'')+'" id="ex-'+bi+'-'+ii+'"><div class="ex-head"><div class="tx">'+(tags.length?'<span class="ex-tag">'+esc(tags.join(' · '))+'</span>':'')+'<h3>'+esc(def.name)+'</h3><div class="ex-meta">'+meta.join(' · ')+'</div></div>'+(canSwap?'<button class="swap-btn" data-a="swap-open" '+ref+' aria-label="'+esc(def.name)+' tauschen">'+I.swap+'Tauschen</button>':'')+'</div>';
   const f=e.find;
@@ -1819,7 +1835,7 @@ function entryCard(s,bi,ii){
   const tagTxt={up:'↑ Mehr',hold:'= Halten',down:'↓ Leichter',new:'Neu',start:'Start',found:'Gefunden',reps:'Mehr Wdh.'}[t.action]||'';
   let extra='';
   if(f && f.status==='done') extra='<span class="note" style="color:var(--muted)">'+esc(f.steps.map(st=>findStepText(st,def)).join(' · '))+'</span>'+(findCanUndo(e)&&!state.editId?'<button class="act" data-a="fd-undo" '+ref+'>Letzten Probesatz zurücknehmen</button>':'');
-  else if(canFind(def, e.ex) && !e.sets.some(x=>x.done) && !state.editId && s.type!=='H') extra='<button class="act" data-a="fd-start" '+ref+'>Gewicht neu finden</button>';
+  else if(canFind(def, e.ex) && !e.sets.some(x=>x.done) && !state.editId && !isAux(s.type)) extra='<button class="act" data-a="fd-start" '+ref+'>Gewicht neu finden</button>';
   h+='<div class="sugg"><span class="tag '+t.action+'">'+tagTxt+'</span><span>'+esc(t.reason)+(t.notes&&t.notes.length?t.notes.map(n=>'<span class="note">'+esc(n)+'</span>').join(''):'')+(extra?'<br>'+extra:'')+'</span></div>';
   if(f && f.suggestAssist && !state.editId) h+='<div class="callout">'+I.warn+'<div><b>'+(f.steps.length && f.steps[f.steps.length-1].r<t.reps[0] ? 'Weniger als '+t.reps[0]+' saubere Wdh.' : 'Zu wenig Reserve.')+'</b> Mit Unterstützung kommst du in den Zielbereich.<div><button class="link" data-a="fd-assist" '+ref+'>Heute Klimmzüge assistiert</button></div></div></div>';
   const wNow = firstOpen>-1 ? e.sets[firstOpen].w : (e.sets.length?e.sets[e.sets.length-1].w:null);
@@ -1928,7 +1944,7 @@ function checkTips(c, type){
   c=normCheck(c)||{};
   if((c.pain||[]).length) tips.push('<b>Schmerz '+c.pain.map(regionName).join(', ')+':</b> Übungen, die diese Stelle belasten, lasse ich heute aus. Du kannst jede einzeln wieder aufnehmen. Hält der Schmerz an oder wird er stärker, lass es abklären.');
   if((c.sore||[]).length) tips.push('<b>Muskelkater '+c.sore.map(regionName).join(', ')+':</b> Übungen dafür mit 1 Wdh. mehr Reserve.');
-  if(c.intense && type!=='H') tips.push('<b>Gestern intensiv:</b> Plan-Regel ist möglichst kein beinlastiges Gym am Folgetag. Heute Beine mit 1 Wdh. mehr Reserve, Oberkörper normal.');
+  if(c.intense && !isAux(type)) tips.push('<b>Gestern intensiv:</b> Plan-Regel ist möglichst kein beinlastiges Gym am Folgetag. Heute Beine mit 1 Wdh. mehr Reserve, Oberkörper normal.');
   if(c.energy===0) tips.push('<b>Wenig Energie:</b> Kurzversion ist völlig ok. Jede Einheit zählt.');
   return tips;
 }
@@ -1954,7 +1970,7 @@ function viewDetail(){
   const s=state.sessions[state.detailId];
   if(!s) return '<div class="empty">Diese Einheit gibt es nicht mehr.</div>';
   const st=sessionStats(s), prs=sessionPRs(s);
-  let h='<section class="hero"><div class="hero-top"><div class="plate '+plateCls(s.type)+'">'+s.type+'</div><div><h2>'+typeName(s.type)+'</h2><div class="hero-sub">'+fmtDate(s.date)+(s.reentry?' · Wiedereinstieg':'')+(s.short?' · Kurzversion':'')+'</div></div></div>';
+  let h='<section class="hero"><div class="hero-top"><div class="plate '+plateCls(s.type)+'">'+plateTxt(s.type)+'</div><div><h2>'+typeName(s.type)+'</h2><div class="hero-sub">'+fmtDate(s.date)+(s.reentry?' · Wiedereinstieg':'')+(s.short?' · Kurzversion':'')+'</div></div></div>';
   h+='<div class="stats"><div class="stat"><b>'+(st.dur!=null?st.dur:'–')+'</b><span>Minuten</span></div><div class="stat"><b>'+st.sets+'</b><span>Sätze</span></div><div class="stat"><b>'+(s.feel!=null?s.feel:'–')+'<small style="font-size:16px">/5</small></b><span>Gefühl'+(s.fun!=null?' · Spass '+s.fun+'/5':'')+'</span></div></div>';
   if(prs.length) h+='<div class="chips">'+prs.map(p=>'<span class="chip ok">Bestwert '+esc(EX[p.ex].short||EX[p.ex].name)+' · e1RM '+fmtW(rnd(p.val))+' kg</span>').join('')+'</div>';
   if(s.check) h+='<div class="muted" style="font-size:14px">Vorher: '+esc(checkText(s.check))+'</div>';
@@ -2022,7 +2038,7 @@ function viewProgress(){
   let h='';
   // Regelmässigkeit
   const t=todayStr(), ws0=weekStart(t);
-  const weeks=[]; for(let i=11;i>=0;i--){ const ws=addDays(ws0,-7*i); const ss=weekSessions(ws); weeks.push({ws, gym:ss.filter(s=>s.type!=='H').length, home:ss.filter(s=>s.type==='H').length}); }
+  const weeks=[]; for(let i=11;i>=0;i--){ const ws=addDays(ws0,-7*i); const ss=weekSessions(ws); weeks.push({ws, gym:ss.filter(s=>!isAux(s.type)).length, home:ss.filter(s=>isAux(s.type)).length}); }
   const tot=weeks.reduce((a,w)=>a+w.gym,0), hit=weeks.filter(w=>w.gym>=1).length;
   h+='<section class="sec"><div class="sec-h"><h2 class="eyebrow">Regelmässigkeit · 12 Wochen</h2></div><div class="panel"><div class="grid12">'+weeks.map(w=>'<div class="wk'+(w.gym>=2?' c2':w.gym===1?' c1':'')+(w.ws===ws0?' now':'')+'" title="KW '+isoWeek(w.ws)+': '+w.gym+' Gym'+(w.home?', '+w.home+' Heim':'')+'">'+(w.gym||'')+'</div>').join('')+'</div><div class="grid12">'+weeks.map((w,i)=>'<div class="wk-l">'+(i%2===1||i===11?isoWeek(w.ws):'')+'</div>').join('')+'</div><p class="muted" style="margin:0;font-size:14px">'+tot+' Gym-Einheiten, Baseline in '+hit+' von 12 Wochen. Zahl = Einheiten pro Kalenderwoche.</p></div></section>';
 
@@ -2072,11 +2088,12 @@ function viewSettings(){
     h+='</div></section>'; }
   const prow=key=>{ const it=planItemAny(key); if(!it) return ''; const cur=resolveEx(it), sw=cur!==it.ex; return '<button class="srow" style="width:100%;text-align:left" data-a="plan-swap" data-k="'+key+'"><div class="tx"><b>'+esc(EX[cur].name)+'</b><small>'+esc(GROUPS[it.group].label)+(sw?' · statt '+esc(EX[it.ex].name):'')+'</small></div><span class="chev">'+I.chev+'</span></button>'; };
   const keysOf=t=>{ const out=[]; PLANS[t].blocks.forEach(b=>b.items.forEach(it=>{ if(it.key && it.key.indexOf('X.')!==0 && !out.includes(it.key)) out.push(it.key); })); return out; };
-  h+='<section class="sec"><h2 class="eyebrow">Übungen in Einheit A</h2><p class="phase-t" style="font-size:14px">Tippe auf eine Übung, um sie dauerhaft zu tauschen. Für ein einzelnes Training tauschst du direkt in der Übung.</p><div class="sgroup">'+keysOf('A').map(prow).join('')+'</div></section>';
-  h+='<section class="sec"><h2 class="eyebrow">Übungen in Einheit B</h2><div class="sgroup">'+keysOf('B').map(prow).join('')+'</div></section>';
+  planIds().forEach((t,i)=>{ h+='<section class="sec"><h2 class="eyebrow">Übungen in '+esc(typeName(t))+'</h2>'+(i===0?'<p class="phase-t" style="font-size:14px">Tippe auf eine Übung, um sie dauerhaft zu tauschen. Für ein einzelnes Training tauschst du direkt in der Übung.</p>':'')+'<div class="sgroup">'+keysOf(t).filter(k=>{ const it=planItemAny(k); return it && GROUPS[it.group]; }).map(prow).join('')+'</div></section>'; });
+  if(!st.plan){
   h+='<section class="sec"><h2 class="eyebrow">In beiden Einheiten</h2><div class="sgroup">'+['X.ecc','X.curl','X.tri'].map(prow).join('');
   h+='<div class="srow"><div class="tx"><b>Nordics auch in Einheit A</b><small>2 × 3–5, damit die Nordics jede Woche drankommen</small></div>'+tgl('nordicA')+'</div>';
   h+='<div class="srow"><div class="tx"><b>Optik-Bonus</b><small>Bizeps + Trizeps als Supersatz am Ende</small></div>'+tgl('arms')+'</div></div></section>';
+  }
 
   h+='<section class="sec"><h2 class="eyebrow">Wiedereinstieg</h2><div class="sgroup">';
   h+='<div class="srow"><div class="tx"><b>Wiedereinstieg aktiv</b><small>Die ersten 2 Wochen: 2 Sätze, beim ersten Mal pro Übung RIR 3–4, danach 2–3</small></div>'+tgl('reentry')+'</div>';
@@ -2151,11 +2168,11 @@ function sheetCheck(){
   h+='<div class="q"><div class="q-l">Energie heute</div>'+segRow('ck-energy', ENERGY.map((l,i)=>[i,l]), c.energy)+'</div>';
   const rc=(act,list,pain)=>'<div class="rchips">'+REGIONS.map(([id,l])=>{ const on=list.includes(id); return '<button class="rchip'+(pain?' pain':'')+(on?' on':'')+'" data-a="'+act+'" data-v="'+id+'" aria-pressed="'+on+'">'+l+'</button>'; }).join('')+'</div>';
   h+='<div class="q"><div class="q-l">Spürst du etwas? Nur antippen, wenn ja.</div><div class="body-q"><div class="bq-l">Muskelkater</div>'+rc('ck-sore', c.sore, false)+'<div class="bq-l">Schmerz</div>'+rc('ck-pain', c.pain, true)+'</div></div>';
-  if(type!=='H') h+='<div class="q"><div class="q-l">Gestern Padel oder Qualitätslauf?</div>'+segRow('ck-intense', [[0,'Nein'],[1,'Ja']], c.intense==null?null:(c.intense?1:0))+'</div>';
-  if(type!=='H') h+='<div class="srow" style="padding:0;border:0"><div class="tx"><b>Kurzversion, ca. 35 min</b><small>Die ersten drei Blöcke: Grundübungen und erster Supersatz</small></div><label class="tgl"><input type="checkbox" id="ck-short" data-f="ck-short"'+(c.short?' checked':'')+'><span></span></label></div>';
+  if(!isAux(type)) h+='<div class="q"><div class="q-l">Gestern Padel oder Qualitätslauf?</div>'+segRow('ck-intense', [[0,'Nein'],[1,'Ja']], c.intense==null?null:(c.intense?1:0))+'</div>';
+  if(!isAux(type)) h+='<div class="srow" style="padding:0;border:0"><div class="tx"><b>Kurzversion, ca. 35 min</b><small>Die ersten drei Blöcke: Grundübungen und erster Supersatz</small></div><label class="tgl"><input type="checkbox" id="ck-short" data-f="ck-short"'+(c.short?' checked':'')+'><span></span></label></div>';
   const tips=checkTips({energy:c.energy, sore:c.sore, pain:c.pain, intense:!!c.intense}, type);
   if(tips.length) h+='<div class="callout">'+I.warn+'<div>'+tips.map(t=>'<div>'+t+'</div>').join('')+'</div></div>';
-  if(type!=='H'){
+  if(!isAux(type)){
     const nf=findActive(buildSession(type,{preview:true}));
     if(nf){ const min=Math.max(5, Math.round(nf*2/5)*5); h+='<div class="callout info">'+I.info+'<div><b>Gewicht finden:</b> Bei '+nf+' '+(nf===1?'Übung':'Übungen')+' findest du heute das Gewicht mit Probesätzen neu. Plane ca. '+min+' Minuten mehr ein.</div></div>'; }
   }
@@ -2189,7 +2206,7 @@ function swapUsedElsewhere(w){
       used.add(e.ex);
     }));
   } else {
-    ['A','B'].forEach(t=>{
+    planIds().forEach(t=>{
       if(!planItemIn(t, w.key)) return;
       PLANS[t].blocks.forEach(b=>{
         if((b.opt==='arms' && !st.arms) || (b.opt==='nordicA' && !st.nordicA)) return;
@@ -2237,7 +2254,7 @@ function sheetBrief(){
 
 function sheetBacklog(){
   const b=state.backlog;
-  return '<h2 id="sh-t">Einheit nachtragen</h2><p class="lead">Die App setzt die Vorschläge vom gewählten Datum ein. Du hakst ab, was du gemacht hast.</p><div class="q"><div class="q-l">Einheit</div>'+segRow('bl-type', [['A','Einheit A'],['B','Einheit B'],['H','Heimroutine']], b.type)+'</div><div class="q"><label class="q-l" for="bl-date">Datum</label><input type="date" class="sinput date" style="width:100%;height:48px" id="bl-date" data-f="bl-date" value="'+b.date+'" max="'+todayStr()+'"></div><button class="btn pri block" data-a="bl-go">Weiter</button><button class="link" style="align-self:center" data-a="sheet-close">Abbrechen</button>';
+  return '<h2 id="sh-t">Einheit nachtragen</h2><p class="lead">Die App setzt die Vorschläge vom gewählten Datum ein. Du hakst ab, was du gemacht hast.</p><div class="q"><div class="q-l">Einheit</div>'+segRow('bl-type', planIds().map(t=>[t, typeName(t)]).concat([['H','Heimroutine']]), b.type)+'</div><div class="q"><label class="q-l" for="bl-date">Datum</label><input type="date" class="sinput date" style="width:100%;height:48px" id="bl-date" data-f="bl-date" value="'+b.date+'" max="'+todayStr()+'"></div><button class="btn pri block" data-a="bl-go">Weiter</button><button class="link" style="align-self:center" data-a="sheet-close">Abbrechen</button>';
 }
 
 /* =========================================================
@@ -2578,7 +2595,7 @@ function onClick(ev){
       state.check={type:d.t, energy:null, sore:[], pain:[], intense:null, short:false, shortTouched:false};
       openSheet('check'); break;
     }
-    case 'ck-energy': { const c=state.check; c.energy=+d.v; if(!c.shortTouched && c.type!=='H') c.short = c.energy===0; renderSheet(); break; }
+    case 'ck-energy': { const c=state.check; c.energy=+d.v; if(!c.shortTouched && !isAux(c.type)) c.short = c.energy===0; renderSheet(); break; }
     case 'ck-sore': case 'ck-pain': { const key=a==='ck-sore'?'sore':'pain', other=a==='ck-sore'?'pain':'sore', c=state.check; const i=c[key].indexOf(d.v); if(i>-1) c[key].splice(i,1); else { c[key].push(d.v); const j=c[other].indexOf(d.v); if(j>-1) c[other].splice(j,1); } renderSheet(); break; }
     case 'ck-intense': state.check.intense=d.v==='1'; renderSheet(); break;
     case 'ck-go': { const c=state.check; const chk={energy:c.energy==null?1:c.energy, sore:c.sore.slice(), pain:c.pain.slice(), intense:!!c.intense}; startSession(c.type, chk, c.short); break; }
