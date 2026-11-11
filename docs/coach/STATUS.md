@@ -16,7 +16,7 @@ Letzte Aktualisierung: 11.11.2026
 - P3 Plan-Engine: `coach/engine.js` (`buildPlan`, `standardPlan`). `node tools/test_engine.js`: 25 Tests OK mit 11 Profilen. Aarons Profil ergibt einen Plan mit allen Übungen aus A/B.
 
 ## In Arbeit
-- nichts offen. Stand in der Testumgebung: 1.5 Test 6.
+- nichts offen. Stand in der Testumgebung: 1.5 Test 7.
 
 ## Als Nächstes
 1. P5b Rest: Gewicht finden mit Schätzung aus verwandten Übungen (konzept.md Abschnitt 9). Heute startet eine neue Übung mit festem `FIND_START` oder 50 % des früheren Gewichts. Neu: Startwert aus dem e1RM einer Übung desselben Musters mal Verhältnis, minus 10–15 %. Dafür Verhältnis-Tabelle pro Muster in `coach/engine.js` und Aufruf in `findPlan()`.
