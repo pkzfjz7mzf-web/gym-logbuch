@@ -4,7 +4,8 @@
 
    Zeile: id: [Muster, Niveau, Beweglichkeit, Auslöser, Regionen, Dehnung]
    - Muster: squat, hinge, single, hpush, vpush, hpull, vpull, glute, kneeflex, kneeext, lateral, abduct,
-     rear, latiso, chestiso, deltiso, biceps, triceps, antiext, antirot, coreflex
+     rear, latiso, chestiso, deltiso, biceps, triceps, antiext, antirot, coreflex,
+     Mobility: mob_tspine, mob_shoulder, mob_neck, mob_hipflex, mob_hip, mob_ankle, mob_chain
    - Niveau: 1 leicht lernbar und stabil · 2 mittlere Technik · 3 anspruchsvoll (Technik, Kraft oder Balance)
    - Beweglichkeit: verlangter Selbsttest und Mindestresultat (1 = «knapp» reicht, 2 = muss «gehen»).
      Tests: squat (tiefe Hocke), overhead (Arme über Kopf), toes (Finger zum Boden), hipflex, wall (Wand-Engel)
@@ -97,9 +98,31 @@ const ROWS = {
   pallof:     ['antirot',1,'','','',0],
   chop:       ['antirot',2,'','rotation','lowback',0],
   kneeraise:  ['coreflex',2,'overhead1','pull','shoulder hip',0],
-  cablecrunch:['coreflex',1,'','kneel','lowback',0]
+  cablecrunch:['coreflex',1,'','kneel','lowback',0],
+  /* Mobility und Korrektur */
+  tspineroll: ['mob_tspine',1,'','','',0],
+  openbook:   ['mob_tspine',1,'','','',0],
+  threadneedle:['mob_tspine',1,'','kneel wrist','',0],
+  catcow:     ['mob_tspine',1,'','kneel wrist','',0],
+  wallslide:  ['mob_shoulder',1,'','','',0],
+  latstretch: ['mob_shoulder',1,'','kneel overhead','',0],
+  pecstretch: ['mob_shoulder',1,'','','',0],
+  shouldercar:['mob_shoulder',1,'','','',0],
+  chintuck:   ['mob_neck',1,'','','',0],
+  hipflexstretch:['mob_hipflex',1,'','kneel','',0],
+  couchstretch:['mob_hipflex',2,'','kneel deepknee','',0],
+  hip9090:    ['mob_hip',1,'','rotation','',0],
+  lungerot:   ['mob_hip',1,'','wrist','',0],
+  squathold:  ['mob_hip',1,'','deepknee','',0],
+  adductorrock:['mob_hip',1,'','kneel wrist','',0],
+  figure4:    ['mob_hip',1,'','','',0],
+  kneetowall: ['mob_ankle',1,'','','',0],
+  calfstretch:['mob_ankle',1,'','','',0],
+  legswing:   ['mob_chain',1,'','','',0],
+  hamfloss:   ['mob_chain',1,'','','',0],
+  inchworm:   ['mob_chain',1,'','wrist bend','',0]
 };
-const PATTERNS = ['squat','hinge','single','hpush','vpush','hpull','vpull','glute','kneeflex','kneeext','lateral','abduct','rear','latiso','chestiso','deltiso','biceps','triceps','antiext','antirot','coreflex'];
+const PATTERNS = ['squat','hinge','single','hpush','vpush','hpull','vpull','glute','kneeflex','kneeext','lateral','abduct','rear','latiso','chestiso','deltiso','biceps','triceps','antiext','antirot','coreflex','mob_tspine','mob_shoulder','mob_neck','mob_hipflex','mob_hip','mob_ankle','mob_chain'];
 const TESTS = ['squat','overhead','toes','hipflex','wall'];
 const TRIGGERS = ['deepknee','overhead','rotation','bend','axial','pull','pushdeep','kneel','wrist'];
 const REGIONS = ['knee','hip','lowback','shoulder','elbow','wrist','hams','adductors'];
