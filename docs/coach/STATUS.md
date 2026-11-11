@@ -16,7 +16,7 @@ Letzte Aktualisierung: 11.11.2026
 - P3 Plan-Engine: `coach/engine.js` (`buildPlan`, `standardPlan`). `node tools/test_engine.js`: 25 Tests OK mit 11 Profilen. Aarons Profil ergibt einen Plan mit allen Übungen aus A/B.
 
 ## In Arbeit
-- nichts offen. Stand in der Testumgebung: 1.5 Test 8. Kommentar 11.11. (Thread 9f097e4b): Antwortoptionen bei den Grundbewegungen waren zu vage, jetzt drei beobachtbare Stufen pro Bewegung (`OB_SKILL`). Aaron erwartet generell Fragen und Antworten wie von einem echten Coach: übrige Onboarding-Schritte daraufhin prüfen.
+- nichts offen. Stand in der Testumgebung: 1.5 Test 9. Kommentar 11.11. (Thread e7384228): Wochenübersicht zeigte den Coach-Plan nicht. Neu: offene Einheiten als gestrichelte Vorschläge an den üblichen Trainingstagen (`planWeekdays`, Onboarding-Schritt Zeit fragt `weekdays` ab), Zähler «Gym x von n». Kommentar 11.11. (Thread 9f097e4b): Antwortoptionen bei den Grundbewegungen waren zu vage, jetzt drei beobachtbare Stufen pro Bewegung (`OB_SKILL`). Aaron erwartet generell Fragen und Antworten wie von einem echten Coach: übrige Onboarding-Schritte daraufhin prüfen.
 
 ## Als Nächstes
 1. P5b Rest: Gewicht finden mit Schätzung aus verwandten Übungen (konzept.md Abschnitt 9). Heute startet eine neue Übung mit festem `FIND_START` oder 50 % des früheren Gewichts. Neu: Startwert aus dem e1RM einer Übung desselben Musters mal Verhältnis, minus 10–15 %. Dafür Verhältnis-Tabelle pro Muster in `coach/engine.js` und Aufruf in `findPlan()`.

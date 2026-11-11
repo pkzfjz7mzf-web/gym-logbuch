@@ -156,6 +156,7 @@ main{padding-bottom:calc(var(--dock-h,84px) + 28px)}
 .day.today{background:var(--surface);color:var(--fg);box-shadow:inset 0 0 0 1px var(--line)}
 .day .slot{width:26px;height:26px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--line-strong);display:grid;place-items:center}
 .day .slot.multi{position:relative}
+.day .slot.plan{box-shadow:none;border:1.5px dashed var(--accent);color:var(--accent);font:700 13px/1 var(--f-display)}
 .list{background:var(--surface);border-radius:var(--r-l);overflow:hidden}
 .li{display:flex;align-items:center;gap:12px;padding:12px 14px;width:100%;text-align:left;border-top:1px solid var(--line);min-height:62px}
 .li:first-child{border-top:0}
@@ -1723,13 +1724,27 @@ function viewHome(){
   // Woche
   const ws=weekStart(t), wsess=weekSessions(ws), gym=wsess.filter(s=>!isAux(s.type));
   const ham=hamThisWeek(ws);
+  // Coach-Plan: offene Einheiten als Vorschlag auf die üblichen Trainingstage legen (Reihenfolge wie im Plan)
+  const planned={}, coach=!!st.plan;
+  if(coach && !act){
+    const ids=planIds(), want=planWeekdays(), seq=[]; let k=ids.indexOf(nextType());
+    for(let n=Math.max(0, ids.length-gym.length); n>0; n--){ seq.push(ids[k%ids.length]); k++; }
+    for(let i=0;i<7 && seq.length;i++){ const d=addDays(ws,i); if(d>=t && want.includes(parseYmd(d).getDay()) && !gym.some(x=>x.date===d)) planned[d]=seq.shift(); }
+    for(let i=0;i<7 && seq.length;i++){ const d=addDays(ws,i); if(d>=t && !planned[d] && !gym.some(x=>x.date===d)) planned[d]=seq.shift(); }
+  }
   h+='<section class="sec"><div class="sec-h"><h2 class="eyebrow">Diese Woche · KW '+isoWeek(t)+'</h2></div><div class="week">';
   for(let i=0;i<7;i++){
     const d=addDays(ws,i), ds=wsess.filter(s=>s.date===d);
     const dd=parseYmd(d);
-    h+='<div class="day'+(d===t?' today':'')+'"><span>'+WD[dd.getDay()]+'</span>'+(ds.length?'<span class="plate xs '+plateCls(ds[0].type)+'" title="'+esc(typeName(ds[0].type))+'">'+plateTxt(ds[0].type)+'</span>':'<span class="slot"></span>')+'<span class="tnum" style="font-weight:500">'+dd.getDate()+'</span></div>';
+    h+='<div class="day'+(d===t?' today':'')+'"><span>'+WD[dd.getDay()]+'</span>'+(ds.length?'<span class="plate xs '+plateCls(ds[0].type)+'" title="'+esc(typeName(ds[0].type))+'">'+plateTxt(ds[0].type)+'</span>':planned[d]?'<span class="slot plan" title="Geplant: '+esc(typeName(planned[d]))+'">'+plateTxt(planned[d])+'</span>':'<span class="slot"></span>')+'<span class="tnum" style="font-weight:500">'+dd.getDate()+'</span></div>';
   }
-  h+='</div><div class="chips"><span class="chip '+(gym.length>=1?'ok':'')+'">'+(gym.length>=1?'Gym '+gym.length+'× · Baseline ✓':'Gym 0 von 1 (Baseline)')+'</span></div></section>';
+  h+='</div>';
+  if(coach){
+    const n=planIds().length, pd=Object.keys(planned).sort();
+    h+='<div class="chips"><span class="chip '+(gym.length>=n?'ok':'')+'">Gym '+gym.length+' von '+n+(gym.length>=n?' ✓':'')+'</span></div>';
+    if(pd.length) h+='<p class="phase-t" style="font-size:14px">Geplant: '+pd.map(d=>WD[parseYmd(d).getDay()]+' '+esc(typeName(planned[d]))).join(' · ')+'. Die Tage sind ein Vorschlag, du kannst jederzeit an einem anderen Tag trainieren.</p>';
+  } else h+='<div class="chips"><span class="chip '+(gym.length>=1?'ok':'')+'">'+(gym.length>=1?'Gym '+gym.length+'× · Baseline ✓':'Gym 0 von 1 (Baseline)')+'</span></div>';
+  h+='</section>';
 
   // Letzte
   const ds=doneSessions().slice(0,3);
@@ -2313,7 +2328,7 @@ const OB_STEPS = ['Ziel','Erfahrung','Zeit','Material','Sport','Beschwerden','Be
 function obDefault(){
   const o=state.settings.profile;
   return Object.assign({v:1, goal:'fitness', focus:[], years:2, pauseWeeks:0, skill:{squat:2, hinge:2, push:2, pull:2}, days:2, minutes:60, equip:'gym', gear:[],
-    sports:[], sportHours:0, sportHard:0, race:'', priority:'both', issues:[], redflag:false, mobility:{}, work:'sit', posture:[], supersets:true}, o ? JSON.parse(JSON.stringify(o)) : {});
+    sports:[], sportHours:0, sportHard:0, race:'', priority:'both', issues:[], redflag:false, mobility:{}, work:'sit', posture:[], supersets:true, weekdays:[]}, o ? JSON.parse(JSON.stringify(o)) : {});
 }
 function obStart(){ if(!state.ob) state.ob={step:0, p:obDefault()}; openSheet('ob'); }
 /* Entwurf in die Form bringen, die die Engine erwartet. */
@@ -2345,6 +2360,7 @@ function sheetOb(){
     h+='<h2 id="sh-t">Deine Zeit</h2><p class="lead">Plane, was du sicher schaffst. Ein Plan, den du einhältst, schlägt den perfekten Plan.</p>';
     h+=obQ('Trainingstage pro Woche', obSeg('days', [1,2,3,4,5,6].map(x=>[x,String(x)]), p.days, ' scale'));
     h+=obQ('Minuten pro Einheit', obSeg('minutes', [30,45,60,75,90].map(x=>[x,String(x)]), p.minutes, ' scale'), 'Inklusive Aufwärmen und Mobility.');
+    h+=obQ('An welchen Tagen trainierst du meistens? (optional)', obChips('weekdays', [['1','Mo'],['2','Di'],['3','Mi'],['4','Do'],['5','Fr'],['6','Sa'],['0','So']], p.weekdays), 'Die Wochenübersicht schlägt deine Einheiten an diesen Tagen vor. Du bleibst frei, an anderen Tagen zu trainieren.');
   } else if(n===3){
     h+='<h2 id="sh-t">Wo trainierst du?</h2>';
     h+=obQ('Ort und Material', obSeg('equip', [['gym','Gym'],['home','Zuhause'],['bw','Ohne Geräte']], p.equip));
@@ -2405,6 +2421,11 @@ function sheetObResult(){
   h+='<button class="link" style="align-self:center" data-a="ob-save">Nur Profil speichern, Plan noch nicht übernehmen</button>';
   h+='<div class="ob-nav"><button class="btn sec" data-a="ob-back">Zurück</button><button class="btn pri" data-a="ob-apply">Plan übernehmen</button></div>';
   return h;
+}
+/* Übliche Trainingstage (getDay: 0 = So). Aus dem Profil, sonst gleichmässig über die Woche verteilt. */
+function planWeekdays(){
+  const w=((state.settings.profile||{}).weekdays||[]).map(Number), n=planIds().length;
+  return w.length ? w : ({1:[3], 2:[1,4], 3:[1,3,5], 4:[1,2,4,5], 5:[1,2,3,5,6], 6:[1,2,3,4,5,6]}[n] || [1,4]);
 }
 function planTitle(pl){ return pl && pl.days ? (pl.name || 'Coach-Plan · '+pl.days.length+' '+(pl.days.length===1?'Einheit':'Einheiten')+' pro Woche') : 'Ganzkörper A/B'; }
 /* Plan aktivieren. Der bisherige Plan wandert in den Verlauf (max. 5). Der Übungsverlauf hängt an der Übung und bleibt. */
