@@ -29,9 +29,10 @@ for(const name in P){
   const dupes = pl.days.some(d => { const a = [].concat(...d.blocks.map(b => b.items.map(i => i.ex))); return new Set(a).size !== a.length; });
   const over = pl.days.filter(d => d.minutes > (p.minutes||60));
   const keys = its.map(i => i.key);
-  const bad = its.filter(i => !EX[i.ex] || !CATALOG[i.ex] || i.sets<2 || i.sets>4 || !(i.reps[0]<=i.reps[1]));
+  const bad = its.filter(i => !EX[i.ex] || !CATALOG[i.ex] || i.sets<(i.mob?1:2) || i.sets>4 || !(i.reps[0]<=i.reps[1]) || !!i.mob !== !!EX[i.ex].mob);
+  const mobOk = pl.days.every(d => d.blocks[0].mob && d.blocks[0].items.length>=2 && d.blocks.filter(b => b.mob).length===1) && pl.routine && pl.routine.blocks[0].items.length>=4;
   ok(name+': '+pl.days.length+' Tage, '+its.length+' Übungen, '+pl.days.map(d=>d.minutes).join('/')+' min',
-     again && !dupes && !over.length && !bad.length && new Set(keys).size===keys.length && pl.days.length===Math.max(1,Math.min(6,p.days||2)) && (name==='bw' ? pl.why.some(w => w.topic==='luecke') : pl.days.every(d => d.blocks.length>=3)),   // bw: Katalog hat noch zu wenig Körpergewichtsübungen (P6)
+     again && !dupes && !over.length && !bad.length && mobOk && new Set(keys).size===keys.length && pl.days.length===Math.max(1,Math.min(6,p.days||2)) && (name==='bw' ? pl.why.some(w => w.topic==='luecke') : pl.days.every(d => d.blocks.length>=4)),   // bw: Katalog hat noch zu wenig Körpergewichtsübungen (P6)
      JSON.stringify({again, dupes, over:over.map(d=>d.name+' '+d.minutes), bad:bad.map(i=>i.ex)}));
 }
 
@@ -67,6 +68,21 @@ for(const name in P){
   ok('Schwerpunkt Brust und Arme: mehr Volumen dort', m.volume.chest.sets > base.volume.chest.sets && m.volume.arms.sets > base.volume.arms.sets, JSON.stringify([m.volume.chest.sets, base.volume.chest.sets, m.volume.arms.sets, base.volume.arms.sets]));
   const sh = E.buildPlan(P.short, EX, CATALOG);
   ok('30 Minuten: Grundübungen bleiben, Hinweis auf Zeit', sh.days.every(d => d.blocks.some(b => b.items.some(i => i.main))) && sh.why.some(w => w.topic==='zeit')); }
+
+// Mobility
+{ const pl = E.buildPlan(P.aaron, EX, CATALOG), m = pl.days.map(d => d.blocks[0].items.map(i => CATALOG[i.ex].pattern));
+  ok('Aaron: Mobility deckt Brustwirbelsäule und Hüftbeuger ab (Rundrücken, Hohlkreuz, sitzend)', m.every(x => x.includes('mob_tspine') && x.includes('mob_hipflex')), JSON.stringify(m));
+  ok('Aaron: Routine für freie Tage mit Brustwirbelsäule, Hüftbeuger, Schulter', ['mob_tspine','mob_hipflex','mob_shoulder'].every(k => pl.routine.blocks[0].items.some(i => CATALOG[i.ex].pattern===k)) && pl.routine.minutes>=5 && pl.routine.minutes<=14, pl.routine.minutes+' min');
+  ok('Mobility-Begründung nennt die Gründe', pl.why.some(w => w.topic==='mobility' && /Rundrücken/.test(w.text) && /Hohlkreuz/.test(w.text)));
+  const tight = E.buildPlan({days:4, minutes:60, years:3, mobility:{squat:0, overhead:2, toes:0, hipflex:2, wall:2}}, EX, CATALOG);
+  const leg = tight.days.find(d => /Unterkörper/.test(d.name)).blocks[0].items.map(i => CATALOG[i.ex].pattern), up = tight.days.find(d => /Oberkörper/.test(d.name)).blocks[0].items.map(i => CATALOG[i.ex].pattern);
+  ok('Hocke und Zehen «geht nicht»: Beintag mit Sprunggelenk, Hüfte, hinterer Kette', ['mob_ankle','mob_hip','mob_chain'].every(k => leg.includes(k)), leg.join(','));
+  ok('Oberkörpertag: Mobility für Brustwirbelsäule oder Schulter', up.some(k => k==='mob_tspine' || k==='mob_shoulder'), up.join(','));
+  const head = E.buildPlan({days:2, posture:['head']}, EX, CATALOG);
+  ok('Kopf nach vorne: Nackenübung in der Routine', head.routine.blocks[0].items.some(i => i.ex==='chintuck'));
+  const knee = E.buildPlan({days:2, issues:[{region:'knee', status:'sensitive', triggers:['kneel','deepknee']}]}, EX, CATALOG);
+  const kn = [].concat(...knee.days.map(d => d.blocks[0].items), knee.routine.blocks[0].items).filter(i => CATALOG[i.ex].triggers.some(t => ['kneel','deepknee'].includes(t)));
+  ok('Knie empfindlich beim Knien: keine knienden Mobility-Übungen', kn.length===0, kn.map(i=>i.ex).join(',')); }
 
 // Standardplan
 { const st = E.standardPlan(PLANS, WARMUP);

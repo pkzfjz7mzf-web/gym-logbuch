@@ -37,15 +37,56 @@ const LABEL = {squat:'Kniebeuge', hinge:'Hüftbeuge', single:'Einbeinig', hpush:
 const BASE = {goblet:3, frontsq:2, rdl:3, dbrdl:2, csrow:3, dbrow:2, cablerow:2, incline:3, dbbench:2, bbbench:2, bss:3, revlunge:2, splitsq:2,
   facepull:3, revfly:2, deadbug:3, birddog:2, hipthrust:3, bbbridge:2, pullup:3, chinup:2, latpd:2, pullupA:2, landmine:3, seatedpress:2, ohp:2,
   nordic:3, seatcurl:2, legcurl:2, latlunge:3, adductor:2, pallof:3, chop:2, curl:2, inclinecurl:2, pushdown:2, ohext:2, latraise:2, cablelat:2,
-  cablefly:2, pecdeck:2, straightarm:2, legext:2, legpress:2, hacksquat:2, cablecrunch:2, kneeraise:2, abduction:2};
+  cablefly:2, pecdeck:2, straightarm:2, legext:2, legpress:2, hacksquat:2, cablecrunch:2, kneeraise:2, abduction:2,
+  tspineroll:4, openbook:3, threadneedle:2, wallslide:3, pecstretch:2, latstretch:2, chintuck:3, hipflexstretch:3, couchstretch:2, hip9090:2, lungerot:3,
+  squathold:3, adductorrock:2, figure4:2, kneetowall:3, calfstretch:2, legswing:3, hamfloss:2, inchworm:2};
 /* Zusätzliches Material neben dem Gerätetyp. gym hat alles. */
 const NEEDS = {pullup:['bar'], chinup:['bar'], kneeraise:['bar'], invrow:['bar'], dips:['gym'], incline:['bench'], dbbench:['bench'], csrow:['bench'], bbbench:['bench'],
   skull:['bench'], inclinecurl:['bench'], dbfly:['bench'], dbpullover:['bench'], hipthrust:['bench'], seatedpress:['bench'], slhipthrust:['bench'], bss:['bench'], stepup:['bench'],
-  backext:['gym'], rollout:['gym'], ballcurl:['gym'], pullapart:['bands'], landmine:['gym'], frontsq:['rack'], goodmorning:['rack'], ohp:['rack']};
+  backext:['gym'], rollout:['gym'], ballcurl:['gym'], tspineroll:['gym'], latstretch:['bench'], pullapart:['bands'], landmine:['gym'], frontsq:['rack'], goodmorning:['rack'], ohp:['rack']};
 const REPS = {nordic:[3,5], deadbug:[8,8], birddog:[8,8], pallof:[10,10], copenhagen:[6,10], hamslide:[6,10], rollout:[6,10], latlunge:[8,8], cossack:[6,8]};
 const TEST_NAME = {squat:'tiefe Hocke', overhead:'Arme über Kopf', toes:'Finger zum Boden', hipflex:'Hüftbeuger', wall:'Wand-Engel'};
 const TRIG_NAME = {deepknee:'tiefes Kniebeugen', overhead:'Überkopf-Bewegungen', rotation:'Drehung', bend:'Vorbeugen unter Last', axial:'Last auf der Wirbelsäule', pull:'Hängen und Zug', pushdeep:'tiefe Schulterstreckung', kneel:'Knien', wrist:'Stütz auf dem Handgelenk'};
 const REGION_NAME = {knee:'Knie', hip:'Hüfte', lowback:'unterer Rücken', shoulder:'Schulter', elbow:'Ellbogen', wrist:'Handgelenk', hams:'Hamstrings', adductors:'Adduktoren'};
+
+/* ---------- Mobility: Bedarf aus Selbsttests, Haltung und Alltag ---------- */
+const MOB = ['mob_tspine','mob_hipflex','mob_hip','mob_shoulder','mob_ankle','mob_chain','mob_neck'];
+const MOB_LABEL = {mob_tspine:'Brustwirbelsäule', mob_shoulder:'Schulter', mob_neck:'Nacken', mob_hipflex:'Hüftbeuger', mob_hip:'Hüfte', mob_ankle:'Sprunggelenk', mob_chain:'hintere Kette'};
+function mobNeeds(p){
+  const n = {}, why = {}; MOB.forEach(k => { n[k] = 0; why[k] = []; });
+  const add = (k, v, w) => { if(v>0){ n[k] += v; if(w && !why[k].includes(w)) why[k].push(w); } };
+  const d = t => 2 - mob(p, t), tested = t => (p.mobility||{})[t] != null;
+  const T = (t, k, f) => add(k, d(t)*f, tested(t) ? 'Test «'+TEST_NAME[t]+'»' : null);
+  T('squat','mob_ankle',1); T('squat','mob_hip',1); T('overhead','mob_shoulder',1); T('overhead','mob_tspine',1);
+  T('toes','mob_chain',1); T('hipflex','mob_hipflex',1); T('wall','mob_tspine',1); T('wall','mob_shoulder',0.5);
+  const po = p.posture||[];
+  if(po.includes('kyphosis')){ add('mob_tspine',2,'Rundrücken'); add('mob_shoulder',1,'Rundrücken'); }
+  if(po.includes('lordosis')) add('mob_hipflex',2,'Hohlkreuz');
+  if(po.includes('head')){ add('mob_neck',2,'Kopf nach vorne'); add('mob_tspine',1,'Kopf nach vorne'); }
+  if(p.work==='sit'){ add('mob_hipflex',1,'sitzende Arbeit'); add('mob_tspine',1,'sitzende Arbeit'); }
+  return {n, why};
+}
+function pickMob(pattern, p, EX, CAT, gear, used, preferHold, week){
+  const trig = [].concat(...(p.issues||[]).map(i => i.triggers||[])), c = [];
+  for(const id in CAT){
+    const k = CAT[id], ex = EX[id];
+    if(!ex || k.pattern!==pattern || used[id] || (p.avoid||[]).includes(id) || !available(id, ex, gear)) continue;
+    if(k.triggers.some(t => trig.includes(t))) continue;
+    c.push({id, score:(BASE[id]||1) + (ex.hold ? (preferHold ? 2 : -1) : 0) - (k.level>1 ? 1 : 0) - (week && week[id] ? 2 : 0)});
+  }
+  c.sort((a,b) => b.score-a.score || (a.id<b.id?-1:1));
+  return c[0] ? c[0].id : null;
+}
+function mobBlock(prefix, order, need, count, sets, p, EX, CAT, gear, preferHold, week){
+  const used = {}, items = [];
+  for(const k of order){
+    if(items.length>=count) break;
+    const id = pickMob(k, p, EX, CAT, gear, used, preferHold, week); if(!id) continue;
+    used[id] = true; if(week) week[id] = true;
+    items.push({key:prefix+'.mob'+(items.length+1), group:k, pattern:k, ex:id, sets:typeof sets==='function' ? sets(k) : sets, reps:(EX[id].reps||[8,10]).slice(), mob:true, alts:[]});
+  }
+  return items.length ? {rest:'short', mob:true, name:'Mobility', items} : null;
+}
 
 function levelOf(p){ const y=p.years||0; return y<1 ? 1 : y<3 ? 2 : 3; }
 function gearOf(p){
@@ -115,11 +156,12 @@ function repsFor(slot, id, p){
 
 /* ---------- Zeit und Volumen ---------- */
 function slotSeconds(it, EX, paired){
+  if(it.mob){ const e = EX[it.ex]; return it.sets*(e.side?2:1)*(e.hold ? it.reps[0]+10 : 40); }
   const side = EX[it.ex].side ? 70 : 40, rest = it.main ? 150 : 90;
   return it.sets*(side + (paired ? 45 : rest));
 }
 function dayMinutes(day, EX){
-  let s = 8*60;
+  let s = (day.blocks.some(b => b.mob) ? 4 : 8)*60;   // allgemeines Aufwärmen, mit Mobility-Block kürzer
   day.blocks.forEach(b => b.items.forEach(it => { s += slotSeconds(it, EX, b.ss); }));
   return Math.round(s/60);
 }
@@ -195,14 +237,22 @@ function buildPlan(profile, EX, CAT){
   missing.forEach(m => why.push({topic:'luecke', text:m.day+': für «'+LABEL[m.pattern]+'» gibt es mit deinem Material und deinen Angaben keine passende Übung.'}));
 
   // 4) Blöcke, Zeitbudget: erst paaren, dann streichen, dann Sätze kürzen
-  const allowSS = p.supersets!==false; let trimmed = false, paired = false;
+  const allowSS = p.supersets!==false, mn = mobNeeds(p), mobWeek = {}; let trimmed = false, paired = false;
   days.forEach(d => {
     d.blocks = d.items.map(it => ({rest:it.ex==='nordic' ? 'nordic' : it.main ? 'main' : 'acc', items:[it]}));
+    { // Mobility-Block: Bedarf plus Bezug zum Tagesinhalt
+      const legs = d.items.some(x => LEG.includes(x.pattern)), upper = d.items.some(x => ['hpush','vpush','hpull','vpull'].includes(x.pattern));
+      const rel = k => (legs && ['mob_hipflex','mob_hip','mob_ankle','mob_chain'].includes(k) ? 2 : 0) + (upper && ['mob_tspine','mob_shoulder'].includes(k) ? 2 : 0);
+      const sc = MOB.map(k => ({k, s:mn.n[k] + rel(k)})).filter(x => x.s>0 && (x.k!=='mob_neck' || mn.n.mob_neck>0)).sort((a,b) => b.s-a.s);
+      const cap = minutes<=30 ? 2 : minutes<=45 ? 3 : 4, count = Math.max(2, Math.min(cap, sc.filter(x => x.s>=2).length));
+      const mb = mobBlock(d.id, sc.map(x => x.k), mn.n, count, k => mn.n[k]>=2 ? 2 : 1, p, EX, CAT, gear, false, mobWeek);
+      if(mb) d.blocks.unshift(mb);
+    }
     const over = () => dayMinutes(d, EX) > minutes;
     if(allowSS){
       for(let i=0; i<d.blocks.length-1 && over(); i++){
         const a = d.blocks[i], b = d.blocks[i+1];
-        if(a.items.length===1 && b.items.length===1 && canPair(a.items[0], b.items[0], EX)){ d.blocks.splice(i, 2, {rest:'ss', ss:true, items:[a.items[0], b.items[0]]}); paired = true; }
+        if(!a.mob && !b.mob && a.items.length===1 && b.items.length===1 && canPair(a.items[0], b.items[0], EX)){ d.blocks.splice(i, 2, {rest:'ss', ss:true, items:[a.items[0], b.items[0]]}); paired = true; }
       }
     }
     for(let pr=3; pr>=2 && over(); pr--){
@@ -214,12 +264,12 @@ function buildPlan(profile, EX, CAT){
       }
     }
     for(let guard=0; guard<12 && over(); guard++){
-      const its = [].concat(...d.blocks.map(b=>b.items)).filter(x => x.sets>2).sort((a,b) => b.prio-a.prio || b.sets-a.sets);
+      const its = [].concat(...d.blocks.map(b=>b.items)).filter(x => x.sets>2 && !x.mob).sort((a,b) => b.prio-a.prio || b.sets-a.sets);
       if(!its.length) break; its[0].sets--; trimmed = true;
     }
     // Letzter Ausweg bei sehr kurzen Einheiten: Ergänzungen von hinten streichen, mindestens 3 Übungen bleiben
     for(let i=d.blocks.length-1; i>=0 && over(); i--){
-      const b = d.blocks[i]; if(b.items.some(x=>x.main)) continue;
+      const b = d.blocks[i]; if(b.mob || b.items.some(x=>x.main)) continue;
       if([].concat(...d.blocks.map(x=>x.items)).length - b.items.length < 3) break;
       d.blocks.splice(i,1); trimmed = true;
     }
@@ -236,7 +286,7 @@ function buildPlan(profile, EX, CAT){
     let done = false;
     for(const l of lack){
       const opts = [];
-      days.forEach(d => d.blocks.forEach(b => b.items.forEach(it => { if(it.sets<4 && !EX[it.ex].noRir && primary(it,EX).includes(l.m) && !(enduranceFirst && LEG.includes(it.pattern))){
+      days.forEach(d => d.blocks.forEach(b => b.items.forEach(it => { if(it.sets<4 && !it.mob && !EX[it.ex].noRir && primary(it,EX).includes(l.m) && !(enduranceFirst && LEG.includes(it.pattern))){
         it.sets++; const fits = dayMinutes(d,EX) <= minutes; it.sets--; if(fits) opts.push({it, mins:dayMinutes(d,EX)}); } })));
       if(opts.length){ opts.sort((a,b) => a.it.sets-b.it.sets || a.mins-b.mins); opts[0].it.sets++; done = true; break; }
     }
@@ -257,19 +307,20 @@ function buildPlan(profile, EX, CAT){
   // 7) Aufwärmen
   days.forEach(d => { d.warmup = warmupFor(d, p); d.focus = [].concat(...d.blocks.map(b=>b.items)).filter(x=>x.main).map(x=>LABEL[x.pattern]).join(', '); d.minutes = dayMinutes(d, EX);
     d.blocks.forEach(b => b.items.forEach(it => { delete it.prio; if(!it.main) delete it.main; if(!it.alts.length) delete it.alts; })); delete d.type; });
-  return {v:1, source:'coach', level, days, volume, why};
+  // 8) Mobility: Begründung und Routine für freie Tage
+  const top = MOB.filter(k => mn.n[k]>=2).sort((a,b) => mn.n[b]-mn.n[a]);
+  if(top.length){ const reasons = [...new Set([].concat(...top.map(k => mn.why[k])))];
+    why.push({topic:'mobility', text:'Mobility-Block mit Schwerpunkt '+top.slice(0,3).map(k => MOB_LABEL[k]).join(', ')+(reasons.length?' ('+reasons.join(', ')+')':'')+'. Kräftigen und Mobilisieren verbessern Beweglichkeit und Kraft in diesen Positionen. Haltung verändert sich dadurch nur langsam und mässig.'}); }
+  else why.push({topic:'mobility', text:'Mobility-Block passend zum Tagesinhalt als Vorbereitung.'});
+  const order = MOB.slice().sort((a,b) => mn.n[b]-mn.n[a]).filter(k => k!=='mob_neck' || mn.n.mob_neck>0);
+  const rb = mobBlock('M', order, mn.n, Math.max(4, Math.min(6, order.filter(k => mn.n[k]>=1).length)), 2, p, EX, CAT, new Set(), true);   // Routine für zuhause: ohne Geräte
+  const routine = rb ? {id:'M', kind:'mobility', name:'Mobility für freie Tage', blocks:[rb]} : null;
+  if(routine) routine.minutes = Math.round(rb.items.reduce((a,it) => a+slotSeconds(it, EX), 0)/60);
+  return {v:1, source:'coach', level, days, routine, volume, why};
 }
 
 function warmupFor(d, p){
-  const w = [['5 min locker auf Rudergerät, Velo oder Crosstrainer','']], pats = [].concat(...d.blocks.map(b=>b.items)).map(x=>x.pattern), posture = p.posture||[];
-  const legs = pats.some(x => LEG.includes(x)), upper = pats.some(x => ['hpush','vpush','hpull','vpull'].includes(x)), add = (a,b) => { if(w.length<4) w.push([a,b]); };
-  if(legs && (mob(p,'hipflex')<2 || posture.includes('lordosis') || p.work==='sit')) add('Kniende Hüftbeuger-Dehnung','2 × 30 s pro Seite, Becken aufgerichtet, Gesäss angespannt');
-  if(legs && mob(p,'squat')<2) add('Tiefe Hocke halten, an einem Pfosten festhalten','2 × 30 s, Fersen am Boden, Knie nach vorne schieben');
-  if(upper && (mob(p,'overhead')<2 || mob(p,'wall')<2 || posture.includes('kyphosis'))) add('Brustwirbelsäule über Foam Roller strecken','1 × 10');
-  if(upper && (posture.includes('kyphosis') || p.work==='sit')) add('Open Books','1 × 8 pro Seite');
-  if(legs && mob(p,'toes')<2) add('Beinpendel vor und zurück','1 × 10 pro Seite');
-  add('Aufwärmsätze der ersten Übung','2 leichte Sätze mit steigendem Gewicht');
-  return w;
+  return [['4 min locker auf Rudergerät, Velo oder Crosstrainer',''], ['Aufwärmsätze der ersten Übung','2 leichte Sätze mit steigendem Gewicht']];
 }
 
 /* Heutiges A/B als Plan. Die Tages-IDs bleiben «A» und «B», damit alte Einheiten und Auswertungen passen. */
@@ -278,6 +329,6 @@ function standardPlan(PLANS, WARMUP){
   return {v:1, source:'standard', name:'Ganzkörper A/B', days, why:[{topic:'split', text:'Dein bisheriger Plan: zwei Ganzkörper-Einheiten im Wechsel.'}]};
 }
 
-const api = {buildPlan, standardPlan, dayMinutes, weeklyVolume, LABEL};
+const api = {buildPlan, standardPlan, dayMinutes, weeklyVolume, mobNeeds, LABEL, MOB_LABEL};
 if(typeof module !== 'undefined' && module.exports) module.exports = api; else root.COACH_ENGINE = api;
 })(typeof self !== 'undefined' ? self : this);
