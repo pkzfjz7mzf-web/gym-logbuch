@@ -13,6 +13,7 @@ Ausdauersport, später laufende Anpassung.
 - Verletzungen: abfragen, Übungen ausschliessen/ersetzen, Korrekturübungen einplanen. Keine Diagnosen,
   bei Warnzeichen Verweis an Physio/Arzt.
 - 10.11., 16:54: A/B ist der aktive Plan, Onboarding erst bei «neuen Plan erstellen». Coach soll auch beim Gewicht finden helfen und auf reale Situationen reagieren (krank, Ferien, verpasst, verschoben). Ausdauer vorerst nur berücksichtigen, eigener Ausdauerplan soll später kommen, Datenmodell dafür offen halten.
+- 11.11.: Gym ist der Normalfall. Gewichtsschritte pro Übung einfach erfassbar (z.B. 0.75 kg von 2 bis 80). Mobility ist sehr wichtig (Fehlhaltungen).
 - Umfang ist für 6 Tage gross: Was nicht fertig wird, bleibt hier dokumentiert.
 
 ## Arbeitsweise (limit-sicher)
@@ -29,6 +30,8 @@ Ausdauersport, später laufende Anpassung.
 | P1 | Konzept | `konzept.md`: Onboarding-Fragen, Datenmodell, Planlogik mit Quellen, Architektur | Aaron liest und gibt frei |
 | P2 | Katalog-Schema | Attribute pro Übung (Muster, Muskeln, Gerät, Niveau, Anforderungen, Ausschlüsse), bestehende 83 Übungen nachgeführt | Prüfskript OK |
 | P3 | Plan-Engine | reine Funktion Profil → Plan, mit Node-Tests für typische Profile | Tests OK |
+| P3b | Gewichtsschritte pro Übung | Sheet «Schritte» in der Übung, Raster in Vorschlägen, Gewicht finden, Plus/Minus | erledigt 11.11., in Test |
+| P3c | Mobility zuerst | Mobility- und Korrekturübungen im Katalog, Mobility-Block pro Einheit in der Engine, Routine für freie Tage (konzept.md Abschnitt 11) | Tests OK |
 | P4 | Onboarding-UI | Fragenstrecke in der Testumgebung, speichert Profil | Aaron testet |
 | P5 | Plan in der App | Plan-Ansicht, Einheiten aus dem Plan starten und loggen, bestehendes A/B bleibt als Standardplan | Aaron testet, test_app OK |
 | P5b | Coach reagiert | Knopf «Etwas ist dazwischengekommen»: verpasst, verschieben, Ferien, krank, Pause (konzept.md Abschnitt 10). Gewicht finden mit Schätzung aus verwandten Übungen (Abschnitt 9) | Aaron testet |

@@ -730,7 +730,18 @@ function setSwap(key, exId){
   Store.saveSettings();
 }
 function missingRir(b){ let n=0; b.items.forEach(e=>{ if(e.skipped || EX[e.ex].noRir) return; e.sets.forEach(x=>{ if(x.done && x.rir==null) n++; }); }); return n; }
-function incFor(def, st){ const k=EQUIP[def.equip].inc; return k ? (+st[k]||2.5) : 1; }
+Object.keys(EX).forEach(id=>{ EX[id].id=id; });
+/* Gewichtsschritte: Standard pro Gerätetyp, optional pro Übung (settings.steps[id] = {inc, min, max}). */
+function gridOf(def, st){ const c=((st||state.settings).steps||{})[def.id]; return c && +c.inc>0 ? c : null; }
+function incFor(def, st){ const g=gridOf(def, st); if(g) return +g.inc; const k=EQUIP[def.equip].inc; return k ? (+st[k]||2.5) : 1; }
+/* Auf das Raster der Übung legen: min, min+inc, min+2·inc … bis max. Ohne eigenes Raster unverändert. */
+function snapW(w, def){
+  const g=gridOf(def); if(!g || w==null || isNaN(w)) return w;
+  const min=+g.min||0, inc=+g.inc; let v=min+Math.round((w-min)/inc-1e-9)*inc;
+  if(+g.max>0) v=Math.min(v, +g.max);
+  return rnd(Math.max(min, v));
+}
+function gridText(g){ const min=+g.min||0, inc=+g.inc, a=[0,1,2,3].map(i=>fmtW(min+i*inc)); return a.join(' · ')+' …'+(+g.max>0?' bis '+fmtW(+g.max):''); }
 
 function phaseOf(d){ return PHASES.find(p=>d>=p.from && d<=p.to) || null; }
 
@@ -750,8 +761,10 @@ const state = {
    Release hoch, nicht pro Änderung. Alle Änderungen bis zum Release sammeln sich im obersten CHANGELOG-Eintrag
    (date: null, solange er nicht live ist). In der Testumgebung kommt «Test n» dazu (tools/build-preview.py).
    Die echte App zeigt nach einem Release einmal pro Gerät «Was ist neu». */
-const APP_VERSION = '1.4';
+const APP_VERSION = '1.5';
 const CHANGELOG = [
+  {v:'1.5', date:null, items:[
+    'Gewichtsschritte pro Übung: Unter «Schritte» legst du fest, in welchen Schritten und in welchem Bereich das Gewicht an diesem Gerät wählbar ist, z. B. 0.75 kg von 2 bis 80 kg. Vorschläge, Gewicht finden und die Plus/Minus-Tasten halten sich daran.']},
   {v:'1.4', date:'2026-11-10', items:[
     'Übung tauschen: deutlich mehr Auswahl. Oben stehen Varianten der gleichen Bewegung, darunter Übungen mit anderer Mechanik für dieselben Muskeln, z. B. Beinbeuger statt RDL oder Seitheben statt Schulterdrücken.',
     '37 neue Übungen, u. a. Beinstrecker, Hackenschmidt, Good Mornings, Langhantelrudern, Chin-ups, Bankdrücken, Dips, Fliegende, Seitheben und Copenhagen Adduktion.',
@@ -1016,7 +1029,8 @@ function isFresh(exId, ctx){
   if(ctx.reentry){ const rs=ctx.settings.reentryStart; return !rs || (last.s.date||'') < rs; }
   return (ctx.ts-(last.s.startedAt||0))/864e5 >= FIND_DAYS;
 }
-function computeTarget(exId, it, ctx){
+function computeTarget(exId, it, ctx){ const b=computeTargetRaw(exId, it, ctx); if(b && b.w!=null) b.w=snapW(b.w, EX[exId]); return b; }
+function computeTargetRaw(exId, it, ctx){
   const def=EX[exId], st=ctx.settings;
   const lo=it.reps[0], hi=it.reps[1];
   const sets = ctx.reentry ? Math.min(it.sets,2) : it.sets;
@@ -1147,7 +1161,7 @@ function findOverlaps(key, tr){ const r=FIND_RANGE[key]; return r[1]>=tr[0] && r
 function findMinW(def){ return def.equip==='bb' ? (+state.settings.barKg||20) : 0; }
 function findRound(w, def){
   if(def.equip==='bw') return Math.max(0, rnd(w));
-  return Math.max(findMinW(def), roundTo(w, incFor(def, state.settings), 'near'));
+  return snapW(Math.max(findMinW(def), roundTo(w, incFor(def, state.settings), 'near')), def);
 }
 function findPlan(exId, ctx){
   const def=EX[exId], st=ctx.settings;
@@ -1168,6 +1182,7 @@ function findPlan(exId, ctx){
 }
 function findBegin(e, ctxReentry, start, why, manual){
   const def=EX[e.ex];
+  start=snapW(start, def);
   e.find={status:'active', tr:(e.target.rir||[1,2]).slice(), start, w:start, r:e.target.reps[0], steps:[], why, manual:!!manual};
   e.target.action='find'; e.target.reason=why; e.target.w=null;
   e.sets.forEach(x=>{ if(!x.done) x.w=null; });
@@ -1219,6 +1234,8 @@ function findNext(w, kind, f, def, est){
   let nw = kind==='down' ? findLighter(w, def) : findHeavier(w, def, kind==='up25'?0.25:kind==='up50'?0.5:0.10);
   // Weniger oder mehr Wdh. als geplant: Schätzung, mindestens so weit wie die Grundregel
   if(est!=null) nw = kind==='down' ? Math.max(findMinW(def), Math.min(nw, roundTo(est, inc, 'near'))) : Math.max(nw, roundTo(est, inc, 'down'));
+  nw=snapW(nw, def);
+  if(nw===w && gridOf(def)) nw=snapW(rnd(w+(kind==='down'?-1:1)*sg*inc), def);
   if(hi!=null && D(nw)>=D(hi)) nw=rnd(hi-sg*inc);
   if(lo!=null && D(nw)<=D(lo)) nw=rnd(lo+sg*inc);
   if(nw<0 || nw===w || (def.equip==='bb' && nw<findMinW(def))) return null;
@@ -1756,7 +1773,7 @@ function entryCard(s,bi,ii){
   const tags=[]; if(s.blocks[bi].opt==='nordicA') tags.push('Vorschlag · optional'); if(e.swapFrom && EX[e.swapFrom]) tags.push('Heute statt '+EX[e.swapFrom].name); if(e.swappedTo && EX[e.swappedTo]) tags.push('Gewechselt zu '+EX[e.swappedTo].name);
   let h='<article class="ex'+(ro?' ro':'')+'" id="ex-'+bi+'-'+ii+'"><div class="ex-head"><div class="tx">'+(tags.length?'<span class="ex-tag">'+esc(tags.join(' · '))+'</span>':'')+'<h3>'+esc(def.name)+'</h3><div class="ex-meta">'+meta.join(' · ')+'</div></div>'+(canSwap?'<button class="swap-btn" data-a="swap-open" '+ref+' aria-label="'+esc(def.name)+' tauschen">'+I.swap+'Tauschen</button>':'')+'</div>';
   const f=e.find;
-  if(f && f.status==='active' && !state.editId){ h+=findPanel(s,bi,ii)+'<div class="ex-foot"><button class="ghost-btn" data-a="fd-skip" '+ref+'>Ich kenne mein Gewicht</button><span class="sp"></span><button class="ghost-btn" data-a="skip" '+ref+'>'+I.skip+'Auslassen</button></div>'; h+='<details class="cue"><summary>'+I.info+'<span class="when-closed">Technik-Tipp anzeigen</span><span class="when-open">Technik-Tipp</span>'+I.chevD+'</summary><p>'+esc(def.cue)+'</p></details>'; return h+'</article>'; }
+  if(f && f.status==='active' && !state.editId){ h+=findPanel(s,bi,ii)+'<div class="ex-foot"><button class="ghost-btn" data-a="fd-skip" '+ref+'>Ich kenne mein Gewicht</button><span class="sp"></span>'+(EQUIP[def.equip].inc?'<button class="ghost-btn" data-a="steps-open" '+ref+'>Schritte</button>':'')+'<button class="ghost-btn" data-a="skip" '+ref+'>'+I.skip+'Auslassen</button></div>'; h+='<details class="cue"><summary>'+I.info+'<span class="when-closed">Technik-Tipp anzeigen</span><span class="when-open">Technik-Tipp</span>'+I.chevD+'</summary><p>'+esc(def.cue)+'</p></details>'; return h+'</article>'; }
   const tagTxt={up:'↑ Mehr',hold:'= Halten',down:'↓ Leichter',new:'Neu',start:'Start',found:'Gefunden',reps:'Mehr Wdh.'}[t.action]||'';
   let extra='';
   if(f && f.status==='done') extra='<span class="note" style="color:var(--muted)">'+esc(f.steps.map(st=>findStepText(st,def)).join(' · '))+'</span>'+(findCanUndo(e)&&!state.editId?'<button class="act" data-a="fd-undo" '+ref+'>Letzten Probesatz zurücknehmen</button>':'');
@@ -1780,7 +1797,7 @@ function entryCard(s,bi,ii){
     }
   });
   const lastDone = e.sets.length>0 && e.sets[e.sets.length-1].done;
-  h+='</div><div class="ex-foot"><div class="setctl" role="group" aria-label="Anzahl Sätze"><button data-a="rm-set" '+ref+' aria-label="Satz entfernen"'+(e.sets.length<=1||lastDone?' disabled':'')+'>−</button><span>'+e.sets.length+' '+(e.sets.length===1?'Satz':'Sätze')+'</span><button data-a="add-set" '+ref+' aria-label="Satz hinzufügen">+</button></div><span class="sp"></span><button class="ghost-btn" data-a="skip" '+ref+'>'+I.skip+'Auslassen</button></div>';
+  h+='</div><div class="ex-foot"><div class="setctl" role="group" aria-label="Anzahl Sätze"><button data-a="rm-set" '+ref+' aria-label="Satz entfernen"'+(e.sets.length<=1||lastDone?' disabled':'')+'>−</button><span>'+e.sets.length+' '+(e.sets.length===1?'Satz':'Sätze')+'</span><button data-a="add-set" '+ref+' aria-label="Satz hinzufügen">+</button></div><span class="sp"></span>'+(EQUIP[def.equip].inc?'<button class="ghost-btn" data-a="steps-open" '+ref+'>Schritte</button>':'')+'<button class="ghost-btn" data-a="skip" '+ref+'>'+I.skip+'Auslassen</button></div>';
   h+='<details class="cue"><summary>'+I.info+'<span class="when-closed">Technik-Tipp anzeigen</span><span class="when-open">Technik-Tipp</span>'+I.chevD+'</summary><p>'+esc(def.cue)+'</p></details>';
   return h+'</article>';
 }
@@ -2071,6 +2088,7 @@ function renderSheet(){
   else if(t==='backlog') h=sheetBacklog();
   else if(t==='swap') h=sheetSwap();
   else if(t==='news') h=sheetNews();
+  else if(t==='steps') h=sheetSteps();
   const prevScroll = wrap.firstElementChild ? wrap.firstElementChild.scrollTop : 0;
   wrap.innerHTML='<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-t"><div class="grab"></div>'+h+'</div>';
   wrap.hidden=false;
@@ -2174,6 +2192,19 @@ function sheetBacklog(){
   return '<h2 id="sh-t">Einheit nachtragen</h2><p class="lead">Die App setzt die Vorschläge vom gewählten Datum ein. Du hakst ab, was du gemacht hast.</p><div class="q"><div class="q-l">Einheit</div>'+segRow('bl-type', [['A','Einheit A'],['B','Einheit B'],['H','Heimroutine']], b.type)+'</div><div class="q"><label class="q-l" for="bl-date">Datum</label><input type="date" class="sinput date" style="width:100%;height:48px" id="bl-date" data-f="bl-date" value="'+b.date+'" max="'+todayStr()+'"></div><button class="btn pri block" data-a="bl-go">Weiter</button><button class="link" style="align-self:center" data-a="sheet-close">Abbrechen</button>';
 }
 
+function sheetSteps(){
+  const r=state.stepsRef, def=r && EX[r.ex]; if(!def) return '';
+  const g=gridOf(def), std=incFor(Object.assign({}, def, {id:null}), state.settings);
+  const f=(id,l,v,ph)=>'<label class="q"><span class="q-l">'+l+'</span><input class="field" id="'+id+'" type="text" inputmode="decimal" value="'+(v!=null&&v!==''?esc(String(v)):'')+'" placeholder="'+ph+'"></label>';
+  let h='<h2 id="sh-t">Gewichtsschritte</h2><p class="lead">'+esc(def.name)+'. '+esc(EQUIP[def.equip].hint)+'.</p>';
+  h+=f('st-inc','Schritt in kg', g?g.inc:'', 'Standard '+fmtW(std));
+  h+=f('st-min','Kleinstes Gewicht in kg', g&&g.min?g.min:'', 'z. B. 2');
+  h+=f('st-max','Grösstes Gewicht in kg (optional)', g&&g.max?g.max:'', 'z. B. 80');
+  h+='<p class="lead" style="margin:0">'+(g?'Aktuell: '+esc(gridText(g)):'Aktuell gilt der Standard für '+esc(EQUIP_LABEL[def.equip])+': Schritte von '+fmtW(std)+' kg.')+' Gilt für diese Übung in allen Einheiten.</p><p class="err" id="st-err"></p>';
+  h+='<button class="btn pri block" data-a="steps-save">Speichern</button>';
+  if(g) h+='<button class="btn sec block" data-a="steps-reset">Zurück zum Standard</button>';
+  return h+'<button class="link" data-a="sheet-close" style="align-self:center">Abbrechen</button>';
+}
 function sheetNews(){
   const seen=state.newsSeen;
   const list = state.newsAll ? CHANGELOG : CHANGELOG.filter(c=>verCmp(c.v, seen||NEWS_BASE)>0 && verCmp(c.v, APP_VERSION)<=0);
@@ -2396,7 +2427,7 @@ function onClick(ev){
     case 'step': {
       if(d.f==='fw' || d.f==='fr'){
         const e=s.blocks[bi].items[ii], def=EX[e.ex], fd=e.find; if(!fd) break;
-        if(d.f==='fw'){ const inc=incFor(def, state.settings); fd.w=Math.max(0, rnd((fd.w==null?(FIND_START[e.ex]||0):fd.w)+(+d.d)*inc)); const inp=document.getElementById('in-fw-'+bi+'-'+ii+'-0'); if(inp){ inp.value=fmtW(fd.w); } const pl=document.getElementById('pl-'+bi+'-'+ii); if(pl) pl.innerHTML=plateHtml(fd.w, def); }
+        if(d.f==='fw'){ const inc=incFor(def, state.settings); fd.w=snapW(Math.max(0, rnd((fd.w==null?(FIND_START[e.ex]||0):fd.w)+(+d.d)*inc)), def); const inp=document.getElementById('in-fw-'+bi+'-'+ii+'-0'); if(inp){ inp.value=fmtW(fd.w); } const pl=document.getElementById('pl-'+bi+'-'+ii); if(pl) pl.innerHTML=plateHtml(fd.w, def); }
         else { fd.r=Math.max(1, (fd.r==null?e.target.reps[0]:fd.r)+(+d.d)); const inp=document.getElementById('in-fr-'+bi+'-'+ii+'-0'); if(inp) inp.value=fd.r; }
         persist(s); break;
       }
@@ -2405,7 +2436,7 @@ function onClick(ev){
         const inc=incFor(def, state.settings), old=x.w;
         let v = (x.w==null ? (e.target.w!=null?e.target.w:(def.equip==='bb'?+state.settings.barKg:0)) : x.w) + (+d.d)*inc;
         if(x.w==null && +d.d>0 && e.target.w==null) v = def.equip==='bb'?+state.settings.barKg:inc;
-        x.w=Math.max(0, rnd(v));
+        x.w=snapW(Math.max(0, rnd(v)), def);
         const inp=document.getElementById('in-w-'+bi+'-'+ii+'-'+si); if(inp){ inp.value=fmtW(x.w); inp.dataset.old=x.w; }
         if(!x.done) propagateWeight(s,bi,ii,si,old,x.w);
         updatePlates(s,bi,ii);
@@ -2446,6 +2477,20 @@ function onClick(ev){
     case 'fd-start': { const e=s.blocks[bi].items[ii], def=EX[e.ex]; const w0=e.sets.find(x=>x.w!=null); const start = w0 ? w0.w : (e.target.w!=null ? e.target.w : (FIND_START[e.ex]!=null?FIND_START[e.ex]:findMinW(def))); findBegin(e, s.reentry, start, 'Von dir gestartet.', true); persist(s); renderMain(); renderTop(); break; }
     case 'fd-assist': { swapEntry(s, bi, ii, 'pullupA', 'once'); persist(s); render(); toast('Heute Klimmzüge assistiert'); break; }
     case 'rir-fix': { const cs=curSession(); if(!cs) break; const i=cs.blocks.findIndex(b=>missingRir(b)>0); state.sheet=null; if(i>-1) setCur(cs,i); render(); if(i>-1) scrollToBlock(i); break; }
+    case 'steps-open': { const e=s.blocks[bi].items[ii]; state.stepsRef={ex:e.ex}; openSheet('steps'); break; }
+    case 'steps-save': case 'steps-reset': {
+      const r=state.stepsRef; if(!r) break; const st=state.settings; st.steps=st.steps||{};
+      if(a==='steps-reset') delete st.steps[r.ex];
+      else {
+        const num=id=>{ const v=parseFloat(String(document.getElementById(id).value).replace(',','.')); return isNaN(v)?null:v; };
+        const inc=num('st-inc'), min=num('st-min')||0, max=num('st-max')||0, err=document.getElementById('st-err');
+        if(!(inc>0)){ err.textContent='Bitte einen Schritt grösser als 0 eintragen.'; break; }
+        if(min<0 || (max>0 && max<=min)){ err.textContent='Das grösste Gewicht muss über dem kleinsten liegen.'; break; }
+        st.steps[r.ex]={inc:rnd(inc), min:rnd(min), max:rnd(max)};
+      }
+      Store.saveSettings(); closeSheet(); renderMain();
+      toast(st.steps[r.ex] ? 'Schritte gespeichert: '+gridText(st.steps[r.ex]) : 'Standard-Schritte gelten wieder.'); break;
+    }
     case 'swap-open': {
       const e=s.blocks[bi].items[ii], g=entryGroup(e); if(!g || !GROUPS[g]) break;
       state.swap={mode:'session', bi, ii, key:entryKey(s,e), group:g, cur:e.ex, sel:e.ex, scope:'once', doneN:e.sets.filter(x=>x.done).length};

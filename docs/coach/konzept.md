@@ -197,6 +197,22 @@ Ein Plan ist eine Reihenfolge von Einheiten, kein Kalender mit Pflichtterminen. 
 Umsetzung: ein Knopf «Etwas ist dazwischengekommen» auf der Startseite mit diesen Situationen. Jede Reaktion
 zeigt ihre Begründung und ändert nie still den Plan.
 
+## 11. Nachträge von Aaron (11.11.)
+
+- **Gym ist der Normalfall.** Das Onboarding fragt das Material weiter ab, «Gym» ist vorausgewählt. Heim- und
+  Körpergewichtspläne haben tiefere Priorität.
+- **Gewichtsschritte pro Übung** (umgesetzt in 1.5): `settings.steps[id] = {inc, min, max}`. Vorschläge,
+  Gewicht finden und Plus/Minus rasten auf dieses Raster ein.
+- **Mobility hat hohe Priorität**, weil Fehlhaltungen bekämpft werden sollen. Folgen für den Plan:
+  1. Mobility- und Korrekturübungen kommen als eigene Muster in den Katalog (Brustwirbelsäule, Schulter,
+     Hüftbeuger, Hüfte, Sprunggelenk, hintere Kette) und werden vor der übrigen Katalog-Erweiterung gebaut.
+  2. Jede Einheit bekommt einen eigenen Mobility-Block (5–8 min, 2–4 Übungen), gewählt aus Selbsttests,
+     Haltung und Tagesinhalt. Er ist ein Block wie die anderen und wird abgehakt, nicht nur Aufwärmtext.
+  3. Dazu eine kurze Routine für trainingsfreie Tage (rund 8 min), weil Beweglichkeit von Häufigkeit lebt.
+  4. Im Kraftteil bevorzugt der Plan bei Einschränkungen Übungen über den vollen Bewegungsweg (Abschnitt 3).
+  Ehrlich bleibt: Kräftigen und Mobilisieren verändern Haltungswinkel nur mässig. Die App verspricht
+  bessere Beweglichkeit und Kraft in den Positionen, nicht eine «korrigierte» Haltung.
+
 Quellen:
 - Remmert, Pelland, Robinson, Hinson, Zourdos 2025, Per-Session Volume, SportRxiv: https://sportrxiv.org/index.php/server/preprint/download/537/1148/1071
 - Currier et al. 2023, Br J Sports Med 57(18):1211: https://bjsm.bmj.com/content/bjsports/57/18/1211.full.pdf
