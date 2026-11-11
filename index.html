@@ -821,7 +821,9 @@ const state = {
 const APP_VERSION = '1.5';
 const CHANGELOG = [
   {v:'1.5', date:null, items:[
-    'Coach, erster Teil: Unter Einstellungen → «Neuen Plan erstellen» fragt der Coach Ziel, Erfahrung, Zeit, Sport, Beschwerden, Beweglichkeit und Alltag ab und zeigt dir einen Plan mit Begründung. 21 neue Mobility-Übungen.',
+    'Coach: Unter Einstellungen → «Neuen Plan erstellen» fragt der Coach Ziel, Erfahrung, Zeit, Sport, Beschwerden, Beweglichkeit und Alltag ab und erstellt daraus deinen Trainingsplan mit Begründung.',
+    'Jede Einheit im Coach-Plan beginnt mit einem Mobility-Block. Dazu gibt es eine kurze Mobility-Routine für freie Tage. 21 neue Mobility-Übungen.',
+    'Dein bisheriges A/B bleibt der aktive Plan, bis du einen neuen übernimmst. Zurückwechseln geht jederzeit.',
     'Gewichtsschritte pro Übung: Unter «Schritte» legst du fest, in welchen Schritten und in welchem Bereich das Gewicht an diesem Gerät wählbar ist, z. B. 0.75 kg von 2 bis 80 kg. Vorschläge, Gewicht finden und die Plus/Minus-Tasten halten sich daran.']},
   {v:'1.4', date:'2026-11-10', items:[
     'Übung tauschen: deutlich mehr Auswahl. Oben stehen Varianten der gleichen Bewegung, darunter Übungen mit anderer Mechanik für dieselben Muskeln, z. B. Beinbeuger statt RDL oder Seitheben statt Schulterdrücken.',
@@ -1841,7 +1843,7 @@ function entryCard(s,bi,ii){
   const wNow = firstOpen>-1 ? e.sets[firstOpen].w : (e.sets.length?e.sets[e.sets.length-1].w:null);
   const pl=plateHtml(wNow, def), wu=(state.editId || (f && f.status==='done'))?'':warmupSets(t.w, def);
   if(pl || wu) h+='<div class="aux">'+(pl?'<div class="aux-row" id="pl-'+bi+'-'+ii+'">'+pl+'</div>':'')+(wu?'<div>'+wu+'</div>':'')+'</div>';
-  h+='<div class="sets"><div class="set-h"><span>Satz</span>'+(ro?'':'<span>'+eq.col+'</span>')+'<span>'+(def.side?'Wdh/S':'Wdh')+'</span><span></span></div>';
+  h+='<div class="sets"><div class="set-h"><span>Satz</span>'+(ro?'':'<span>'+eq.col+'</span>')+'<span>'+(def.hold?(def.side?'Sek/S':'Sek'):(def.side?'Wdh/S':'Wdh'))+'</span><span></span></div>';
   e.sets.forEach((x,si)=>{
     const sref=ref+' data-s="'+si+'"';
     const p = prev && prev.sets[si] ? (ro ? String(prev.sets[si].r) : fmtW(prev.sets[si].w)+'×'+prev.sets[si].r) : '';
@@ -2083,8 +2085,10 @@ function viewSettings(){
   let h='';
   { const pr=st.profile, goal=pr && (OB_GOALS.find(g=>g[0]===pr.goal)||[])[1];
     h+='<section class="sec"><h2 class="eyebrow">Coach</h2><div class="sgroup">';
-    h+='<div class="srow"><div class="tx"><b>Aktiver Plan: Ganzkörper A/B</b><small>Zwei Ganzkörper-Einheiten im Wechsel</small></div></div>';
+    if(st.plan) h+='<button class="srow" style="width:100%;text-align:left" data-a="plan-open"><div class="tx"><b>Aktiver Plan: '+esc(planTitle(st.plan))+'</b><small>Ansehen, mit Begründung</small></div><span class="chev">'+I.chev+'</span></button>';
+    else h+='<div class="srow"><div class="tx"><b>Aktiver Plan: Ganzkörper A/B</b><small>Zwei Ganzkörper-Einheiten im Wechsel</small></div></div>';
     h+='<button class="srow" style="width:100%;text-align:left" data-a="ob-start"><div class="tx"><b>Neuen Plan erstellen</b><small>'+(pr?'Profil vom '+fmtDate(pr.done)+(goal?' · Ziel '+esc(goal):'')+' · anpassen und neu planen':'Der Coach fragt Ziel, Zeit, Beschwerden und Beweglichkeit ab, rund 5 Minuten')+'</small></div><span class="chev">'+I.chev+'</span></button>';
+    if(st.plan) h+='<button class="srow" style="width:100%;text-align:left" data-a="plan-std"><div class="tx"><b>Zurück zu Ganzkörper A/B</b><small>Der Coach-Plan bleibt im Verlauf gespeichert</small></div><span class="chev">'+I.chev+'</span></button>';
     h+='</div></section>'; }
   const prow=key=>{ const it=planItemAny(key); if(!it) return ''; const cur=resolveEx(it), sw=cur!==it.ex; return '<button class="srow" style="width:100%;text-align:left" data-a="plan-swap" data-k="'+key+'"><div class="tx"><b>'+esc(EX[cur].name)+'</b><small>'+esc(GROUPS[it.group].label)+(sw?' · statt '+esc(EX[it.ex].name):'')+'</small></div><span class="chev">'+I.chev+'</span></button>'; };
   const keysOf=t=>{ const out=[]; PLANS[t].blocks.forEach(b=>b.items.forEach(it=>{ if(it.key && it.key.indexOf('X.')!==0 && !out.includes(it.key)) out.push(it.key); })); return out; };
@@ -2154,6 +2158,7 @@ function renderSheet(){
   else if(t==='news') h=sheetNews();
   else if(t==='steps') h=sheetSteps();
   else if(t==='ob') h=sheetOb();
+  else if(t==='plan') h=sheetPlan();
   const prevScroll = wrap.firstElementChild ? wrap.firstElementChild.scrollTop : 0;
   wrap.innerHTML='<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-t"><div class="grab"></div>'+h+'</div>';
   wrap.hidden=false;
@@ -2262,6 +2267,15 @@ function sheetBacklog(){
    Konzept: docs/coach/konzept.md. Planlogik: coach/engine.js
    ========================================================= */
 const COACH = window.COACH_ENGINE || null, COACH_CAT = (window.COACH_CATALOG||{}).CATALOG || null;
+/* Tauschgruppen für Muster, die es im Standardplan nicht gibt (Beinstrecker, Schulter seitlich, Mobility …). */
+if(COACH && COACH_CAT){
+  const by={}, lab=Object.assign({}, COACH.LABEL, COACH.MOB_LABEL);
+  for(const id in COACH_CAT){ const pt=COACH_CAT[id].pattern; if(EX[id] && !COACH.GROUP[pt]) (by[pt]=by[pt]||[]).push(id); }
+  for(const pt in by) if(!GROUPS[pt]){
+    GROUPS[pt]={label:(pt.indexOf('mob_')===0?'Mobility ':'')+lab[pt], mus:Object.keys(EX[by[pt][0]].m||{}).filter(m=>EX[by[pt][0]].m[m]>=1), ex:by[pt]};
+    by[pt].forEach(id=>{ if(!EX_GROUP[id]) EX_GROUP[id]=pt; });
+  }
+}
 const OB_GOALS = [['muscle','Muskelaufbau','Mehr Muskelmasse, sichtbar und messbar'],['strength','Kraft','Schwerer heben in den Grundübungen'],['fitness','Allgemeine Fitness','Stark, belastbar und ausgeglichen'],['athletic','Athletik für meine Sportart','Kraft, die im Sport hilft'],['posture','Beschwerdefrei und Haltung','Rücken, Rumpf und Beweglichkeit zuerst']];
 const OB_FOCUS = [['chest','Brust'],['upback','Oberer Rücken'],['lats','Latissimus'],['shoulders','Schultern'],['arms','Arme'],['glutes','Gesäss'],['quads','Beine vorne'],['hams','Hamstrings']];
 const OB_SPORTS = [['run','Laufen'],['ride','Rennrad, Bike'],['swim','Schwimmen'],['court','Padel, Tennis, Squash'],['team','Fussball, Teamsport'],['other','Anderes']];
@@ -2367,9 +2381,27 @@ function sheetObResult(){
   h+=pl.days.map(planDayHtml).join('');
   if(pl.routine) h+=planDayHtml(Object.assign({}, pl.routine, {name:pl.routine.name}));
   h+='<div class="prose"><h3>Warum dieser Plan?</h3><ul class="ob-why">'+pl.why.map(w=>'<li>'+esc(w.text)+'</li>').join('')+'</ul></div>';
-  h+='<div class="callout info">'+I.info+'<div>Dein aktiver Plan bleibt vorerst Ganzkörper A/B. Das Übernehmen des neuen Plans folgt im nächsten Schritt der Testversion.</div></div>';
-  h+='<div class="ob-nav"><button class="btn sec" data-a="ob-back">Zurück</button><button class="btn pri" data-a="ob-save">Speichern</button></div>';
+  h+='<div class="callout info">'+I.info+'<div>Mit «Plan übernehmen» wird das dein aktiver Plan. Dein Verlauf bleibt erhalten, und du kannst jederzeit zum bisherigen Plan zurück.</div></div>';
+  h+='<button class="link" style="align-self:center" data-a="ob-save">Nur Profil speichern, Plan noch nicht übernehmen</button>';
+  h+='<div class="ob-nav"><button class="btn sec" data-a="ob-back">Zurück</button><button class="btn pri" data-a="ob-apply">Plan übernehmen</button></div>';
   return h;
+}
+function planTitle(pl){ return pl && pl.days ? (pl.name || 'Coach-Plan · '+pl.days.length+' '+(pl.days.length===1?'Einheit':'Einheiten')+' pro Woche') : 'Ganzkörper A/B'; }
+/* Plan aktivieren. Der bisherige Plan wandert in den Verlauf (max. 5). Der Übungsverlauf hängt an der Übung und bleibt. */
+function planActivate(pl){
+  const st=state.settings;
+  if(activeSession()){ toast('Beende zuerst die laufende Einheit.'); return false; }
+  st.planHistory=(st.planHistory||[]); st.planHistory.unshift({until:todayStr(), plan:st.plan||null}); st.planHistory=st.planHistory.slice(0,5);
+  if(pl) st.plan=Object.assign({}, pl, {created:new Date().toISOString()}); else delete st.plan;
+  delete st.planProposal;
+  Store.saveSettings(); syncPlans(); return true;
+}
+function sheetPlan(){
+  const pl=state.settings.plan; if(!pl) return '';
+  let h='<h2 id="sh-t">Dein Plan</h2><p class="lead">'+esc(planTitle(pl))+', aktiv seit '+fmtDate(String(pl.created||'').slice(0,10)||todayStr())+'.</p>';
+  h+=pl.days.map(planDayHtml).join('')+(pl.routine?planDayHtml(pl.routine):'');
+  h+='<div class="prose"><h3>Warum dieser Plan?</h3><ul class="ob-why">'+(pl.why||[]).map(w=>'<li>'+esc(w.text)+'</li>').join('')+'</ul></div>';
+  return h+'<button class="btn pri block" data-a="sheet-close">Schliessen</button>';
 }
 function obSetPath(p, key, v){
   const k=key.split('.');
@@ -2390,9 +2422,11 @@ function obAction(a, d){
   }
   else if(a==='ob-next'){ keepRace(); o.plan=null; o.step=Math.min(OB_STEPS.length, o.step+1); }
   else if(a==='ob-back'){ keepRace(); o.plan=null; o.step=Math.max(0, o.step-1); }
-  else if(a==='ob-save'){
-    const st=state.settings; st.profile=Object.assign({}, p, {done:todayStr()}); st.planProposal=o.plan||null;
-    Store.saveSettings(); state.ob=null; closeSheet(); renderMain(); toast('Profil gespeichert.'); return true;
+  else if(a==='ob-save' || a==='ob-apply'){
+    const st=state.settings; st.profile=Object.assign({}, p, {done:todayStr()});
+    if(a==='ob-apply'){ if(!o.plan || !planActivate(o.plan)) return true; } else { st.planProposal=o.plan||null; Store.saveSettings(); }
+    state.ob=null; closeSheet(); if(a==='ob-apply') go('home'); else renderMain();
+    toast(a==='ob-apply' ? 'Neuer Plan ist aktiv.' : 'Profil gespeichert.'); return true;
   } else return false;
   renderSheet();
   if(a==='ob-next' || a==='ob-back'){ const sh=document.querySelector('#sheet .sheet'); if(sh) sh.scrollTop=0; }
@@ -2685,7 +2719,9 @@ function onClick(ev){
     case 'fd-assist': { swapEntry(s, bi, ii, 'pullupA', 'once'); persist(s); render(); toast('Heute Klimmzüge assistiert'); break; }
     case 'rir-fix': { const cs=curSession(); if(!cs) break; const i=cs.blocks.findIndex(b=>missingRir(b)>0); state.sheet=null; if(i>-1) setCur(cs,i); render(); if(i>-1) scrollToBlock(i); break; }
     case 'ob-start': obStart(); break;
-    case 'ob-set': case 'ob-tog': case 'ob-next': case 'ob-back': case 'ob-save': obAction(a, d); break;
+    case 'ob-set': case 'ob-tog': case 'ob-next': case 'ob-back': case 'ob-save': case 'ob-apply': obAction(a, d); break;
+    case 'plan-open': openSheet('plan'); break;
+    case 'plan-std': if(planActivate(null)){ render(); toast('Ganzkörper A/B ist wieder aktiv.'); } break;
     case 'steps-open': { const e=s.blocks[bi].items[ii]; state.stepsRef={ex:e.ex}; openSheet('steps'); break; }
     case 'steps-save': case 'steps-reset': {
       const r=state.stepsRef; if(!r) break; const st=state.settings; st.steps=st.steps||{};

@@ -329,6 +329,6 @@ function standardPlan(PLANS, WARMUP){
   return {v:1, source:'standard', name:'Ganzkörper A/B', days, why:[{topic:'split', text:'Dein bisheriger Plan: zwei Ganzkörper-Einheiten im Wechsel.'}]};
 }
 
-const api = {buildPlan, standardPlan, dayMinutes, weeklyVolume, mobNeeds, LABEL, MOB_LABEL};
+const api = {buildPlan, standardPlan, dayMinutes, weeklyVolume, mobNeeds, LABEL, MOB_LABEL, GROUP};
 if(typeof module !== 'undefined' && module.exports) module.exports = api; else root.COACH_ENGINE = api;
 })(typeof self !== 'undefined' ? self : this);
