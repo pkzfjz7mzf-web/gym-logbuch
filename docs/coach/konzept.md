@@ -221,3 +221,34 @@ Quellen:
 - Afonso et al. 2021, Healthcare: https://estudogeral.uc.pt/handle/10316/104612
 - Spiering et al. 2021: https://pubmed.ncbi.nlm.nih.gov/33629972/
 - Haltung, noch zu prüfen: https://sportsmedicine-open.springeropen.com/counter/pdf/10.1186/s40798-024-00733-5.pdf
+
+## 12. Neuausrichtung nach Aarons Kritik vom 11.11. (Referenz-App)
+
+Aaron: «Ein Coach würde doch nicht etwas vorschlagen, sondern die Bedürfnisse abfragen.» Er hat drei Aufnahmen einer App geschickt, die es aus seiner Sicht hervorragend macht (Onboarding in zwei Clips, erstes Training mit Krafttest). Die App ist Massstab für die Art des Fragens, nicht Vorlage zum Kopieren.
+
+### Was die Referenz anders macht
+- **Eine Frage pro Bildschirm**, in drei benannten Kapiteln (Profil, Ziele, Bedürfnisse) mit Fortschritt pro Kapitel. Jede Frage sagt in einem Satz, wofür die Antwort gebraucht wird.
+- **Nichts ist vorausgewählt.** Der Nutzer antwortet, der Coach reagiert: «Empfohlen» bei der Trainingshäufigkeit, Warnung «nicht optimaler Split» mit Rückfrage, Warndreieck bei Zielen, die nicht zur Ausgangslage passen.
+- **Feine Eingaben statt drei Stufen:** Erfahrung als Regler von «gar keine» bis Jahre plus «in den letzten 3 Monaten durchgehend trainiert?», dazu Selbsteinschätzung in sechs Stufen. Schmerz auf einer Körperfigur, pro Punkt 0–10 mit Text. Arbeitshaltung als Mehrfachwahl mit rund zehn Positionen. Alltagsaktivität in fünf Stufen.
+- **Wochenplanung zum Anfassen:** Einheiten auf Wochentage schieben, Dauer per Regler.
+- **Erstes Training ist ein «Intro»:** jede Übung startet mit einem Krafttest in fünf Schritten: Energie, Muskelkater pro Muskel 0–10, 2–3 Aufwärmsätze, ein Satz mit 10–15 Wdh. ans Limit, Auswertung. Daraus kommen die Arbeitsgewichte.
+- **Mobility-Test als eigenes Screening** nach dem Onboarding (Finger-Boden-Abstand, Overhead-Squat), verbessert den Plan nachträglich.
+
+### Wo unser Onboarding (1.5 Test 9) dagegen abfällt
+- Alle Antworten sind vorbelegt (`obDefault`: Ziel Fitness, 1–3 Jahre, 2 Tage, 60 min, alle Grundbewegungen «sitzt», Arbeit sitzend). Wer nur «Weiter» tippt, bekommt einen Plan. Das ist Vorschlagen statt Abfragen.
+- Formularseiten mit 3–5 Fragen statt Gespräch. Grobe Stufen (Erfahrung in drei Segmenten, Beschwerden als Chips mit Status).
+- Der Coach reagiert im Onboarding nie auf eine Antwort. Begründungen kommen erst am Schluss.
+- Ein Ziel statt mehrere mit Gewichtung. Keine Frage nach dem «Warum jetzt».
+- Erste Einheit: «Gewicht finden» tastet mit RIR-Schätzungen. Weit weg vom Limit sind solche Schätzungen ungenau.
+
+### Was wir inhaltlich schon besser abdecken (bleibt)
+Ausdauer und andere Sportarten mit harten Einheiten und Vorrang, Auslöser pro Beschwerde und Warnzeichen, fünf Beweglichkeitstests, Grundbewegungen mit beobachtbaren Stufen, Gewichtsschritte pro Übung, Reaktion auf Ferien, Krankheit und Pausen. Weggelassen wird bewusst: Körperfett, Kalorien, Ernährung, Werbeversprechen.
+
+### Neue Pakete (ersetzen die Reihenfolge in STATUS.md)
+- **N1 Onboarding als Gespräch.** Eine Frage pro Bildschirm, keine Vorbelegung (Weiter erst nach Antwort, «weiss ich nicht» wo sinnvoll), drei Kapitel: Du, Ziele, Rahmen. Mehrere Ziele mit Rangfolge. Erfahrung als Regler plus «letzte 3 Monate durchgehend?». Das bestehende Profil dient nur beim Bearbeiten als Vorbelegung.
+- **N2 Coach reagiert im Onboarding.** Nach heiklen Antworten eine kurze Einschätzung mit Rückfrage: Häufigkeit gegen Erfahrung und Ausdauer, Dauer gegen Ziele, Fokus gegen Beschwerden. Empfehlung wird markiert, entscheidet aber nicht.
+- **N3 Beschwerden auf der Körperfigur.** Vorder- und Rückseite, pro Region 0–10 mit Text, danach Auslöser und Warnzeichen wie heute.
+- **N4 Wochenplanung.** Einheiten Wochentagen zuordnen, Warnung bei gleichen Muskeln an Folgetagen und rund um harte Ausdauer.
+- **N5 Krafttest beim ersten Mal.** Ersetzt die Probesätze von «Gewicht finden» für Übungen mit Last: Tagesform, 2–3 Aufwärmsätze mit vorgeschlagenen Gewichten, ein Testsatz im Zielbereich bis kurz vor Technikverlust (RIR 0–1), daraus e1RM und Arbeitsgewichte für die restlichen Sätze. Kein Limit-Test bei: Technikstufe 0 der Bewegung (Technik-Einstieg), Region mit Beschwerden, Nordics, Mobility. Dort bleibt das vorsichtige Herantasten.
+- **N6 Screening nachholbar.** Beweglichkeitstests aus dem Onboarding lösen, als eigene Karte «Plan verbessern», mit Bild pro Test.
+- Danach wie geplant: Katalog erweitern, Erklärungen in drei Teilen, Animation.
