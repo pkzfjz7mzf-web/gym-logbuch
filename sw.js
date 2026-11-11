@@ -1,7 +1,7 @@
 // Service Worker: macht die App ohne Netz startbar. Daten laufen nicht über diesen Cache.
-const CACHE = 'gym-logbuch-v2';
+const CACHE = 'gym-logbuch-v3';
 const SHELL = [
-  './', './index.html', './config.js', './vendor/supabase.js', './manifest.webmanifest',
+  './', './index.html', './config.js', './vendor/supabase.js', './coach/catalog.js', './coach/engine.js', './manifest.webmanifest',
   './icons/apple-touch-icon-v2.png', './icons/icon-192-v2.png', './icons/icon-512-v2.png',
   './fonts/barlow-latin-400-normal.woff2', './fonts/barlow-latin-500-normal.woff2',
   './fonts/barlow-latin-600-normal.woff2', './fonts/barlow-latin-700-normal.woff2',

@@ -33,7 +33,7 @@ else:
                  'Zuerst APP_VERSION auf die nächste Version setzen und oben in CHANGELOG einen Eintrag mit date: null anlegen.')
     state_p = root / 'tools' / 'test-build.json'
     st = json.loads(state_p.read_text(encoding='utf-8')) if state_p.exists() else {}
-    sha = hashlib.sha256(src.encode('utf-8')).hexdigest()[:16]
+    sha = hashlib.sha256((src + ''.join((root / 'coach' / f).read_text(encoding='utf-8') for f in ('catalog.js', 'engine.js'))).encode('utf-8')).hexdigest()[:16]
     if st.get('version') != ver:
         build = 1
     elif st.get('sha') != sha:
@@ -44,6 +44,7 @@ else:
     test_build = 'Test ' + str(build)
     band_ver = 'Version ' + ver + ' ' + test_build
 mock = (root / 'tools' / 'preview-mock.js').read_text(encoding='utf-8')
+coach = ''.join((root / 'coach' / f).read_text(encoding='utf-8') + '\n' for f in ('catalog.js', 'engine.js'))
 out = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else root / 'tools' / 'out' / 'preview.html')
 
 css = src[src.index('<style>') + 7:src.index('</style>')]
@@ -72,7 +73,7 @@ page = ('<title>Gym-Logbuch Test</title>\n'
         '<link rel="preconnect" href="https://fonts.googleapis.com">\n'
         '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
         '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap">\n'
-        '<script>\n' + ('window.__TEST_BUILD = ' + json.dumps(test_build) + ';\n' if test_build else '') + mock + '\n</script>\n'
+        '<script>\n' + ('window.__TEST_BUILD = ' + json.dumps(test_build) + ';\n' if test_build else '') + mock + '\n' + coach + '</script>\n'
         '<style>\n' + css + '</style>\n' + band + body.strip() + '\n<script>' + js + '</script>\n')
 out.parent.mkdir(parents=True, exist_ok=True)
 out.write_text(page, encoding='utf-8')

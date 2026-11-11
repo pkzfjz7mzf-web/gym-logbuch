@@ -19,6 +19,8 @@
 <link rel="preload" href="fonts/barlow-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <script src="config.js"></script>
 <script src="vendor/supabase.js"></script>
+<script src="coach/catalog.js"></script>
+<script src="coach/engine.js"></script>
 <style>
 @font-face{font-family:"Barlow";font-style:normal;font-weight:400;font-display:swap;src:url(fonts/barlow-latin-400-normal.woff2) format("woff2")}
 @font-face{font-family:"Barlow";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/barlow-latin-500-normal.woff2) format("woff2")}
@@ -279,6 +281,23 @@ details.cue p{margin:0 2px 12px;color:var(--muted)}
 .tmr-rir .rir-c{height:44px;min-width:0;background:rgba(127,127,127,.25);background:color-mix(in srgb,var(--t-ink) 16%,transparent);color:inherit;box-shadow:none;font-size:19px}
 .tmr-rir .rir-c.tgt{box-shadow:inset 0 -3px 0 var(--t-ink)}
 
+/* Onboarding */
+.ob-top{display:flex;align-items:center;gap:12px;font-size:13px;font-weight:600;color:var(--muted)}
+.ob-bar{flex:1;height:6px;border-radius:3px;background:var(--sunken);overflow:hidden}
+.ob-bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.ob-sub{font-size:13px;line-height:1.4;color:var(--muted);margin:0}
+.ob-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:10px;align-items:center;font-size:15px}
+.ob-card{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-radius:14px;box-shadow:inset 0 0 0 1px var(--line)}
+.ob-nav{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:8px;position:sticky;bottom:calc(-18px - env(safe-area-inset-bottom,0px));background:var(--surface);padding:10px 0 calc(18px + env(safe-area-inset-bottom,0px));margin-bottom:calc(-18px - env(safe-area-inset-bottom,0px))}
+.ob-dayh{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.ob-dayh b{font:700 19px/1.1 var(--f-display);text-transform:uppercase;letter-spacing:.02em}
+.ob-dayh span{font-size:13px;color:var(--muted);white-space:nowrap}
+.ob-card .plan-row{grid-template-columns:minmax(0,1fr) auto;font-size:14px;padding:7px 0}
+.ob-card .plan-row .no{display:none}
+.ob-blk{font:700 11px/1 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);padding:9px 0 2px}
+.ob-blk.end{padding:0;border-bottom:1px solid var(--line-strong)}
+.ob-why{margin:0;padding-left:20px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
+.seg.sm button{min-height:38px;font-size:13px;padding:6px 3px}
 /* Sheets */
 .sheet-wrap{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center;background:var(--scrim)}
 .sheet{width:100%;max-width:560px;max-height:calc(100% - env(safe-area-inset-top,0px) - 20px);overflow:auto;overscroll-behavior:contain;background:var(--surface);border-radius:22px 22px 0 0;padding-top:8px;padding-bottom:calc(18px + env(safe-area-inset-bottom,0px));padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:16px}
@@ -786,6 +805,7 @@ const state = {
 const APP_VERSION = '1.5';
 const CHANGELOG = [
   {v:'1.5', date:null, items:[
+    'Coach, erster Teil: Unter Einstellungen → «Neuen Plan erstellen» fragt der Coach Ziel, Erfahrung, Zeit, Sport, Beschwerden, Beweglichkeit und Alltag ab und zeigt dir einen Plan mit Begründung. 21 neue Mobility-Übungen.',
     'Gewichtsschritte pro Übung: Unter «Schritte» legst du fest, in welchen Schritten und in welchem Bereich das Gewicht an diesem Gerät wählbar ist, z. B. 0.75 kg von 2 bis 80 kg. Vorschläge, Gewicht finden und die Plus/Minus-Tasten halten sich daran.']},
   {v:'1.4', date:'2026-11-10', items:[
     'Übung tauschen: deutlich mehr Auswahl. Oben stehen Varianten der gleichen Bewegung, darunter Übungen mit anderer Mechanik für dieselben Muskeln, z. B. Beinbeuger statt RDL oder Seitheben statt Schulterdrücken.',
@@ -2045,6 +2065,11 @@ function viewSettings(){
   const tgl=(key)=>'<label class="tgl"><input type="checkbox" id="st-'+key+'" data-s="'+key+'" data-t="bool"'+(st[key]?' checked':'')+'><span></span></label>';
   const num=(path, val, unit, step)=>'<input class="sinput" id="st-'+path.replace('.','-')+'" data-s="'+path+'" data-t="num" inputmode="decimal" value="'+(val==null?'':fmtW(val))+'"'+(step?' step="'+step+'"':'')+' placeholder="–"><span class="unit">'+unit+'</span>';
   let h='';
+  { const pr=st.profile, goal=pr && (OB_GOALS.find(g=>g[0]===pr.goal)||[])[1];
+    h+='<section class="sec"><h2 class="eyebrow">Coach</h2><div class="sgroup">';
+    h+='<div class="srow"><div class="tx"><b>Aktiver Plan: Ganzkörper A/B</b><small>Zwei Ganzkörper-Einheiten im Wechsel</small></div></div>';
+    h+='<button class="srow" style="width:100%;text-align:left" data-a="ob-start"><div class="tx"><b>Neuen Plan erstellen</b><small>'+(pr?'Profil vom '+fmtDate(pr.done)+(goal?' · Ziel '+esc(goal):'')+' · anpassen und neu planen':'Der Coach fragt Ziel, Zeit, Beschwerden und Beweglichkeit ab, rund 5 Minuten')+'</small></div><span class="chev">'+I.chev+'</span></button>';
+    h+='</div></section>'; }
   const prow=key=>{ const it=planItemAny(key); if(!it) return ''; const cur=resolveEx(it), sw=cur!==it.ex; return '<button class="srow" style="width:100%;text-align:left" data-a="plan-swap" data-k="'+key+'"><div class="tx"><b>'+esc(EX[cur].name)+'</b><small>'+esc(GROUPS[it.group].label)+(sw?' · statt '+esc(EX[it.ex].name):'')+'</small></div><span class="chev">'+I.chev+'</span></button>'; };
   const keysOf=t=>{ const out=[]; PLANS[t].blocks.forEach(b=>b.items.forEach(it=>{ if(it.key && it.key.indexOf('X.')!==0 && !out.includes(it.key)) out.push(it.key); })); return out; };
   h+='<section class="sec"><h2 class="eyebrow">Übungen in Einheit A</h2><p class="phase-t" style="font-size:14px">Tippe auf eine Übung, um sie dauerhaft zu tauschen. Für ein einzelnes Training tauschst du direkt in der Übung.</p><div class="sgroup">'+keysOf('A').map(prow).join('')+'</div></section>';
@@ -2111,6 +2136,7 @@ function renderSheet(){
   else if(t==='swap') h=sheetSwap();
   else if(t==='news') h=sheetNews();
   else if(t==='steps') h=sheetSteps();
+  else if(t==='ob') h=sheetOb();
   const prevScroll = wrap.firstElementChild ? wrap.firstElementChild.scrollTop : 0;
   wrap.innerHTML='<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-t"><div class="grab"></div>'+h+'</div>';
   wrap.hidden=false;
@@ -2212,6 +2238,148 @@ function sheetBrief(){
 function sheetBacklog(){
   const b=state.backlog;
   return '<h2 id="sh-t">Einheit nachtragen</h2><p class="lead">Die App setzt die Vorschläge vom gewählten Datum ein. Du hakst ab, was du gemacht hast.</p><div class="q"><div class="q-l">Einheit</div>'+segRow('bl-type', [['A','Einheit A'],['B','Einheit B'],['H','Heimroutine']], b.type)+'</div><div class="q"><label class="q-l" for="bl-date">Datum</label><input type="date" class="sinput date" style="width:100%;height:48px" id="bl-date" data-f="bl-date" value="'+b.date+'" max="'+todayStr()+'"></div><button class="btn pri block" data-a="bl-go">Weiter</button><button class="link" style="align-self:center" data-a="sheet-close">Abbrechen</button>';
+}
+
+/* =========================================================
+   Coach: Onboarding (Profil erfassen) und Plan-Vorschau
+   Konzept: docs/coach/konzept.md. Planlogik: coach/engine.js
+   ========================================================= */
+const COACH = window.COACH_ENGINE || null, COACH_CAT = (window.COACH_CATALOG||{}).CATALOG || null;
+const OB_GOALS = [['muscle','Muskelaufbau','Mehr Muskelmasse, sichtbar und messbar'],['strength','Kraft','Schwerer heben in den Grundübungen'],['fitness','Allgemeine Fitness','Stark, belastbar und ausgeglichen'],['athletic','Athletik für meine Sportart','Kraft, die im Sport hilft'],['posture','Beschwerdefrei und Haltung','Rücken, Rumpf und Beweglichkeit zuerst']];
+const OB_FOCUS = [['chest','Brust'],['upback','Oberer Rücken'],['lats','Latissimus'],['shoulders','Schultern'],['arms','Arme'],['glutes','Gesäss'],['quads','Beine vorne'],['hams','Hamstrings']];
+const OB_SPORTS = [['run','Laufen'],['ride','Rennrad, Bike'],['swim','Schwimmen'],['court','Padel, Tennis, Squash'],['team','Fussball, Teamsport'],['other','Anderes']];
+const OB_REGIONS = [['shoulder','Schulter'],['elbow','Ellbogen'],['wrist','Handgelenk'],['lowback','Unterer Rücken'],['hip','Hüfte'],['adductors','Leiste, Adduktoren'],['hams','Hamstrings'],['knee','Knie']];
+const OB_STATUS = [['acute','akut'],['rehab','in Reha'],['sensitive','empfindlich'],['recurring','kommt wieder']];
+const OB_TRIG = {deepknee:'tiefes Beugen', kneel:'Knien', rotation:'Drehung', bend:'Vorbeugen mit Last', axial:'Last auf den Schultern', overhead:'über Kopf', pushdeep:'tiefes Drücken, Dips', pull:'Hängen, Zug', wrist:'Stützen'};
+const OB_REGION_TRIG = {knee:['deepknee','kneel'], hip:['deepknee','rotation'], lowback:['bend','axial','rotation'], shoulder:['overhead','pushdeep','pull'], elbow:['pull','pushdeep'], wrist:['wrist'], hams:['bend'], adductors:['deepknee']};
+const OB_TESTS = [
+  ['squat','Tiefe Hocke','Füsse schulterbreit, ganz nach unten gehen. Die Fersen bleiben am Boden, du hältst dich nicht fest.'],
+  ['overhead','Arme über Kopf','Rücken und Gesäss an die Wand. Gestreckte Arme nach oben führen, bis die Daumen die Wand berühren, ohne Hohlkreuz.'],
+  ['toes','Finger zum Boden','Mit gestreckten Knien vorbeugen und den Boden mit den Fingerspitzen berühren.'],
+  ['hipflex','Hüftbeuger','Halber Kniestand, Becken aufrichten, Gesäss anspannen. Lässt sich die Hüfte nach vorne schieben, ohne ins Hohlkreuz zu fallen?'],
+  ['wall','Wand-Engel','Rücken, Gesäss und Hinterkopf an die Wand, Arme in U-Form. Liegen Ellbogen und Handrücken an der Wand an?']];
+const OB_STEPS = ['Ziel','Erfahrung','Zeit','Material','Sport','Beschwerden','Beweglichkeit','Alltag','Vorlieben'];
+
+function obDefault(){
+  const o=state.settings.profile;
+  return Object.assign({v:1, goal:'fitness', focus:[], years:2, pauseWeeks:0, skill:{squat:2, hinge:2, push:2, pull:2}, days:2, minutes:60, equip:'gym', gear:[],
+    sports:[], sportHours:0, sportHard:0, race:'', priority:'both', issues:[], redflag:false, mobility:{}, work:'sit', posture:[], supersets:true}, o ? JSON.parse(JSON.stringify(o)) : {});
+}
+function obStart(){ if(!state.ob) state.ob={step:0, p:obDefault()}; openSheet('ob'); }
+/* Entwurf in die Form bringen, die die Engine erwartet. */
+function obProfile(p){
+  const q=JSON.parse(JSON.stringify(p));
+  q.sports=(p.sports||[]).map((k,i)=>({kind:k, hours:i===0?(+p.sportHours||0):0, hard:i===0?(+p.sportHard||0):0, race:p.race||null}));
+  if(p.redflag) q.issues=(p.issues||[]).map(x=>Object.assign({}, x, {status:'acute'}));
+  return q;
+}
+function obSeg(key, opts, cur, extra){ return '<div class="seg'+(extra||'')+'">'+opts.map(o=>'<button class="'+(cur===o[0]?'on':'')+'" data-a="ob-set" data-k="'+key+'" data-v="'+o[0]+'" aria-pressed="'+(cur===o[0])+'">'+o[1]+'</button>').join('')+'</div>'; }
+function obChips(key, opts, arr, max){ return '<div class="rchips">'+opts.map(o=>'<button class="rchip'+(arr.includes(o[0])?' on':'')+'" data-a="ob-tog" data-k="'+key+'" data-v="'+o[0]+'"'+(max?' data-max="'+max+'"':'')+' aria-pressed="'+arr.includes(o[0])+'">'+o[1]+'</button>').join('')+'</div>'; }
+function obQ(label, inner, sub){ return '<div class="q"><span class="q-l">'+label+'</span>'+(sub?'<span class="ob-sub">'+sub+'</span>':'')+inner+'</div>'; }
+
+function sheetOb(){
+  const o=state.ob; if(!o) return '';
+  if(o.step>=OB_STEPS.length) return sheetObResult();
+  const p=o.p, n=o.step; let h='<div class="ob-top"><span>Schritt '+(n+1)+' von '+OB_STEPS.length+'</span><div class="ob-bar"><i style="width:'+Math.round((n+1)/OB_STEPS.length*100)+'%"></i></div></div>';
+  if(n===0){
+    h+='<h2 id="sh-t">Was ist dein Ziel?</h2><p class="lead">Das Hauptziel bestimmt Übungen, Wiederholungen und Verteilung.</p>';
+    h+='<div class="opts">'+OB_GOALS.map(g=>'<button class="opt'+(p.goal===g[0]?' on':'')+'" data-a="ob-set" data-k="goal" data-v="'+g[0]+'"><span class="radio"></span><span class="tx"><b>'+g[1]+'</b><small>'+g[2]+'</small></span></button>').join('')+'</div>';
+    h+=obQ('Schwerpunkt-Muskeln (optional, höchstens 2)', obChips('focus', OB_FOCUS, p.focus, 2));
+  } else if(n===1){
+    h+='<h2 id="sh-t">Deine Erfahrung</h2><p class="lead">Daraus ergeben sich Umfang und Schwierigkeit der Übungen.</p>';
+    h+=obQ('Wie lange trainierst du schon mit Gewichten?', obSeg('years', [[0,'unter 1 Jahr'],[2,'1–3 Jahre'],[4,'über 3 Jahre']], p.years));
+    h+=obQ('Wie lange war deine letzte Pause?', obSeg('pauseWeeks', [[0,'keine'],[3,'bis 4 Wo.'],[8,'1–3 Mt.'],[26,'länger']], p.pauseWeeks));
+    h+='<div class="q"><span class="q-l">Wie sicher bist du in den Grundbewegungen?</span>'+[['squat','Kniebeuge'],['hinge','Kreuzheben, Hüftbeuge'],['push','Drücken'],['pull','Ziehen, Klimmzug']].map(k=>'<div class="ob-row"><span>'+k[1]+'</span>'+obSeg('skill.'+k[0], [[2,'sicher'],[1,'unsicher'],[0,'nie']], p.skill[k[0]], ' sm')+'</div>').join('')+'</div>';
+  } else if(n===2){
+    h+='<h2 id="sh-t">Deine Zeit</h2><p class="lead">Plane, was du sicher schaffst. Ein Plan, den du einhältst, schlägt den perfekten Plan.</p>';
+    h+=obQ('Trainingstage pro Woche', obSeg('days', [1,2,3,4,5,6].map(x=>[x,String(x)]), p.days, ' scale'));
+    h+=obQ('Minuten pro Einheit', obSeg('minutes', [30,45,60,75,90].map(x=>[x,String(x)]), p.minutes, ' scale'), 'Inklusive Aufwärmen und Mobility.');
+  } else if(n===3){
+    h+='<h2 id="sh-t">Wo trainierst du?</h2>';
+    h+=obQ('Ort und Material', obSeg('equip', [['gym','Gym'],['home','Zuhause'],['bw','Ohne Geräte']], p.equip));
+    if(p.equip==='home') h+=obQ('Was hast du zuhause?', obChips('gear', [['db','Kurzhanteln'],['bb','Langhantel'],['bench','Bank'],['bar','Klimmzugstange'],['bands','Bänder'],['cable','Kabelzug']], p.gear));
+    if(p.equip!=='gym') h+='<div class="callout">'+I.info+'<div>Für Zuhause und ohne Geräte ist die Auswahl an Übungen noch klein. Der Plan zeigt offen, wo etwas fehlt.</div></div>';
+  } else if(n===4){
+    h+='<h2 id="sh-t">Ausdauer und andere Sportarten</h2><p class="lead">Damit Krafttraining und Sport sich nicht in die Quere kommen.</p>';
+    h+=obQ('Was machst du regelmässig?', obChips('sports', OB_SPORTS, p.sports));
+    if(p.sports.length){
+      h+=obQ('Stunden pro Woche insgesamt', obSeg('sportHours', [[1.5,'bis 2'],[3,'2–4'],[5,'4–6'],[7,'über 6']], p.sportHours));
+      h+=obQ('Davon harte Einheiten pro Woche', obSeg('sportHard', [[0,'0'],[1,'1'],[2,'2'],[3,'3+']], p.sportHard, ' scale'), 'Intervalle, Tempo, Wettkampf, intensive Spiele.');
+      h+=obQ('Was hat Vorrang?', obSeg('priority', [['strength','Kraft'],['both','Beides gleich'],['endurance','Ausdauer']], p.priority));
+      h+=obQ('Nächster Wettkampf (optional)', '<input class="field" type="date" id="ob-race" value="'+esc(p.race||'')+'">');
+    }
+  } else if(n===5){
+    h+='<h2 id="sh-t">Verletzungen und Beschwerden</h2><p class="lead">Aktuelle oder frühere Probleme, die du im Training spürst. Nichts ausgewählt heisst: alles gut.</p>';
+    h+=obQ('Wo?', obChips('issueRegions', OB_REGIONS, p.issues.map(x=>x.region)));
+    p.issues.forEach((is,i)=>{
+      h+='<div class="ob-card"><b>'+esc(OB_REGIONS.find(r=>r[0]===is.region)[1])+'</b>'+obSeg('issue.'+i+'.status', OB_STATUS, is.status, ' sm');
+      h+='<span class="ob-sub">Was löst es aus?</span>'+obChips('issue.'+i+'.triggers', OB_REGION_TRIG[is.region].map(t=>[t,OB_TRIG[t]]), is.triggers||[])+'</div>';
+    });
+    if(p.issues.length){
+      h+='<button class="opt'+(p.redflag?' on':'')+'" data-a="ob-set" data-k="redflag" data-v="'+(!p.redflag)+'" style="border-radius:14px;box-shadow:inset 0 0 0 1px var(--line)"><span class="radio"></span><span class="tx"><b>Warnzeichen</b><small>Taubheit oder Ausstrahlen, Schmerz in Ruhe oder nachts, oder ärztliches Sportverbot</small></span></button>';
+      if(p.redflag) h+='<div class="callout">'+I.info+'<div><b>Bitte zuerst abklären lassen.</b> Der Plan lässt die betroffenen Regionen ganz weg. Die App ersetzt keine Physio und keinen Arzt.</div></div>';
+      else h+='<p class="ob-sub">«Akut» lässt die Region ganz weg. Bei den anderen fallen nur die auslösenden Bewegungen weg, der Rest startet vorsichtig.</p>';
+    }
+  } else if(n===6){
+    h+='<h2 id="sh-t">Beweglichkeit</h2><p class="lead">Fünf kurze Selbsttests. Sie steuern Übungswahl und Mobility. Du kannst sie überspringen und später nachholen.</p>';
+    OB_TESTS.forEach(t=>{ h+='<div class="ob-card"><b>'+t[1]+'</b><span class="ob-sub">'+t[2]+'</span>'+obSeg('mobility.'+t[0], [[2,'geht'],[1,'knapp'],[0,'geht nicht']], p.mobility[t[0]], ' sm')+'</div>'; });
+  } else if(n===7){
+    h+='<h2 id="sh-t">Alltag und Haltung</h2>';
+    h+=obQ('Deine Arbeit ist überwiegend', obSeg('work', [['sit','sitzend'],['stand','stehend'],['physical','körperlich']], p.work));
+    h+=obQ('Was beobachtest du an dir? (optional)', obChips('posture', [['kyphosis','Rundrücken'],['lordosis','Hohlkreuz'],['head','Kopf nach vorne']], p.posture));
+    h+='<p class="ob-sub">Der Plan kräftigt und mobilisiert gezielt. Haltung verändert sich dadurch nur langsam und mässig, Beweglichkeit und Kraft deutlich schneller.</p>';
+  } else if(n===8){
+    h+='<h2 id="sh-t">Vorlieben</h2>';
+    h+=obQ('Supersätze, um Zeit zu sparen?', obSeg('supersets', [[true,'Ja, gerne'],[false,'Lieber nicht']], p.supersets), 'Zwei Übungen für verschiedene Muskeln im Wechsel.');
+    h+='<p class="ob-sub">Einzelne Übungen tauschst du später direkt im Plan oder in der Einheit.</p>';
+  }
+  h+='<div class="ob-nav">'+(n>0?'<button class="btn sec" data-a="ob-back">Zurück</button>':'<button class="btn sec" data-a="sheet-close">Abbrechen</button>')+'<button class="btn pri" data-a="ob-next">'+(n===OB_STEPS.length-1?'Plan erstellen':'Weiter')+'</button></div>';
+  return h;
+}
+
+function planDayHtml(d){
+  const row=it=>{ const def=EX[it.ex]||{name:it.ex}; return '<div class="plan-row"><span class="no"></span><span class="nm">'+esc(def.name)+'</span><span class="tg">'+it.sets+' × '+(it.reps[0]===it.reps[1]?it.reps[0]:it.reps[0]+'–'+it.reps[1])+(def.hold?' s':'')+'</span></div>'; };
+  let h='<div class="ob-card"><div class="ob-dayh"><b>'+esc(d.name)+'</b><span>'+(d.minutes?'ca. '+d.minutes+' min':'')+'</span></div><div class="plan-list">';
+  d.blocks.forEach(b=>{ if(b.mob) h+='<div class="ob-blk">Mobility</div>'; else if(b.ss) h+='<div class="ob-blk">Supersatz</div>'; h+=b.items.map(row).join(''); if(b.mob||b.ss) h+='<div class="ob-blk end"></div>'; });
+  return h+'</div></div>';
+}
+function sheetObResult(){
+  const o=state.ob; if(!COACH || !COACH_CAT) return '<h2 id="sh-t">Plan</h2><p class="lead">Die Planlogik konnte nicht geladen werden. Bitte mit Internet neu öffnen.</p><button class="btn sec block" data-a="sheet-close">Schliessen</button>';
+  const pl=o.plan || (o.plan=COACH.buildPlan(obProfile(o.p), EX, COACH_CAT));
+  let h='<h2 id="sh-t">Dein Plan</h2><p class="lead">'+pl.days.length+' '+(pl.days.length===1?'Einheit':'Einheiten')+' pro Woche. Du kannst zurückgehen und Angaben ändern.</p>';
+  h+=pl.days.map(planDayHtml).join('');
+  if(pl.routine) h+=planDayHtml(Object.assign({}, pl.routine, {name:pl.routine.name}));
+  h+='<div class="prose"><h3>Warum dieser Plan?</h3><ul class="ob-why">'+pl.why.map(w=>'<li>'+esc(w.text)+'</li>').join('')+'</ul></div>';
+  h+='<div class="callout info">'+I.info+'<div>Dein aktiver Plan bleibt vorerst Ganzkörper A/B. Das Übernehmen des neuen Plans folgt im nächsten Schritt der Testversion.</div></div>';
+  h+='<div class="ob-nav"><button class="btn sec" data-a="ob-back">Zurück</button><button class="btn pri" data-a="ob-save">Speichern</button></div>';
+  return h;
+}
+function obSetPath(p, key, v){
+  const k=key.split('.');
+  if(k[0]==='skill' || k[0]==='mobility'){ p[k[0]][k[1]]=v; return; }
+  if(k[0]==='issue'){ p.issues[+k[1]][k[2]]=v; return; }
+  p[key]=v;
+}
+function obAction(a, d){
+  const o=state.ob; if(!o) return false; const p=o.p;
+  const val=x=>x==='true'?true:x==='false'?false:(x!=='' && !isNaN(x))?+x:x;
+  const keepRace=()=>{ const el=document.getElementById('ob-race'); if(el) p.race=el.value||''; };
+  if(a==='ob-set'){ keepRace(); obSetPath(p, d.k, val(d.v)); }
+  else if(a==='ob-tog'){
+    keepRace(); const v=d.v;
+    if(d.k==='issueRegions'){ const i=p.issues.findIndex(x=>x.region===v); if(i>=0) p.issues.splice(i,1); else p.issues.push({region:v, status:'sensitive', triggers:[]}); if(!p.issues.length) p.redflag=false; }
+    else { const k=d.k.split('.'), arr=k[0]==='issue' ? (p.issues[+k[1]].triggers=p.issues[+k[1]].triggers||[]) : p[d.k]; const i=arr.indexOf(v);
+      if(i>=0) arr.splice(i,1); else { if(d.max && arr.length>=+d.max) arr.shift(); arr.push(v); } }
+  }
+  else if(a==='ob-next'){ keepRace(); o.plan=null; o.step=Math.min(OB_STEPS.length, o.step+1); }
+  else if(a==='ob-back'){ keepRace(); o.plan=null; o.step=Math.max(0, o.step-1); }
+  else if(a==='ob-save'){
+    const st=state.settings; st.profile=Object.assign({}, p, {done:todayStr()}); st.planProposal=o.plan||null;
+    Store.saveSettings(); state.ob=null; closeSheet(); renderMain(); toast('Profil gespeichert.'); return true;
+  } else return false;
+  renderSheet();
+  if(a==='ob-next' || a==='ob-back'){ const sh=document.querySelector('#sheet .sheet'); if(sh) sh.scrollTop=0; }
+  return true;
 }
 
 function sheetSteps(){
@@ -2499,6 +2667,8 @@ function onClick(ev){
     case 'fd-start': { const e=s.blocks[bi].items[ii], def=EX[e.ex]; const w0=e.sets.find(x=>x.w!=null); const start = w0 ? w0.w : (e.target.w!=null ? e.target.w : (FIND_START[e.ex]!=null?FIND_START[e.ex]:findMinW(def))); findBegin(e, s.reentry, start, 'Von dir gestartet.', true); persist(s); renderMain(); renderTop(); break; }
     case 'fd-assist': { swapEntry(s, bi, ii, 'pullupA', 'once'); persist(s); render(); toast('Heute Klimmzüge assistiert'); break; }
     case 'rir-fix': { const cs=curSession(); if(!cs) break; const i=cs.blocks.findIndex(b=>missingRir(b)>0); state.sheet=null; if(i>-1) setCur(cs,i); render(); if(i>-1) scrollToBlock(i); break; }
+    case 'ob-start': obStart(); break;
+    case 'ob-set': case 'ob-tog': case 'ob-next': case 'ob-back': case 'ob-save': obAction(a, d); break;
     case 'steps-open': { const e=s.blocks[bi].items[ii]; state.stepsRef={ex:e.ex}; openSheet('steps'); break; }
     case 'steps-save': case 'steps-reset': {
       const r=state.stepsRef; if(!r) break; const st=state.settings; st.steps=st.steps||{};
