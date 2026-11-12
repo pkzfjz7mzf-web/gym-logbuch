@@ -114,15 +114,17 @@ function screen(id, c, p){
   return caution ? {caution} : {};
 }
 
+/* Gewicht eines Ziels: Hauptziel 1, weitere Ziele 0.5, sonst 0. Alte Profile kennen nur p.goal. */
+function gw(p, g){ const G = p.goals && p.goals.length ? p.goals : [p.goal]; const i = G.indexOf(g); return i<0 ? 0 : i===0 ? 1 : 0.5; }
 function score(id, ex, c, slot, p, ctx){
   let s = BASE[id]||1; const lvl = ctx.level;
   if(c.level > lvl) s -= 4*(c.level-lvl);
   if(lvl===1 && c.level===1) s += 2;
   const sk = {squat:'squat', single:'squat', hinge:'hinge', hpush:'push', vpush:'push', hpull:'pull', vpull:'pull'}[c.pattern];
   if(sk && (p.skill||{})[sk]!=null && p.skill[sk]<2 && c.level>=2) s -= 3;
-  if(c.lengthened) s += p.goal==='muscle' ? 2 : 1;
-  if(p.goal==='strength' && slot.main && (ex.equip==='bb') && lvl>=2) s += 3;
-  if(p.goal==='muscle' && !slot.main && (ex.equip==='machine' || ex.equip==='cable')) s += 1;
+  if(c.lengthened) s += 1 + gw(p,'muscle');
+  if(slot.main && (ex.equip==='bb') && lvl>=2) s += 3*gw(p,'strength');
+  if(!slot.main && (ex.equip==='machine' || ex.equip==='cable')) s += gw(p,'muscle');
   if((p.posture||[]).includes('lordosis') && c.triggers.includes('axial')) s -= 2;
   if((p.like||[]).includes(id)) s += 3;
   if(ctx.usedWeek[id] && !(slot.main && p.goal==='strength')) s -= 3;
@@ -209,6 +211,8 @@ function buildPlan(profile, EX, CAT){
   const posture = p.posture||[];
   if(posture.includes('kyphosis') || p.work==='sit') ensure('rear', 2, 2, 'Sitzende Arbeit oder Rundrücken: hintere Schulter und oberer Rücken bekommen einen festen Platz.');
   if(posture.includes('lordosis')){ ensure('antiext', 2, 2, 'Hohlkreuz: Rumpfübungen gegen das Überstrecken und Gesässarbeit sind fix dabei.'); ensure('glute', 1, 2); }
+  if(gw(p,'posture')){ ensure('rear', 2, 2, 'Ziel Haltung: hintere Schulter und oberer Rücken an zwei Tagen.'); ensure('antiext', 2, 2, 'Ziel Haltung: Rumpfkontrolle an zwei Tagen.'); }
+  if(gw(p,'athletic')){ ensure('single', 1, 2, 'Ziel Athletik: einbeinige Kraft und Rumpf gegen Drehung sind fix dabei.'); ensure('antirot', 1, 2); }
   if(kinds.some(k => ['court','padel','tennis','football','team'].includes(k))){ ensure('lateral', 1, 2, 'Spielsport: seitliche Bewegungen und Rumpf gegen Drehung für Richtungswechsel.'); ensure('antirot', 1, 2); }
   if(kinds.includes('run')) ensure('kneeflex', 1, 2, 'Laufen: Beinbeuger für die Hamstrings. Wadenübungen folgen mit der Katalog-Erweiterung.');
   const FOCUS = {chest:'chestiso', shoulders:'deltiso', lats:'latiso', quads:'kneeext', hams:'kneeflex', glutes:'glute', upback:'rear'};
