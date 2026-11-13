@@ -21,6 +21,7 @@ Aarons persönliche Trainings-Web-App (Einheit A/B, Progressionsvorschläge, RIR
 - Plan in `docs/coach/PLAN.md`, Stand in `docs/coach/STATUS.md`. **Jede Session liest zuerst STATUS.md und macht dort weiter.**
 - Limit-sicher arbeiten (von Aaron verlangt, gilt besonders mit Fable): kleine Pakete, nach jedem Paket committen, auf `test` pushen und STATUS.md nachführen. Grosse Dateien stückweise schreiben und zwischendurch sichern.
 - Aaron sagt an, wenn er zu Fable wechselt oder davon weg.
+- **Evidenz-Pflicht (von Aaron verlangt, 13.11.):** Alles Sportliche (Regeln, Zahlen, Coach-Aussagen) kommt aus Studien, keine eigenen Faustregeln. Register in `docs/coach/evidenz.md` führen: Quelle vorher lesen, Regel als belegt, abgeleitet oder offen eintragen. Offenes darf nicht als Coach-Aussage in die App.
 
 ## Versionen und Rollback
 - **Die Versionsnummer zählt nur einmal pro Release hoch, nicht pro Änderung.** Mit der ersten Änderung nach einem Release `APP_VERSION` in `index.html` auf die nächste Nummer setzen (z.B. 1.4 → 1.5) und oben in `CHANGELOG` einen Eintrag mit `date: null` anlegen. Alle weiteren Änderungen bis zum Release kommen in diesen einen Eintrag, kurz und aus Aarons Sicht. Beim Release nur das Datum setzen.

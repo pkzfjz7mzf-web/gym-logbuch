@@ -292,6 +292,7 @@ details.cue p{margin:0 2px 12px;color:var(--muted)}
 .ob-bars{flex:1;display:flex;gap:6px}
 .ob-bars .ob-bar{flex:1}
 .opt .rec{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font:700 11px/1.4 var(--f-body);letter-spacing:.04em;text-transform:uppercase;vertical-align:1px}
+.ob-src{display:block;margin-top:6px;font-size:12px;color:var(--muted)}
 .ob-big{font:700 30px/1.1 var(--f-display);text-transform:uppercase;letter-spacing:.01em;margin-top:8px}
 .ob-range{width:100%;height:40px;accent-color:var(--accent);margin:0}
 .opt .num{flex:none;width:24px;height:24px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--line-strong);display:grid;place-items:center;font:700 13px/1 var(--f-body)}
@@ -2364,7 +2365,7 @@ function obScreens(p){
   s.push(['sports',1]); if(p.sports.length) s.push(['sportHours',1],['sportHard',1],['priority',1]);
   s.push(['issues',1]); p.issues.forEach((x,i)=>s.push(['issue.'+i,1])); if(p.issues.length) s.push(['redflag',1]);
   s.push(['mobNow',1]); if(p.mobNow) OB_TESTS.forEach(t=>s.push(['mobility.'+t[0],1]));
-  s.push(['work',1],['posture',1],['days',2],['minutes',2],['weekdays',2],['equip',2]);
+  s.push(['work',1],['posture',1],['minutes',2],['days',2],['weekdays',2],['equip',2]);
   if(p.equip==='home') s.push(['gear',2]);
   s.push(['supersets',2]);
   return s;
@@ -2380,35 +2381,31 @@ function obAnswered(o, id){
 function obSeg(key, opts, cur, extra){ return '<div class="seg'+(extra||'')+'">'+opts.map(o=>'<button class="'+(cur===o[0]?'on':'')+'" data-a="ob-set" data-k="'+key+'" data-v="'+o[0]+'" aria-pressed="'+(cur===o[0])+'">'+o[1]+'</button>').join('')+'</div>'; }
 function obChips(key, opts, arr, max){ return '<div class="rchips">'+opts.map(o=>'<button class="rchip'+(arr.includes(o[0])?' on':'')+'" data-a="ob-tog" data-k="'+key+'" data-v="'+o[0]+'"'+(max?' data-max="'+max+'"':'')+' aria-pressed="'+arr.includes(o[0])+'">'+o[1]+'</button>').join('')+'</div>'; }
 function obQ(label, inner, sub){ return '<div class="q"><span class="q-l">'+label+'</span>'+(sub?'<span class="ob-sub">'+sub+'</span>':'')+inner+'</div>'; }
-/* Der Coach reagiert auf Antworten: Empfehlung bei der Häufigkeit, Rückfrage, wenn Antworten nicht zusammenpassen. */
+/* Der Coach reagiert auf Antworten. Jede sportliche Aussage nennt ihre Quelle (docs/coach/evidenz.md). Keine Faustregeln. */
+const OB_SRC = {
+  acsm:'ACSM Position Stand 2026 (Currier et al., Med Sci Sports Exerc)',
+  schumann:'Schumann et al. 2022, Sports Medicine (Meta-Analyse)',
+  petre:'Petré et al. 2021, Sports Medicine (Meta-Analyse)'
+};
+function obTrial(p, days){ return COACH.buildPlan(obProfile(Object.assign({}, p, {days:days, equip:p.equip||'gym', supersets:p.supersets!==false})), EX, COACH_CAT); }
+function obLow(pl){ const w=pl.why.find(x=>x.topic==='volumen'); return w && w.muscles ? w.muscles : []; }
+/* Empfohlene Häufigkeit: mindestens 2 (ACSM 2026), sonst die kleinste Zahl, mit der der Probeplan den empfohlenen Wochenumfang erreicht. */
 function obRecDays(p){
-  if(p.years!=null && p.years<0.5) return [2,'du neu einsteigst und zwei Ganzkörper-Einheiten am Anfang für guten Fortschritt reichen'];
-  if((+p.sportHours||0)>=5 || (+p.sportHard||0)>=2) return [2,'daneben viel oder harter Sport ansteht und die Erholung sonst knapp wird'];
-  return [3,'so jeder Muskel zwei- bis dreimal pro Woche drankommt und genug Erholung bleibt'];
+  /* Lücken, die kein Tag schliesst (z.B. Übungen fallen wegen Beschwerden weg), zählen nicht gegen die Empfehlung. */
+  try{ const n=[2,3,4,5,6].map(d=>obLow(obTrial(p,d)).length), min=Math.min.apply(null,n); return 2+n.indexOf(min); }catch(e){}
+  return null;
 }
 function obAdvice(o, id){
-  const p=o.p, g=p.goals[0], hours=+p.sportHours||0, hard=+p.sportHard||0;
+  const p=o.p;
   if(id==='days' && p.days!=null){
-    if(p.days===1 && (g==='muscle' || g==='strength')) return 'Mit einem Training pro Woche hältst du Kraft und Muskeln. Für «'+OB_GOALS.find(x=>x[0]===g)[1]+'» als Hauptziel ist das wenig. Ab zwei Einheiten bekommt jeder Muskel zweimal pro Woche einen Reiz.';
-    if(p.days>=4 && p.years!=null && p.years<1) return p.days+' Trainings pro Woche sind im ersten Jahr mehr als nötig. Mit zwei bis drei kommst du fast gleich weit, und sie lassen sich leichter durchhalten.';
-    if(p.days>=4 && (hours>=5 || hard>=2)) return 'Zusammen mit deinem Sport'+(hard>=2?' und '+(hard>=3?'drei oder mehr':'zwei')+' harten Einheiten':'')+' wird die Erholung knapp. Der Plan geht, aber Beineinheiten und harte Sporttage kommen sich in die Quere.';
+    if(p.days===1) return {text:'Auch ein Training pro Woche wirkt: Jede Menge Krafttraining verbessert Kraft und Muskelmasse. Empfohlen sind aber mindestens zwei Einheiten pro Woche, in denen alle grossen Muskelgruppen drankommen.', src:['acsm']};
+    try{ const low=obLow(obTrial(p,p.days)); if(low.length) return {text:'Mit '+p.days+' × '+p.minutes+' Minuten bleiben '+low.map(m=>MUSCLES[m]||m).join(', ')+' unter dem empfohlenen Wochenumfang ('+(p.goals.includes('muscle')?'für Muskelaufbau mindestens 10 Sätze pro Muskel':'mindestens 2 Einheiten mit 2–3 Sätzen pro Übung')+'). Fortschritt gibt es trotzdem, nur langsamer. Mehr Tage oder längere Einheiten würden das ändern.', src:['acsm']}; }catch(e){}
   }
-  if(id==='priority' && p.priority==='strength' && hours>=5) return 'Bei über 4 Stunden Sport pro Woche hält der Plan den Beinumfang trotzdem tiefer, sonst reicht die Erholung nicht. Der Oberkörper bleibt unverändert.';
-  if(id==='weekdays' && p.weekdays.length && p.days!=null){
-    const n=p.weekdays.length, W=['So','Mo','Di','Mi','Do','Fr','Sa'], set=p.weekdays.map(Number);
-    if(n<p.days) return 'Du willst '+p.days+'-mal pro Woche trainieren, hast aber erst '+n+(n===1?' Tag':' Tage')+' gewählt. Wähle weitere Tage, oder geh zurück und senke die Häufigkeit.';
-    const adj=set.find(d=>set.includes((d+1)%7));
-    if(p.days<=3 && n===p.days && adj!=null) return W[adj]+' und '+W[(adj+1)%7]+' liegen direkt hintereinander. Bei Ganzkörper-Einheiten trainierst du beide Male dieselben Muskeln, dazwischen sollte mindestens ein Tag Pause liegen.';
-  }
-  if(id==='minutes' && p.minutes!=null && p.days!=null){
-    try{
-      const pl=COACH.buildPlan(obProfile(Object.assign({}, p, {equip:p.equip||'gym', supersets:p.supersets!==false})), EX, COACH_CAT), w=pl.why.find(x=>x.topic==='volumen');
-      if(w && w.muscles && w.muscles.length) return 'Mit '+p.days+' × '+p.minutes+' Minuten bleiben '+w.muscles.map(m=>MUSCLES[m]||m).join(', ')+' unter dem Umfang, der für Aufbau empfohlen ist. Längere Einheiten oder ein zusätzlicher Tag würden das ändern.';
-    }catch(e){}
-  }
+  if(id==='priority' && p.priority!=null) return {info:true, text:'Ausdauer bremst Muskelaufbau und Maximalkraft im Schnitt nicht. Was zählt, ist der Abstand: Liegen Ausdauer und Kraft direkt hintereinander, leidet die Schnellkraft, bei Trainierten auch die Beinkraft. Mit mindestens 3 Stunden dazwischen verschwindet der Effekt.'+(p.priority==='endurance'?' Weil dein Sport Vorrang hat, bekommen die Beine den Mindestumfang für Kraft statt den Umfang für Aufbau.':''), src:['schumann','petre']};
+  if(id==='weekdays' && p.weekdays.length && p.days!=null && p.weekdays.length<p.days){ const n=p.weekdays.length; return {text:'Du willst '+p.days+'-mal pro Woche trainieren, hast aber erst '+n+(n===1?' Tag':' Tage')+' gewählt. Wähle weitere Tage, oder geh zurück und senke die Häufigkeit.'}; }
   if(id.indexOf('issue.')===0){
     const is=p.issues[+id.split('.')[1]], hit=(({shoulder:['shoulders','chest'], knee:['quads'], hip:['glutes'], hams:['hams'], elbow:['arms']})[is.region]||[]).filter(f=>p.focus.includes(f));
-    if(hit.length && is.status) return 'Du willst '+hit.map(m=>MUSCLES[m]).join(' und ')+' besonders voranbringen, hast in dieser Region aber Beschwerden. '+(is.status==='acute'?'Solange es akut ist, fällt der Schwerpunkt dort weg.':'Übungen, die es auslösen, fallen weg. Der Schwerpunkt bleibt mit den übrigen Übungen bestehen.');
+    if(hit.length && is.status) return {text:'Du willst '+hit.map(m=>MUSCLES[m]).join(' und ')+' besonders voranbringen, hast in dieser Region aber Beschwerden. '+(is.status==='acute'?'Solange es akut ist, fällt der Schwerpunkt dort weg.':'Übungen, die es auslösen, fallen weg. Der Schwerpunkt bleibt mit den übrigen Übungen bestehen.')};
   }
   return null;
 }
@@ -2447,7 +2444,7 @@ function sheetOb(){
   } else if(id==='sportHard'){
     h+=obHead('Wie viele harte Einheiten sind pro Woche dabei?', 'Intervalle, Tempoläufe, Wettkämpfe, intensive Spiele wie Padel.')+obOpts('sportHard', [[0,'Keine'],[1,'Eine'],[2,'Zwei'],[3,'Drei oder mehr']], p.sportHard);
   } else if(id==='priority'){
-    h+=obHead('Wenn es eng wird: Was hat Vorrang?', 'Hat der Sport Vorrang, bekommen die Beine im Krafttraining weniger Umfang.')+obOpts('priority', [['strength','Krafttraining','Der Sport läuft nebenher'],['both','Beides gleich'],['endurance','Mein Sport','Das Krafttraining unterstützt ihn']], p.priority);
+    h+=obHead('Wenn es eng wird: Was hat Vorrang?', 'Hat dein Sport Vorrang, bekommen die Beine im Krafttraining nur den Mindestumfang.')+obOpts('priority', [['strength','Krafttraining','Der Sport läuft nebenher'],['both','Beides gleich'],['endurance','Mein Sport','Das Krafttraining unterstützt ihn']], p.priority);
   } else if(id==='issues'){
     h+=obHead('Hast du Beschwerden oder Verletzungen?', 'Tippe alle Stellen an, die du im Training oder Alltag spürst. Ausgeheiltes, das dich nicht mehr einschränkt, lässt du weg.')+obChips('issueRegions', OB_REGIONS, p.issues.map(x=>x.region))+obNone(o,'issues');
   } else if(k[0]==='issue'){
@@ -2468,7 +2465,7 @@ function sheetOb(){
     h+=obHead('Was fällt dir an deiner Haltung auf?', 'Mehrere möglich. Der Plan kräftigt und mobilisiert gezielt. Haltung verändert sich dadurch langsam, Beweglichkeit und Kraft deutlich schneller.')+obChips('posture', [['kyphosis','Rundrücken'],['lordosis','Hohlkreuz'],['head','Kopf nach vorne']], p.posture)+obNone(o,'posture');
   } else if(id==='days'){
     const rec=obRecDays(p);
-    h+=obHead('Wie oft pro Woche willst du ins Krafttraining?', 'Nimm die Zahl, die du auch in einer vollen Woche schaffst. Für dich würde ich '+rec[0]+' empfehlen, weil '+rec[1]+'. Du entscheidest.')+obOpts('days', [1,2,3,4,5,6].map(x=>[x, x+' Training'+(x>1?'s':'')+' pro Woche', '', x===rec[0]?'Empfohlen':'']), p.days);
+    h+=obHead('Wie oft pro Woche willst du ins Krafttraining?', 'Nimm die Zahl, die du auch in einer vollen Woche schaffst. Empfohlen sind mindestens zwei Einheiten pro Woche. Wie du den Umfang auf die Tage verteilst, spielt für den Muskelaufbau keine Rolle.'+(rec?' Mit '+p.minutes+' Minuten pro Einheit kommst du ab '+rec+' Trainings auf den empfohlenen Wochenumfang für deine Ziele.':'')+'<span class="ob-src">Quelle: '+OB_SRC.acsm+'</span>')+obOpts('days', [1,2,3,4,5,6].map(x=>[x, x+' Training'+(x>1?'s':'')+' pro Woche', '', x===rec?'Empfohlen':'']), p.days);
   } else if(id==='minutes'){
     h+=obHead('Wie lange darf eine Einheit dauern?', 'Inklusive Aufwärmen und Mobility.')+obOpts('minutes', [30,45,60,75,90].map(x=>[x, x+' Minuten']), p.minutes);
   } else if(id==='weekdays'){
@@ -2481,8 +2478,8 @@ function sheetOb(){
     h+=obHead('Sind Supersätze für dich in Ordnung?', 'Zwei Übungen für verschiedene Muskeln im Wechsel. Das spart Zeit, ist aber anstrengender.')+obOpts('supersets', [[true,'Ja, gerne'],[false,'Lieber nicht']], p.supersets);
   }
   const adv=obAnswered(o,id) ? obAdvice(o,id) : null;
-  if(adv) h+='<div class="callout ob-coach">'+I.info+'<div><b>Coach:</b> '+adv+'</div></div>';
-  h+='<div class="ob-nav">'+(n>0?'<button class="btn sec" data-a="ob-back">Zurück</button>':'<button class="btn sec" data-a="sheet-close">Abbrechen</button>')+'<button class="btn pri" id="ob-nx" data-a="ob-next"'+(obAnswered(o,id)?'':' disabled')+'>'+(n===sc.length-1?'Plan erstellen':adv?'Trotzdem weiter':'Weiter')+'</button></div>';
+  if(adv) h+='<div class="callout ob-coach'+(adv.info?' info':'')+'">'+I.info+'<div><b>Coach:</b> '+adv.text+(adv.src?'<span class="ob-src">Quelle: '+adv.src.map(k=>OB_SRC[k]).join(' · ')+'</span>':'')+'</div></div>';
+  h+='<div class="ob-nav">'+(n>0?'<button class="btn sec" data-a="ob-back">Zurück</button>':'<button class="btn sec" data-a="sheet-close">Abbrechen</button>')+'<button class="btn pri" id="ob-nx" data-a="ob-next"'+(obAnswered(o,id)?'':' disabled')+'>'+(n===sc.length-1?'Plan erstellen':adv && !adv.info?'Trotzdem weiter':'Weiter')+'</button></div>';
   return h;
 }
 

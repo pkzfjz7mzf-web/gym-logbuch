@@ -172,10 +172,14 @@ function weeklyVolume(days, EX){
   days.forEach(d => d.blocks.forEach(b => b.items.forEach(it => { const m = EX[it.ex].m||{}; for(const k in m) v[k] = (v[k]||0) + it.sets*(m[k]>=1 ? 1 : 0.5); })));
   return v;
 }
-function targetFor(muscle, p, level, legFactor){
-  const base = {1:[6,10], 2:[8,14], 3:[10,16]}[level];
+/* Wochenumfang pro Muskel (Sätze, indirekte zählen halb). Quelle: ACSM 2026 (Currier et al.):
+   Muskelaufbau ab 10 Sätzen pro Woche mit Dosis-Wirkung, Plateau bei rund 18–20. Für Kraft und Funktion
+   mindestens 2 Einheiten pro Woche mit 2–3 Sätzen pro Übung, also 4–6 Sätze. Trainingserfahrung ändert daran wenig,
+   darum hängt der Zielbereich nicht mehr von der Stufe ab. legMin = Beine nur auf Mindestumfang (Vorrang Sport). */
+function targetFor(muscle, p, level, legMin){
+  const LEGM = ['quads','glutes','hams','adductors'];
+  const base = (gw(p,'muscle') && !(legMin && LEGM.includes(muscle))) ? [10,20] : [4,10];
   let f = ['core','adductors','arms'].includes(muscle) ? 0.5 : 1;
-  if(['quads','glutes','hams','adductors'].includes(muscle)) f *= legFactor;
   if((p.focus||[]).includes(muscle)) f *= 1.3;
   return [Math.round(base[0]*f), Math.round(base[1]*f)];
 }
@@ -189,8 +193,8 @@ function buildPlan(profile, EX, CAT){
   const nDays = Math.max(1, Math.min(6, p.days||2)), minutes = p.minutes||60;
   const sports = p.sports||[], hours = sports.reduce((a,s)=>a+(s.hours||0),0);
   const kinds = sports.map(s=>s.kind);
-  const enduranceFirst = p.priority==='endurance' || hours>4;
-  const legFactor = enduranceFirst ? 0.6 : 1;
+  const enduranceFirst = p.priority==='endurance';
+  const legFactor = enduranceFirst;
   why.push({topic:'split', text:SPLIT_WHY[nDays]});
 
   // 1) Tage aus Vorlagen
@@ -298,14 +302,14 @@ function buildPlan(profile, EX, CAT){
   }
   const vol = weeklyVolume(days, EX), volume = {};
   muscles.forEach(m => { const t = targetFor(m,p,level,legFactor); volume[m] = {sets:vol[m]||0, target:t}; });
-  const low = muscles.filter(m => volume[m].sets < volume[m].target[0] && !['core','adductors','arms'].includes(m));
-  if(low.length) why.push({topic:'volumen', text:'Mit '+nDays+' × '+minutes+' Minuten liegen einige Muskeln unter dem Zielbereich. Mehr Tage oder längere Einheiten würden das ändern.', muscles:low});
+  const low = muscles.filter(m => Math.round(volume[m].sets) < volume[m].target[0] && !['core','adductors','arms'].includes(m));
+  if(low.length) why.push({topic:'volumen', text:'Mit '+nDays+' × '+minutes+' Minuten liegen einige Muskeln unter dem empfohlenen Wochenumfang (ACSM 2026). Mehr Tage oder längere Einheiten würden das ändern.', muscles:low});
 
   // 6) Ausdauer
   if(sports.length){
     why.push({topic:'ausdauer', text: enduranceFirst
-      ? 'Ausdauer hat Vorrang oder läuft über 4 Stunden pro Woche: Die Beine bekommen weniger Sätze, Ziel ist Erhalt.'
-      : 'Ausdauer bremst Muskelaufbau und Maximalkraft nicht. Lege harte Ausdauereinheiten trotzdem nicht auf denselben Tag wie das Beintraining.'});
+      ? 'Dein Sport hat Vorrang: Die Beine bekommen den Mindestumfang für Kraft (2–3 Sätze pro Übung), nicht den Umfang für Muskelaufbau. Das ist deine Priorität, keine Notwendigkeit: Ausdauer bremst Muskelaufbau und Maximalkraft im Schnitt nicht (Schumann 2022).'
+      : 'Ausdauer bremst Muskelaufbau und Maximalkraft im Schnitt nicht (Schumann 2022). Halte zwischen Ausdauer und Krafttraining mindestens 3 Stunden Abstand: Direkt hintereinander leidet die Schnellkraft, bei Trainierten auch die Beinkraft (Petré 2021).'});
   }
 
   // 7) Aufwärmen
