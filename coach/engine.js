@@ -25,6 +25,8 @@ const SPLITS = {1:['ONE'], 2:['FB_A','FB_B'], 3:['FB_A','FB_B','FB_C'], 4:['U1',
 const SPLIT_WHY = {1:'1 Tag pro Woche: eine Ganzkörper-Einheit mit allen Grundmustern.', 2:'2 Tage pro Woche: zwei Ganzkörper-Einheiten, so wird jeder Muskel 2× pro Woche trainiert.',
   3:'3 Tage pro Woche: Ganzkörper mit wechselnden Schwerpunkten.', 4:'4 Tage pro Woche: je 2× Oberkörper und Unterkörper.',
   5:'5 Tage pro Woche: Oberkörper, Unterkörper, dann Drücken, Ziehen und Beine.', 6:'6 Tage pro Woche: 2× Drücken, Ziehen, Beine.'};
+/* Ergänzungsmuster, mit denen ein Muskel unter Ziel aufgefüllt wird. */
+const FILL = {chest:['chestiso','hpush'], shoulders:['deltiso','vpush'], lats:['latiso','vpull'], upback:['rear','hpull'], quads:['kneeext','single'], hams:['kneeflex'], glutes:['glute','abduct'], arms:['biceps','triceps']};
 const LEG = ['squat','hinge','single','glute','kneeflex','kneeext','lateral','abduct'];
 const UPPER_OK = {rear:['fb','upper','pull'], deltiso:['fb','upper','push'], chestiso:['fb','upper','push'], latiso:['fb','upper','pull'], biceps:['fb','upper','pull'], triceps:['fb','upper','push']};
 const CORE = ['antiext','antirot','coreflex'];
@@ -215,6 +217,7 @@ function buildPlan(profile, EX, CAT){
   };
   const posture = p.posture||[];
   if(posture.includes('kyphosis')) ensure('rear', 2, 2, 'Rundrücken: Kräftigung des oberen Rückens verkleinert den Winkel der Brustwirbelsäule deutlich (González-Gálvez 2019). Darum ein fester Platz an zwei Tagen.');
+  if(posture.includes('head')){ ensure('rear', 2, 2); why.push({topic:'haltung', text:'Kopf nach vorne: Übungsprogramme verbessern die Kopfhaltung um rund 3–4 Grad (Xing 2026, Sheikhhoseini 2018). In den Studien waren das 3–5 Einheiten pro Woche über mindestens 3–8 Wochen, meist kombiniert aus Nackenstabilisation, Schulterblatt-Kräftigung und Dehnen. Der Plan liefert Nackenübung und oberen Rücken an den Trainingstagen. Auf die Häufigkeit aus den Studien kommst du nur mit der Routine an freien Tagen.'}); }
   if(posture.includes('lordosis')) why.push({topic:'haltung', text:'Hohlkreuz: Für Übungsprogramme ist keine gesicherte Wirkung auf die Lendenlordose belegt (González-Gálvez 2019). Der Plan enthält deshalb keine Sonderregeln dafür.'});
   if(gw(p,'posture')){ ensure('rear', 2, 2, 'Ziel Haltung: hintere Schulter und oberer Rücken an zwei Tagen.'); ensure('antiext', 2, 2, 'Ziel Haltung: Rumpfkontrolle an zwei Tagen.'); }
   if(gw(p,'athletic')){ ensure('single', 1, 2, 'Ziel Athletik: einbeinige Kraft und Rumpf gegen Drehung sind fix dabei.'); ensure('antirot', 1, 2); }
@@ -290,7 +293,7 @@ function buildPlan(profile, EX, CAT){
 
   // 5) Volumen auffüllen, wo Zeit bleibt und ein Muskel unter dem Ziel liegt
   const muscles = ['quads','glutes','hams','upback','lats','chest','shoulders','core','adductors','arms'];
-  for(let guard=0; guard<40; guard++){
+  for(let guard=0; guard<80; guard++){
     const v = weeklyVolume(days, EX);
     const lack = muscles.map(m => ({m, d:targetFor(m,p,level,legFactor)[0]-(v[m]||0)})).filter(x => x.d>0).sort((a,b) => b.d-a.d);
     let done = false;
@@ -299,6 +302,23 @@ function buildPlan(profile, EX, CAT){
       days.forEach(d => d.blocks.forEach(b => b.items.forEach(it => { if(it.sets<4 && !it.mob && !EX[it.ex].noRir && primary(it,EX).includes(l.m) && !(enduranceFirst && LEG.includes(it.pattern))){
         it.sets++; const fits = dayMinutes(d,EX) <= minutes; it.sets--; if(fits) opts.push({it, mins:dayMinutes(d,EX)}); } })));
       if(opts.length){ opts.sort((a,b) => a.it.sets-b.it.sets || a.mins-b.mins); opts[0].it.sets++; done = true; break; }
+      /* Kein Satz mehr möglich (alle Übungen dieses Muskels stehen bei 4 Sätzen): eine Ergänzungsübung an dem Tag mit der meisten freien Zeit. */
+      if(l.d < 1 || (enduranceFirst && ['quads','glutes','hams','adductors'].includes(l.m))) continue;
+      const pats = FILL[l.m]||[]; let added = false;
+      for(const d of days.slice().sort((a,b) => dayMinutes(a,EX)-dayMinutes(b,EX))){
+        const used = {}; d.blocks.forEach(b => b.items.forEach(it => { used[it.ex] = true; }));
+        for(const pat of pats){
+          if(d.blocks.some(b => b.items.some(it => it.pattern===pat))) continue;
+          const slot = {pattern:pat, main:false, prio:3}, r = pick(slot, p, EX, CAT, ctx, used);
+          if(!r.best || CAT[r.best.id].level > ctx.level || r.best.caution || !(EX[r.best.id].m||{})[l.m] || EX[r.best.id].m[l.m] < 1) continue;
+          const it = {key:d.id+'.'+pat+'x', group:GROUP[pat]||pat, pattern:pat, ex:r.best.id, sets:2, reps:repsFor(slot, r.best.id, p), main:false, prio:3, alts:r.alts};
+          d.blocks.push({rest:'acc', items:[it]});
+          if(dayMinutes(d,EX) <= minutes){ ctx.usedWeek[r.best.id] = true; added = true; break; }
+          d.blocks.pop();
+        }
+        if(added) break;
+      }
+      if(added){ done = true; break; }
     }
     if(!done) break;
   }
@@ -326,6 +346,15 @@ function buildPlan(profile, EX, CAT){
   const rb = mobBlock('M', order, mn.n, Math.max(4, Math.min(6, order.filter(k => mn.n[k]>=1).length)), 2, p, EX, CAT, new Set(), true);   // Routine für zuhause: ohne Geräte
   const routine = rb ? {id:'M', kind:'mobility', name:'Mobility für freie Tage', blocks:[rb]} : null;
   if(routine) routine.minutes = Math.round(rb.items.reduce((a,it) => a+slotSeconds(it, EX), 0)/60);
+  /* Dehn-Dosis (Ingram 2024): grösster Effekt bei rund 10 Minuten statischem Dehnen pro Woche und Muskelgruppe, höchstens 4 Minuten pro Einheit zählen. */
+  if(routine){
+    const st = rb.items.filter(it => EX[it.ex].hold);
+    if(st.length){
+      const per = st.map(it => it.sets*it.reps[1]*(EX[it.ex].side?2:1)/60), avg = per.reduce((a,b)=>a+b,0)/per.length, n = Math.min(7, Math.ceil(10/Math.min(4,avg)));
+      routine.dose = {minPerRegion:Math.round(avg*10)/10, perWeek:n};
+      why.push({topic:'mobility', text:'Dehnen wirkt am stärksten bei rund 10 Minuten pro Woche und Muskelgruppe, mehr bringt nicht mehr (Ingram 2024). Die Routine für freie Tage dehnt jede eingeschränkte Region rund '+String(routine.dose.minPerRegion).replace('.',',')+' Minuten pro Durchgang: Mit '+n+' Durchgängen pro Woche schöpfst du das aus. Weniger wirkt auch, nur schwächer. Krafttraining über den vollen Bewegungsweg verbessert die Beweglichkeit ebenfalls (Afonso 2021).'});
+    }
+  }
   return {v:1, source:'coach', level, days, routine, volume, why};
 }
 

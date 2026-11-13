@@ -123,8 +123,21 @@ Aarons Präzisierung: Das Vorgehen wird aus Studien abgeleitet, nicht nachträgl
 | Zeitmodell (40 s pro Satz usw.) | Keine Sportaussage, Schätzung. Mit Logbuch-Daten kalibrieren | – | Bleibt |
 | Nicht mehr zitiert, weil nicht gelesen | Currier 2023, Petersen 2011, Haugen 2023 | – | – |
 
+## Nachtrag 13.11. abends: die drei offenen Punkte und die Engine-Schwäche
+
+### Quellen
+- **Nuzzo 2024, weitere Werte** (Text des Preprints und Beitrag des Erstautors): allgemein rund 5 Wdh. bei 90 % und 15 bei 70 % 1RM. Bankdrücken 8 bei 80 % (wie NSCA-Tabelle), Beinpresse 13 bei 80 %. Die volle Tabelle liegt weiterhin nur als Bild vor.
+- **Xing 2026:** Xing Y, Wang R, Zhao X, Xu A. J Pain Res. 2026;19:614524. doi:10.2147/JPR.S614524. 10 RCTs, 550 Personen mit Nackenschmerz: Kopf-Hals-Winkel +3.4° (SMD 0.95, mittlere Sicherheit), Schmerz −1.4 auf der VAS (tiefe Sicherheit). Programme: Nackenstabilisation, Haltungskorrektur, kombiniert mit Schulterblatt-Training und Dehnen; 3–5 Einheiten pro Woche, 20–60 min, 3–8 Wochen. Kombiniert und ab 8 Wochen tendenziell besser (explorativ).
+
+### Ergebnis
+| Punkt | Ableitung | Im Code |
+|---|---|---|
+| Formel fürs geschätzte Maximum | Epley (3.3 % pro Wdh.) ersetzt durch die Beziehung aus Nuzzo 2024: rund 2 % des 1RM pro Wiederholung, 1RM = Gewicht ÷ (1 − 0.02 × (Wdh + RIR)). Stützt sich auf zwei Ablesewerte (90 % ↔ 5, 70 ↔ 15) und Bankdrücken (80 ↔ 8, 65 ↔ 15: 2.1 % pro Wdh.). Übungen unterscheiden sich stark (Beinpresse 13 bei 80 %), darum nur Trend innerhalb derselben Übung, kein Vergleich zwischen Übungen. | `repF(n)`, `findEst`, 1RM-Kurve. Nach zu schwerem Probesatz wird die Schätzung abgerundet (vorsichtiger erster Kontakt, Boyd 2023) |
+| Kopf nach vorne | Wirkung belegt (Xing 2026, Sheikhhoseini 2018), aber mit 3–5 Einheiten pro Woche. Kategorien der Studien: Nackenstabilisation (Kinn zurückschieben), Schulterblatt-Kräftigung, Dehnen. | Nackenübung bleibt, neu fester Platz oberer Rücken, Plan nennt die Dosis der Studien und dass sie nur mit der Routine erreicht wird |
+| Mobility-Dosis | Ingram 2024: Maximum 10 min pro Woche und Muskelgruppe, höchstens 4 min pro Einheit. | Plan rechnet aus, wie viele Durchgänge der Routine das ausschöpfen (`routine.dose`), und sagt es in der Begründung. Dynamische Übungen im Gym-Block: für sie gilt die Dosis nicht (Ingram untersucht statisches Dehnen) |
+| Engine füllt freie Zeit nicht | Kein Evidenzthema, Fehler. | Wenn alle Übungen eines Muskels bei 4 Sätzen stehen, kommt eine Ergänzungsübung dazu (`FILL`), sofern Zeit bleibt und die Übung zur Stufe passt |
+
 ## Noch offen nach dem Audit
-1. Epley ersetzen: volle Nuzzo-Tabelle lesen (liegt nur als Bild vor), zusammen mit Krafttest N5.
-2. Kopf nach vorne: Volltext Sheikhhoseini für die Übungsauswahl.
-3. Mobility-Dosis an Ingram 2024 ausrichten.
-4. Aarons Projekt-Anleitung im Coaching-Projekt nennt noch «erste 2 Gym-Wochen 2 Sätze», «RIR 2–3» und «nach Padel kein beinlastiges Gym». Aaron entscheidet, ob er sie anpasst.
+1. Volle Nuzzo-Tabelle (übungsspezifische Kurven) für den Krafttest N5.
+2. Statisches Dehnen direkt vor dem Krafttraining (akute Wirkung auf die Kraft): nicht geprüft. Der Gym-Block bevorzugt dynamische Übungen, diese Wahl ist noch ohne Quelle.
+3. Obergrenze 4 Sätze pro Übung: ohne Quelle, reine Praxis.

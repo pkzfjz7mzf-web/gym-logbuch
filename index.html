@@ -1274,13 +1274,16 @@ function findDecide(e, rating, reps){
   if(findOverlaps(rating, tr)) return 'found';
   return rating==='r34' ? 'up10' : rating==='r57' ? 'up25' : 'up50';
 }
-/* Schätzung nach Epley inkl. Reserve: Gewicht für die geplanten Wdh. mit Ziel-Reserve.
+/* Wiederholungen und Last: im Mittel rund 2 % des 1RM pro Wiederholung (Nuzzo 2024: etwa 5 Wdh. bei 90 %, 15 bei 70 %; Bankdrücken 8 bei 80 %).
+   repF(n) = Faktor vom Gewicht für n mögliche Wiederholungen zum geschätzten 1RM. Über 25 Wdh. nicht mehr sinnvoll. */
+function repF(n){ return 1/(1-0.02*Math.max(0, Math.min(25, n))); }
+/* Schätzung inkl. Reserve: Gewicht für die geplanten Wdh. mit Ziel-Reserve.
    Nur bei echten Gewichten; bei Körpergewicht und Klimmzug-Maschine fehlt das Körpergewicht. */
 const FIND_MID = {r0:0, r12:1.5, r34:3.5, r57:6, r8:8};
 function findEst(e, def, w, r, rating){
   if(!w || rating==='tech' || r==null || ['bw','assist','none'].includes(def.equip)) return null;
   const tr=findTr(e.find), lo=e.target.reps[0];
-  return w*(1+(r+FIND_MID[rating])/30)/(1+(lo+(tr[0]+tr[1])/2)/30);
+  return w*repF(r+FIND_MID[rating])/repF(lo+(tr[0]+tr[1])/2);
 }
 function findHeavier(w, def, pct){
   const st=state.settings, inc=incFor(def, st);
@@ -1311,7 +1314,7 @@ function findNext(w, kind, f, def, est){
   const inc=incFor(def, state.settings), sg=def.equip==='assist'?-1:1, {lo,hi,D}=findBounds(f, def);
   let nw = kind==='down' ? findLighter(w, def) : findHeavier(w, def, kind==='up25'?0.25:kind==='up50'?0.5:0.10);
   // Weniger oder mehr Wdh. als geplant: Schätzung, mindestens so weit wie die Grundregel
-  if(est!=null) nw = kind==='down' ? Math.max(findMinW(def), Math.min(nw, roundTo(est, inc, 'near'))) : Math.max(nw, roundTo(est, inc, 'down'));
+  if(est!=null) nw = kind==='down' ? Math.max(findMinW(def), Math.min(nw, roundTo(est, inc, 'down'))) : Math.max(nw, roundTo(est, inc, 'down'));
   nw=snapW(nw, def);
   if(nw===w && gridOf(def)) nw=snapW(rnd(w+(kind==='down'?-1:1)*sg*inc), def);
   if(hi!=null && D(nw)>=D(hi)) nw=rnd(hi-sg*inc);
@@ -1414,7 +1417,7 @@ function e1rm(set, def){
   if(!L || L<=0 || !set.r) return null;
   const reps = set.r + (set.rir==null?0:set.rir);
   if(reps>20) return null;
-  return L*(1+reps/30);
+  return L*repF(reps);
 }
 function bestE1rm(sets, def){ let b=0; sets.forEach(x=>{ const v=e1rm(x,def); if(v&&v>b) b=v; }); return b; }
 
@@ -2039,7 +2042,7 @@ function metricFor(exId){
   if(def.load==='reps') return {label:'Wiederholungen gesamt', unit:'Wdh.', fn:sets=>sets.reduce((a,x)=>a+(x.r||0),0)};
   if(def.equip==='assist' && !bw) return {label:'Hilfe in kg, weniger ist stärker', unit:'kg', fn:sets=>Math.min(...sets.map(x=>x.w||0))};
   if(def.equip==='bw' && (!bw || !def.bwLoad)) return {label:'Beste Wiederholungszahl', unit:'Wdh.', fn:sets=>Math.max(...sets.map(x=>x.r||0))};
-  return {label:'Geschätztes 1RM (Epley, inkl. RIR)', unit:'kg', fn:sets=>bestE1rm(sets,def)};
+  return {label:'Geschätztes 1RM (inkl. RIR)', unit:'kg', fn:sets=>bestE1rm(sets,def)};
 }
 
 function niceScale(min,max,n){
@@ -2666,7 +2669,7 @@ function sheetInfo(){
   +'<div><h3>Doppelte Progression</h3><p>Das Gewicht bleibt, bis alle Sätze das obere Ende des Wiederholungsbereichs erreichen. Dann steigt es um 2.5 %, bei viel Luft (RIR über dem Ziel) um 5 %, gerundet auf deinen kleinsten Gewichtsschritt. Danach startest du wieder am unteren Ende. Zweimal in Folge unter dem Bereich: rund 10 % leichter und neu aufbauen.</p><p>Belegt ist: Steigern über Wiederholungen und Steigern über das Gewicht bringen gleich viel Kraft und Muskeln. Die Prozentwerte sind abgeleitet: Sie sind so klein, dass du nach der Erhöhung sicher wieder im Bereich landest (pro Wiederholung weniger sind im Schnitt rund 2 % des Maximums mehr möglich: von 8 auf 6 Wiederholungen also rund 5 % mehr Gewicht, von 12 auf 8 rund 10 %).</p><cite>Plotkin et al. 2022, PeerJ · ACSM Position Stand 2026 · Nuzzo et al. 2024, Sports Med</cite></div>'
   +'<div><h3>Wiederholungen</h3><p>Für Muskelaufbau ist die Last frei wählbar: Von wenigen bis über 15 Wiederholungen wächst der Muskel gleich gut, wenn der Satz anstrengend genug ist. Für Maximalkraft sind schwere Lasten besser (ab rund 80 % des Maximums, das sind im Schnitt etwa 10 Wiederholungen oder weniger). Darum mit Ziel Kraft 4–6 bei den Grundübungen, sonst 6–10. Ergänzungsübungen bleiben bei höchstens 15, weil sich die Reserve bei langen Sätzen schlechter schätzen lässt.</p><cite>ACSM Position Stand 2026 · Lopez et al. 2021, Med Sci Sports Exerc · Nuzzo et al. 2024, Sports Med · Halperin et al. 2022, Sports Med</cite></div>'
   +'<div><h3>RIR</h3><p>Wiederholungen in Reserve: wie viele saubere Wiederholungen noch drin gewesen wären. Bis zum Versagen zu trainieren bringt nicht mehr Kraft und höchstens minimal mehr Muskeln, 2–3 Wiederholungen Reserve reichen. Menschen unterschätzen ihre Reserve im Schnitt um etwa eine Wiederholung. Darum zielt die App auf angegebene RIR 1–2 bei Grundübungen und 1–3 bei Ergänzungsübungen: Das entspricht tatsächlich etwa 2–3. Ein exaktes RIR-Ziel lässt sich aus Studien nicht ableiten.</p><p>Beim ersten Mal pro Übung und nach mehr als 4 Wochen Pause: 2 Sätze und RIR 3–4. Eine einzelne leichtere Einheit reicht, damit die nächste deutlich weniger Muskelkater und Kraftverlust auslöst. Dieser Schutz hält je nach Belastung rund 2–8 Wochen, darum die Grenze bei 4 Wochen. Ab dem zweiten Mal gilt das normale Ziel.</p><cite>ACSM Position Stand 2026 · Refalo et al. 2023, Sports Med · Halperin et al. 2022, Sports Med · Boyd et al. 2023, Sports Med · Bridgeman et al. 2015, J Aust Strength Cond</cite></div>'
-  +'<div><h3>Geschätztes 1RM</h3><p>Epley-Formel mit Reserve: Gewicht × (1 + (Wdh + RIR) / 30). Nur als Trend lesen. Die Schätzung ist unter 10 Wiederholungen genauer, und wie viele Wiederholungen jemand bei gleicher Last schafft, streut von Person zu Person um 2–4. Die grösste Datensammlung dazu deutet darauf hin, dass Epley das Maximum eher zu hoch schätzt.</p><cite>Mayhew et al. 2008, J Strength Cond Res · Nuzzo et al. 2024, Sports Med</cite></div>'
+  +'<div><h3>Geschätztes 1RM</h3><p>Gewicht ÷ (1 − 0.02 × (Wdh + RIR)). Dahinter steht die grösste Datensammlung zu Wiederholungen und Last (269 Studien): Im Mittel schafft man rund 5 Wiederholungen bei 90 % und 15 bei 70 % des Maximums, also etwa 2 % pro Wiederholung. Die Zahl taugt nur als Trend innerhalb derselben Übung: Je nach Übung sind bei gleicher Last sehr unterschiedlich viele Wiederholungen möglich (bei 80 % rund 8 im Bankdrücken, 13 an der Beinpresse), und von Person zu Person streut es um 2–4 Wiederholungen. Unter 10 Wiederholungen ist die Schätzung genauer.</p><cite>Nuzzo et al. 2024, Sports Med · Mayhew et al. 2008, J Strength Cond Res</cite></div>'
   +'<div><h3>Pausen</h3><p>Pausen über 60 Sekunden bringen etwas mehr Muskelaufbau als kürzere. Über 90 Sekunden zeigen die Studien keinen sicheren Zusatznutzen mehr, für die Kraft fand sich gar kein Unterschied. Darum sind 1:30 der Standard. Längere Pausen schaden nicht, sie kosten nur Zeit: Stell sie in den Einstellungen höher, wenn du sonst deine Wiederholungen nicht schaffst.</p><cite>Singer et al. 2024, Front Sports Act Living · ACSM Position Stand 2026</cite></div>'
   +'<div><h3>Supersätze</h3><p>Zwei Übungen für verschiedene Muskeln im Wechsel verkürzen die Einheit bei gleichem Kraft- und Muskelzuwachs. Sie fühlen sich anstrengender an. Zwei Übungen für denselben Muskel hintereinander senken dagegen die Leistung, darum paart die App nur verschiedene Muskeln.</p><cite>Zhang et al. 2025, Sports Med (Meta-Analyse) · Mang et al. 2025, J Strength Cond Res (Review)</cite></div>'
   +'<div><h3>Wochenvolumen</h3><p>Mehr harte Sätze pro Muskel und Woche bringen mehr Muskelaufbau, mit abnehmendem Ertrag: empfohlen sind mindestens 10, ab rund 18–20 flacht es ab. Indirekte Beanspruchung zählt halb. Wie oft pro Woche ein Muskel drankommt, spielt bei gleichem Umfang keine Rolle.</p><cite>ACSM Position Stand 2026 · Pelland et al. 2024 (Preprint)</cite></div>'
