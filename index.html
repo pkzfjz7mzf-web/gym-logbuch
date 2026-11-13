@@ -1109,15 +1109,15 @@ function computeTarget(exId, it, ctx){ const b=computeTargetRaw(exId, it, ctx); 
 function computeTargetRaw(exId, it, ctx){
   const def=EX[exId], st=ctx.settings;
   const lo=it.reps[0], hi=it.reps[1];
-  const sets = (ctx.reentry || ctx.comeback==='hard') ? Math.min(it.sets,2) : it.sets;
   const fresh = !def.noRir && isFresh(exId, ctx);
-  let rir = fresh ? [3,4] : ctx.reentry ? [2,3] : (def.rir || (def.main ? [1,2] : [1,3]));
+  /* Erste Einheit einer neuen oder lange pausierten Übung: weniger Umfang und mehr Reserve. Eine einzelne leichte Einheit schützt deutlich vor Muskelschaden und Kraftverlust bei der nächsten (Boyd 2023, Bridgeman 2015). Danach normal. */
+  const sets = (fresh || ctx.comeback==='hard') ? Math.min(it.sets,2) : it.sets;
+  let rir = fresh ? [3,4] : (def.rir || (def.main ? [1,2] : [1,3]));
   const notes=[];
   if(!def.noRir && ctx.comeback==='hard'){ rir=[3,4]; notes.push('Rückkehr nach Krankheit: 2 Sätze, 3–4 Wdh. Reserve.'); }
   else if(!def.noRir && ctx.comeback==='soft'){ rir=[Math.min(4,rir[0]+1), Math.min(4,rir[1]+1)]; notes.push(ctx.gap ? 'Nach '+ctx.gap+' Tagen Pause: 1 Wdh. mehr Reserve.' : 'Heute vorsichtiger: 1 Wdh. mehr Reserve.'); }
   if(fresh && !ctx.reentry) notes.push('Neu oder länger nicht gemacht: 3–4 Wdh. in Reserve.');
   const chk = ctx.check || {};
-  if(chk.intense && def.legs && !def.noRir){ rir=[Math.min(4,rir[0]+1), Math.min(4,rir[1]+1)]; notes.push('Gestern intensiv: 1 Wdh. mehr Reserve.'); }
   const sore=((normCheck(chk)||{}).sore||[]).filter(r=>regionHits(exId, r, 1));
   if(sore.length && !def.noRir){ rir=[Math.min(4,rir[0]+1), Math.min(4,rir[1]+1)]; notes.push('Muskelkater '+sore.map(regionName).join(', ')+': 1 Wdh. mehr Reserve.'); }
   const hist = perfHistory(exId, ctx.ts, ctx.excludeId);
@@ -1984,7 +1984,6 @@ function checkTips(c, type){
   c=normCheck(c)||{};
   if((c.pain||[]).length) tips.push('<b>Schmerz '+c.pain.map(regionName).join(', ')+':</b> Übungen, die diese Stelle belasten, lasse ich heute aus. Du kannst jede einzeln wieder aufnehmen. Hält der Schmerz an oder wird er stärker, lass es abklären.');
   if((c.sore||[]).length) tips.push('<b>Muskelkater '+c.sore.map(regionName).join(', ')+':</b> Übungen dafür mit 1 Wdh. mehr Reserve.');
-  if(c.intense && !isAux(type)) tips.push('<b>Gestern intensiv:</b> Plan-Regel ist möglichst kein beinlastiges Gym am Folgetag. Heute Beine mit 1 Wdh. mehr Reserve, Oberkörper normal.');
   if(c.energy===0) tips.push('<b>Wenig Energie:</b> Kurzversion ist völlig ok. Jede Einheit zählt.');
   return tips;
 }
@@ -2138,7 +2137,7 @@ function viewSettings(){
   }
 
   h+='<section class="sec"><h2 class="eyebrow">Wiedereinstieg</h2><div class="sgroup">';
-  h+='<div class="srow"><div class="tx"><b>Wiedereinstieg aktiv</b><small>Die ersten 2 Wochen: 2 Sätze, beim ersten Mal pro Übung RIR 3–4, danach 2–3</small></div>'+tgl('reentry')+'</div>';
+  h+='<div class="srow"><div class="tx"><b>Wiedereinstieg aktiv</b><small>Beim ersten Mal pro Übung: 2 Sätze und RIR 3–4. Ab dem zweiten Mal normal.</small></div>'+tgl('reentry')+'</div>';
   h+='<div class="srow"><div class="tx"><b>Gewicht finden vorschlagen</b><small>Bei neuen Übungen und nach 4 Wochen Pause, mit bis zu 3 Probesätzen</small></div>'+tgl('autoFind')+'</div>';
   h+='<div class="srow"><div class="tx"><b>Start</b><small>'+(st.reentryStart?'Läuft bis '+fmtDate(addDays(st.reentryStart,(st.reentryDays||14)-1)):'Startet mit deiner ersten Einheit')+'</small></div><input type="date" class="sinput date" id="st-reentryStart" data-s="reentryStart" data-t="date" value="'+(st.reentryStart||'')+'"></div></div></section>';
 
@@ -2212,7 +2211,6 @@ function sheetCheck(){
   h+='<div class="q"><div class="q-l">Energie heute</div>'+segRow('ck-energy', ENERGY.map((l,i)=>[i,l]), c.energy)+'</div>';
   const rc=(act,list,pain)=>'<div class="rchips">'+REGIONS.map(([id,l])=>{ const on=list.includes(id); return '<button class="rchip'+(pain?' pain':'')+(on?' on':'')+'" data-a="'+act+'" data-v="'+id+'" aria-pressed="'+on+'">'+l+'</button>'; }).join('')+'</div>';
   h+='<div class="q"><div class="q-l">Spürst du etwas? Nur antippen, wenn ja.</div><div class="body-q"><div class="bq-l">Muskelkater</div>'+rc('ck-sore', c.sore, false)+'<div class="bq-l">Schmerz</div>'+rc('ck-pain', c.pain, true)+'</div></div>';
-  if(!isAux(type)) h+='<div class="q"><div class="q-l">Gestern Padel oder Qualitätslauf?</div>'+segRow('ck-intense', [[0,'Nein'],[1,'Ja']], c.intense==null?null:(c.intense?1:0))+'</div>';
   if(!isAux(type)) h+='<div class="srow" style="padding:0;border:0"><div class="tx"><b>Kurzversion, ca. 35 min</b><small>Die ersten drei Blöcke: Grundübungen und erster Supersatz</small></div><label class="tgl"><input type="checkbox" id="ck-short" data-f="ck-short"'+(c.short?' checked':'')+'><span></span></label></div>';
   const tips=checkTips({energy:c.energy, sore:c.sore, pain:c.pain, intense:!!c.intense}, type);
   if(tips.length) h+='<div class="callout">'+I.warn+'<div>'+tips.map(t=>'<div>'+t+'</div>').join('')+'</div></div>';
@@ -2360,13 +2358,12 @@ function obProfile(p){
 }
 /* Die Liste der Bildschirme hängt von den Antworten ab. [id, Kapitel] */
 function obScreens(p){
-  const s=[['goals',0],['focus',0],['years',1],['steady',1]];
-  if(p.steady===false) s.push(['pauseWeeks',1]);
+  const s=[['goals',0],['focus',0]];
   OB_SKILL.forEach(k=>s.push(['skill.'+k[0],1]));
   s.push(['sports',1]); if(p.sports.length) s.push(['sportHours',1],['sportHard',1],['priority',1]);
   s.push(['issues',1]); p.issues.forEach((x,i)=>s.push(['issue.'+i,1])); if(p.issues.length) s.push(['redflag',1]);
   s.push(['mobNow',1]); if(p.mobNow) OB_TESTS.forEach(t=>s.push(['mobility.'+t[0],1]));
-  s.push(['work',1],['posture',1],['minutes',2],['days',2],['weekdays',2],['equip',2]);
+  s.push(['posture',1],['minutes',2],['days',2],['weekdays',2],['equip',2]);
   if(p.equip==='home') s.push(['gear',2]);
   s.push(['supersets',2]);
   return s;
@@ -2463,7 +2460,7 @@ function sheetOb(){
   } else if(id==='work'){
     h+=obHead('Wie sieht dein Arbeitsalltag aus?', 'Wer viel sitzt, bekommt feste Plätze für den oberen Rücken und die Hüftbeuger.')+obOpts('work', [['sit','Überwiegend sitzend'],['stand','Überwiegend stehend oder gehend'],['physical','Körperlich anstrengend']], p.work);
   } else if(id==='posture'){
-    h+=obHead('Was fällt dir an deiner Haltung auf?', 'Mehrere möglich. Der Plan kräftigt und mobilisiert gezielt. Haltung verändert sich dadurch langsam, Beweglichkeit und Kraft deutlich schneller.')+obChips('posture', [['kyphosis','Rundrücken'],['lordosis','Hohlkreuz'],['head','Kopf nach vorne']], p.posture)+obNone(o,'posture');
+    h+=obHead('Was fällt dir an deiner Haltung auf?', 'Mehrere möglich. Belegt ist: Kräftigung verkleinert einen Rundrücken deutlich, und Übungen verbessern die Kopfhaltung. Für das Hohlkreuz ist keine gesicherte Wirkung von Übungen belegt, darum gibt es dafür keine Sonderregeln.<span class="ob-src">Quellen: González-Gálvez et al. 2019, PLoS One · Sheikhhoseini et al. 2018, J Manipulative Physiol Ther</span>')+obChips('posture', [['kyphosis','Rundrücken'],['lordosis','Hohlkreuz'],['head','Kopf nach vorne']], p.posture)+obNone(o,'posture');
   } else if(id==='days'){
     const rec=obRecDays(p);
     h+=obHead('Wie oft pro Woche willst du ins Krafttraining?', 'Nimm die Zahl, die du auch in einer vollen Woche schaffst. Empfohlen sind mindestens zwei Einheiten pro Woche. Wie du den Umfang auf die Tage verteilst, spielt für den Muskelaufbau keine Rolle.'+(rec?' Mit '+p.minutes+' Minuten pro Einheit kommst du ab '+rec+' Trainings auf den empfohlenen Wochenumfang für deine Ziele.':'')+'<span class="ob-src">Quelle: '+OB_SRC.acsm+'</span>')+obOpts('days', [1,2,3,4,5,6].map(x=>[x, x+' Training'+(x>1?'s':'')+' pro Woche', '', x===rec?'Empfohlen':'']), p.days);
@@ -2497,7 +2494,6 @@ function sheetObResult(){
   h+=pl.days.map(planDayHtml).join('');
   if(pl.routine) h+=planDayHtml(Object.assign({}, pl.routine, {name:pl.routine.name}));
   h+='<div class="prose"><h3>Warum dieser Plan?</h3><ul class="ob-why">'+pl.why.map(w=>'<li>'+esc(w.text)+'</li>').join('')+'</ul></div>';
-  if(o.p.steady===false) h+='<div class="callout info">'+I.info+'<div><b>Wiedereinstieg:</b> In den ersten '+((o.p.pauseWeeks||0)>=8?'zwei Wochen':'sieben Tagen')+' gibt es 2 Sätze pro Übung und mehr Reserve. Danach gilt der volle Plan.</div></div>';
   h+='<div class="callout info">'+I.info+'<div>Mit «Plan übernehmen» wird das dein aktiver Plan. Dein Verlauf bleibt erhalten, und du kannst jederzeit zum bisherigen Plan zurück.</div></div>';
   h+='<button class="link" style="align-self:center" data-a="ob-save">Nur Profil speichern, Plan noch nicht übernehmen</button>';
   h+='<div class="ob-nav"><button class="btn sec" data-a="ob-back">Zurück</button><button class="btn pri" data-a="ob-apply">Plan übernehmen</button></div>';
@@ -2562,7 +2558,7 @@ function obAction(a, d){
   else if(a==='ob-save' || a==='ob-apply'){
     const st=state.settings; st.profile=Object.assign({}, p, {done:todayStr()});
     if(a==='ob-apply'){ if(!o.plan || !planActivate(o.plan)) return true;
-      if(p.steady===false){ st.reentry=true; st.reentryStart=null; st.reentryDays=(p.pauseWeeks||0)>=8?14:7; Store.saveSettings(); } }
+}
     else { st.planProposal=o.plan||null; Store.saveSettings(); }
     state.ob=null; closeSheet(); if(a==='ob-apply') go('home'); else renderMain();
     toast(a==='ob-apply' ? 'Neuer Plan ist aktiv.' : 'Profil gespeichert.'); return true;
@@ -2667,16 +2663,19 @@ function sheetNews(){
 }
 function sheetInfo(){
   return '<h2 id="sh-t">So rechnet die App</h2><div class="prose">'
-  +'<div><h3>Doppelte Progression</h3><p>Das Gewicht bleibt, bis alle Sätze das obere Ende des Wiederholungsbereichs erreichen. Dann steigt es um 2.5 %, bei viel Luft (RIR über dem Ziel) um 5 %, gerundet auf deinen kleinsten Gewichtsschritt. Danach startest du wieder am unteren Ende. Zweimal in Folge unter dem Bereich: rund 10 % leichter und neu aufbauen.</p><p>Belegt ist: Steigern über Wiederholungen und Steigern über das Gewicht bringen gleich viel Kraft und Muskeln. Die Prozentwerte sind abgeleitet: Sie sind so klein, dass du nach der Erhöhung sicher wieder im Bereich landest (von 8 auf 6 Wiederholungen entspricht rund 5 % mehr Gewicht, von 12 auf 8 rund 10 %).</p><cite>Plotkin et al. 2022, PeerJ · ACSM Position Stand 2026</cite></div>'
-  +'<div><h3>Wiederholungen</h3><p>Für Muskelaufbau ist die Last frei wählbar: Von wenigen bis über 15 Wiederholungen wächst der Muskel gleich gut, wenn der Satz anstrengend genug ist. Für Maximalkraft sind schwere Lasten besser (ab rund 80 % des Maximums, das sind höchstens etwa 8 Wiederholungen). Darum mit Ziel Kraft 4–6 bei den Grundübungen, sonst 6–10. Ergänzungsübungen bleiben bei höchstens 15, weil sich die Reserve bei langen Sätzen schlechter schätzen lässt.</p><cite>ACSM Position Stand 2026 · Lopez et al. 2021, Med Sci Sports Exerc · Halperin et al. 2022, Sports Med</cite></div>'
-  +'<div><h3>RIR</h3><p>Wiederholungen in Reserve: wie viele saubere Wiederholungen noch drin gewesen wären. Bis zum Versagen zu trainieren bringt nicht mehr Kraft und höchstens minimal mehr Muskeln, 2–3 Wiederholungen Reserve reichen. Menschen unterschätzen ihre Reserve im Schnitt um etwa eine Wiederholung. Darum zielt die App auf angegebene RIR 1–2 bei Grundübungen und 1–3 bei Ergänzungsübungen: Das entspricht tatsächlich etwa 2–3. Ein exaktes RIR-Ziel lässt sich aus Studien nicht ableiten.</p><p>Beim ersten Mal pro Übung (im Wiedereinstieg oder nach mehr als 4 Wochen Pause) 3–4, danach im Wiedereinstieg 2–3. Diese Stufen sind noch nicht gegen Quellen geprüft.</p><cite>ACSM Position Stand 2026 · Refalo et al. 2023, Sports Med · Halperin et al. 2022, Sports Med</cite></div>'
-  +'<div><h3>Geschätztes 1RM</h3><p>Epley-Formel mit Reserve: Gewicht × (1 + (Wdh + RIR) / 30). Nur als Trend lesen, nicht als Maximalversuch.</p></div>'
+  +'<div><h3>Doppelte Progression</h3><p>Das Gewicht bleibt, bis alle Sätze das obere Ende des Wiederholungsbereichs erreichen. Dann steigt es um 2.5 %, bei viel Luft (RIR über dem Ziel) um 5 %, gerundet auf deinen kleinsten Gewichtsschritt. Danach startest du wieder am unteren Ende. Zweimal in Folge unter dem Bereich: rund 10 % leichter und neu aufbauen.</p><p>Belegt ist: Steigern über Wiederholungen und Steigern über das Gewicht bringen gleich viel Kraft und Muskeln. Die Prozentwerte sind abgeleitet: Sie sind so klein, dass du nach der Erhöhung sicher wieder im Bereich landest (pro Wiederholung weniger sind im Schnitt rund 2 % des Maximums mehr möglich: von 8 auf 6 Wiederholungen also rund 5 % mehr Gewicht, von 12 auf 8 rund 10 %).</p><cite>Plotkin et al. 2022, PeerJ · ACSM Position Stand 2026 · Nuzzo et al. 2024, Sports Med</cite></div>'
+  +'<div><h3>Wiederholungen</h3><p>Für Muskelaufbau ist die Last frei wählbar: Von wenigen bis über 15 Wiederholungen wächst der Muskel gleich gut, wenn der Satz anstrengend genug ist. Für Maximalkraft sind schwere Lasten besser (ab rund 80 % des Maximums, das sind im Schnitt etwa 10 Wiederholungen oder weniger). Darum mit Ziel Kraft 4–6 bei den Grundübungen, sonst 6–10. Ergänzungsübungen bleiben bei höchstens 15, weil sich die Reserve bei langen Sätzen schlechter schätzen lässt.</p><cite>ACSM Position Stand 2026 · Lopez et al. 2021, Med Sci Sports Exerc · Nuzzo et al. 2024, Sports Med · Halperin et al. 2022, Sports Med</cite></div>'
+  +'<div><h3>RIR</h3><p>Wiederholungen in Reserve: wie viele saubere Wiederholungen noch drin gewesen wären. Bis zum Versagen zu trainieren bringt nicht mehr Kraft und höchstens minimal mehr Muskeln, 2–3 Wiederholungen Reserve reichen. Menschen unterschätzen ihre Reserve im Schnitt um etwa eine Wiederholung. Darum zielt die App auf angegebene RIR 1–2 bei Grundübungen und 1–3 bei Ergänzungsübungen: Das entspricht tatsächlich etwa 2–3. Ein exaktes RIR-Ziel lässt sich aus Studien nicht ableiten.</p><p>Beim ersten Mal pro Übung und nach mehr als 4 Wochen Pause: 2 Sätze und RIR 3–4. Eine einzelne leichtere Einheit reicht, damit die nächste deutlich weniger Muskelkater und Kraftverlust auslöst. Dieser Schutz hält je nach Belastung rund 2–8 Wochen, darum die Grenze bei 4 Wochen. Ab dem zweiten Mal gilt das normale Ziel.</p><cite>ACSM Position Stand 2026 · Refalo et al. 2023, Sports Med · Halperin et al. 2022, Sports Med · Boyd et al. 2023, Sports Med · Bridgeman et al. 2015, J Aust Strength Cond</cite></div>'
+  +'<div><h3>Geschätztes 1RM</h3><p>Epley-Formel mit Reserve: Gewicht × (1 + (Wdh + RIR) / 30). Nur als Trend lesen. Die Schätzung ist unter 10 Wiederholungen genauer, und wie viele Wiederholungen jemand bei gleicher Last schafft, streut von Person zu Person um 2–4. Die grösste Datensammlung dazu deutet darauf hin, dass Epley das Maximum eher zu hoch schätzt.</p><cite>Mayhew et al. 2008, J Strength Cond Res · Nuzzo et al. 2024, Sports Med</cite></div>'
   +'<div><h3>Pausen</h3><p>Pausen über 60 Sekunden bringen etwas mehr Muskelaufbau als kürzere. Über 90 Sekunden zeigen die Studien keinen sicheren Zusatznutzen mehr, für die Kraft fand sich gar kein Unterschied. Darum sind 1:30 der Standard. Längere Pausen schaden nicht, sie kosten nur Zeit: Stell sie in den Einstellungen höher, wenn du sonst deine Wiederholungen nicht schaffst.</p><cite>Singer et al. 2024, Front Sports Act Living · ACSM Position Stand 2026</cite></div>'
-  +'<div><h3>Supersätze</h3><p>Zwei Übungen für verschiedene Muskeln im Wechsel verkürzen die Einheit bei gleichem Kraft- und Muskelzuwachs. Sie fühlen sich anstrengender an. Zwei Übungen für denselben Muskel hintereinander senken dagegen die Leistung, darum paart die App nur verschiedene Muskeln.</p><cite>Zhang et al. 2025, Sports Med (Meta-Analyse)</cite></div>'
+  +'<div><h3>Supersätze</h3><p>Zwei Übungen für verschiedene Muskeln im Wechsel verkürzen die Einheit bei gleichem Kraft- und Muskelzuwachs. Sie fühlen sich anstrengender an. Zwei Übungen für denselben Muskel hintereinander senken dagegen die Leistung, darum paart die App nur verschiedene Muskeln.</p><cite>Zhang et al. 2025, Sports Med (Meta-Analyse) · Mang et al. 2025, J Strength Cond Res (Review)</cite></div>'
   +'<div><h3>Wochenvolumen</h3><p>Mehr harte Sätze pro Muskel und Woche bringen mehr Muskelaufbau, mit abnehmendem Ertrag: empfohlen sind mindestens 10, ab rund 18–20 flacht es ab. Indirekte Beanspruchung zählt halb. Wie oft pro Woche ein Muskel drankommt, spielt bei gleichem Umfang keine Rolle.</p><cite>ACSM Position Stand 2026 · Pelland et al. 2024 (Preprint)</cite></div>'
-  +'<div><h3>Nordics</h3><p>Programme mit Nordics halbieren in Studien etwa das Risiko für Hamstring-Verletzungen. Für den Erhalt setzen Protokolle rund 1× pro Woche an. Die App steigert in Stufen von 2 × 3 bis 3 × 6 und geht nach über 3 Wochen Pause eine Stufe zurück, weil der Muskelkater-Schutz dann nachlässt.</p><cite>van Dyk et al. 2019, BJSM · Petersen et al. 2011, AJSM</cite></div>'
-  +'<div><h3>Gewicht finden</h3><p>Bei neuen Übungen und nach mehr als 4 Wochen Pause tastet sich die App mit bis zu 3 Probesätzen an dein Arbeitsgewicht heran. Bis etwa 4 Wochen bleibt die Maximalkraft weitgehend erhalten, danach nimmt sie schneller ab. Nach jedem Probesatz gibst du die Reserve an: zu leicht bedeutet +10, +25 oder +50 %, zu schwer −10 %, danach folgt der nächste Probesatz. Erst wenn die Reserve im Ziel liegt, ist das Gewicht gefunden, und dieser Probesatz zählt als erster Arbeitssatz. Gibt es zwischen zu leicht und zu schwer keine Gewichtsstufe mehr, nimmst du das leichtere Gewicht mit mehr Wiederholungen.</p><cite>Bosquet et al. 2013, Scand J Med Sci Sports</cite></div>'
-  +'<div><h3>Aufwärmsätze</h3><p>Vor schweren Grundübungen schlägt die App 2–3 Rampensätze bei ca. 50, 70 und 85 % vor. Sie zählen nicht als Arbeitssätze.</p></div>'
+  +'<div><h3>Nordics</h3><p>Programme mit Nordics halbieren das Risiko für Hamstring-Verletzungen (15 Studien, 8459 Sportler). Kleine Umfänge wirken dabei gleich gut wie grosse. Darum steigert die App in kleinen Stufen von 2 × 3 bis 3 × 6 und geht nach über 3 Wochen Pause eine Stufe zurück, weil der Schutz vor Muskelkater dann nachlässt.</p><cite>van Dyk et al. 2019, BJSM · Cuthbert et al. 2020, Sports Med · Bridgeman et al. 2015</cite></div>'
+  +'<div><h3>Gewicht finden</h3><p>Bei neuen Übungen und nach mehr als 4 Wochen Pause tastet sich die App mit bis zu 3 Probesätzen an dein Arbeitsgewicht heran. Die Kraft nimmt ab, je länger die Pause dauert, eine feste Grenze nennt die Forschung nicht. Die 4 Wochen leiten sich aus dem Schutz vor Muskelkater ab, der rund 2–8 Wochen hält. Nach jedem Probesatz gibst du die Reserve an: zu leicht bedeutet +10, +25 oder +50 %, zu schwer −10 %, danach folgt der nächste Probesatz. Erst wenn die Reserve im Ziel liegt, ist das Gewicht gefunden, und dieser Probesatz zählt als erster Arbeitssatz.</p><cite>Bosquet et al. 2013, Scand J Med Sci Sports · Boyd et al. 2023, Sports Med</cite></div>'
+  +'<div><h3>Aufwärmsätze</h3><p>Vor schweren Grundübungen schlägt die App 2–3 leichtere Sätze vor. Sie sind freiwillig: Die Studienlage zum Nutzen ist uneinheitlich, am ehesten helfen Sätze nahe am Arbeitsgewicht. Sie zählen nicht als Arbeitssätze.</p><cite>Ribeiro et al. 2021, Motricidade (Review)</cite></div>'
+  +'<div><h3>Muskelkater</h3><p>Nach ungewohnter Belastung ist die Kraft 1–4 Tage lang messbar tiefer. Meldest du Muskelkater in einer Region, plant die App dort 1 Wiederholung mehr Reserve.</p><cite>Boyd et al. 2023, Sports Med</cite></div>'
+  +'<div><h3>Beweglichkeit</h3><p>Dehnen verbessert die Beweglichkeit bis etwa 4 Minuten pro Einheit und 10 Minuten pro Woche und Muskelgruppe, darüber bringt es nicht mehr. Wie oft und wie stark du dehnst, spielt keine Rolle, Schmerz ist unnötig. Krafttraining über den vollen Bewegungsweg verbessert die Beweglichkeit gleich gut wie Dehnen.</p><cite>Ingram et al. 2024, Sports Med · Afonso et al. 2021, Healthcare</cite></div>'
+  +'<div><h3>Beschwerden</h3><p>Die App lässt Übungen weg, die deine Beschwerden auslösen. Das ist eine vorsichtige Sicherheitsregel, weil niemand zuschaut: In betreuter Therapie schaden leicht schmerzhafte Übungen bei chronischen Beschwerden nicht. Warnzeichen gehören zu einer Fachperson.</p><cite>Smith et al. 2017, BJSM · Finucane et al. 2020, JOSPT</cite></div>'
   +'</div><button class="btn sec block" data-a="sheet-close">Schliessen</button>';
 }
 

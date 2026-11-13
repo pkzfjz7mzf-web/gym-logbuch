@@ -73,7 +73,7 @@ for(const name in P){
 { const pl = E.buildPlan(P.aaron, EX, CATALOG), m = pl.days.map(d => d.blocks[0].items.map(i => CATALOG[i.ex].pattern));
   ok('Aaron: Mobility deckt Brustwirbelsäule und Hüftbeuger ab (Rundrücken, Hohlkreuz, sitzend)', m.every(x => x.includes('mob_tspine') && x.includes('mob_hipflex')), JSON.stringify(m));
   ok('Aaron: Routine für freie Tage mit Brustwirbelsäule, Hüftbeuger, Schulter', ['mob_tspine','mob_hipflex','mob_shoulder'].every(k => pl.routine.blocks[0].items.some(i => CATALOG[i.ex].pattern===k)) && pl.routine.minutes>=5 && pl.routine.minutes<=14, pl.routine.minutes+' min');
-  ok('Mobility-Begründung nennt die Gründe', pl.why.some(w => w.topic==='mobility' && /Rundrücken/.test(w.text) && /Hohlkreuz/.test(w.text)));
+  ok('Haltung: Rundrücken bekommt Kräftigung mit Quelle, Hohlkreuz keine Sonderregel', pl.why.some(w => /González-Gálvez/.test(w.text) && /Rundrücken/.test(w.text)) && pl.why.some(w => w.topic==='haltung' && /Hohlkreuz/.test(w.text)));
   const tight = E.buildPlan({days:4, minutes:60, years:3, mobility:{squat:0, overhead:2, toes:0, hipflex:2, wall:2}}, EX, CATALOG);
   const leg = tight.days.find(d => /Unterkörper/.test(d.name)).blocks[0].items.map(i => CATALOG[i.ex].pattern), up = tight.days.find(d => /Oberkörper/.test(d.name)).blocks[0].items.map(i => CATALOG[i.ex].pattern);
   ok('Hocke und Zehen «geht nicht»: Beintag mit Sprunggelenk, Hüfte, hinterer Kette', ['mob_ankle','mob_hip','mob_chain'].every(k => leg.includes(k)), leg.join(','));

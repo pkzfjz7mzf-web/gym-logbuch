@@ -70,19 +70,61 @@ Frühere Einträge:
 - Warnung «Ganzkörper an zwei Tagen hintereinander»: Yang 2018 findet keinen Unterschied, ACSM 2026 macht dazu keine Aussage. Betrifft auch Paket N4 (Warnung bei Folgetagen entfällt).
 - Zielbereiche nach Trainingsstufe (6–10, 8–14, 10–16) und die Empfehlung «2 für Einsteiger, 3 sonst».
 
-## Offen (Audit E1, noch zu prüfen)
-Diese Zahlen und Regeln stammen aus früheren Paketen und sind noch nicht gegen Quellen geprüft:
-- `levelOf`: Stufen nach Trainingsjahren (unter 1, unter 3, darüber) und was sie steuern (Übungsschwierigkeit).
-- `score`: alle Gewichte der Übungswahl (Grundwert, Stufe, Technik, gedehnte Position, Ziel, Haltung, Vorlieben).
-- RIR 3–4 beim ersten Mal pro Übung und 2–3 im Wiedereinstieg (Gewöhnung, Muskelkater): Quelle fehlt. Steht in der App als «noch nicht geprüft».
-- Faktor 0.5 für Rumpf, Adduktoren, Arme. Schwerpunkt ×1.3 und +1 Satz.
-- Wiedereinstieg: 2 Sätze, 7 oder 14 Tage, Schwelle 4 Wochen Pause für «Gewicht finden».
-- Tagesform: +1 RIR bei Muskelkater oder intensivem Vortag. Padel-Folgetag.
-- Zeitmodell der Einheit (40 s pro Satz, 70 s bei Seitenwechsel, 45 s im Supersatz), Pause nach Nordics 120 s.
-- Epley-Formel mit RIR (mehrere Ableitungen hängen daran).
-- Zweite Quelle für Supersätze.
-- Mobility: Auswahl nach Tests, Dosierung, Aussagen zur Haltung (Quelle zur Haltung und «Nackenregel» waren schon als ungeprüft markiert).
-- Beschwerden: Ausschluss nach Auslösern, Status-Stufen, Warnzeichen.
-- «Gewicht finden»: Schrittweiten, Epley-Schätzung. Geplanter Krafttest N5: Genauigkeit von Wiederholungstests und RIR-Schätzungen.
-- Texte in Übungserklärungen und im Changelog mit sportlichen Aussagen.
-- Bereits zitierte Quellen aus früheren Paketen (Currier 2023, Singer 2024, Afonso 2021, Spiering 2021, Bosquet 2013, Robinson 2024) nochmals gegen den Volltext prüfen.
+## Audit E1b–d (gelesen am 13.11.2026): alles, was offen war
+
+Aarons Präzisierung: Das Vorgehen wird aus Studien abgeleitet, nicht nachträglich mit Quellen gerechtfertigt. Gibt es keine Quelle, wird es nicht gemacht.
+
+### Quellen
+- **Boyd 2023:** Boyd L, et al. The Effects of Pre-conditioning on Exercise-Induced Muscle Damage. Sports Med. 2023;53:1537–1557. doi:10.1007/s40279-023-01839-8. Eine vorgängige leichtere Einheit senkt Muskelschaden, Muskelkater und Kraftverlust 24–96 h nach der Belastung deutlich. Schutz 2–8 Wochen, am wirksamsten 2–4 Tage vorher, auch mit niedriger Intensität. Evidenzsicherheit sehr tief (Heterogenität).
+- **Bridgeman 2015:** J Aust Strength Cond. 23(3):74–84. Review. Schutz nach leichter Einheit rund 3 Wochen, nach maximaler bis 6 Monate. Empfehlung: mit niedriger Intensität und kleinem Umfang beginnen. Nur Abstract.
+- **Bosquet 2013:** Scand J Med Sci Sports. Meta-Analyse, 103 Studien. Kraftverlust nach Trainingsstopp: Maximalkraft SMD −0.46, Dosis-Wirkung mit der Dauer. Keine Wochen-Schwelle im Abstract.
+- **Nuzzo 2024:** Nuzzo JL, et al. Sports Med. doi:10.1007/s40279-023-01937-7 (Preprint gelesen). 269 Studien: rund 5 Wiederholungen bei 90 % 1RM, rund 15 bei 70 %, Streuung zwischen Personen 2.5 Wdh. bei 80 %, 4.4 bei 60 %. Geschlecht, Alter, Trainingsstand fast ohne Einfluss. Volle Tabelle nur als Bild, nicht gelesen.
+- **Mayhew 2008:** J Strength Cond Res. 22(5):1570–1577. 1RM-Formeln im Bankdrücken (Frauen): genauer unter 10 Wiederholungen. Epley selbst wurde nicht getestet.
+- **van Dyk 2019:** Br J Sports Med. 53(21):1362–1370. 15 Studien, 8459 Sportler: Risikoverhältnis 0.49 (nur RCTs 0.52).
+- **Cuthbert 2020:** Sports Med. Meta-Analyse Nordics: kleine Umfänge (g 2.28) so wirksam wie grosse (2.12), ab 4–6 Wochen. Nur Abstract, Definition «klein» nicht gelesen.
+- **Ingram 2024:** Sports Med. doi:10.1007/s40279-024-02143-9. Dehnen: Maximum bei 4 min pro Einheit (akut) und 10 min pro Woche und Muskelgruppe (chronisch). Häufigkeit und Intensität ohne Einfluss.
+- **Afonso 2021:** Healthcare. 9(4):427. 11 RCTs: Krafttraining und Dehnen verbessern die Beweglichkeit gleich (ES −0.22, n.s.).
+- **González-Gálvez 2019:** PLoS One. 10 RCTs: Übungsprogramme verkleinern die Brustkyphose (SMD −1.40), Kräftigung wichtiger als Dehnen. Lendenlordose: nicht signifikant, Zahlen im Abstract widersprüchlich.
+- **Sheikhhoseini 2018:** J Manipulative Physiol Ther. 41(6):530–539. 7 RCTs: Übungen verbessern den Kopf-Hals-Winkel (starke Evidenz) und Nackenschmerz (mittel). Welche Übungen, steht nicht im Abstract.
+- **Swain 2020:** Übersichtsarbeit über 41 Reviews: kein Konsens, dass Haltung oder Sitzen Rückenschmerz verursacht.
+- **Smith 2017:** Br J Sports Med. 51(23):1679–1687. Schmerzhafte Übungen bei chronischen Beschwerden: kurzfristig kleiner Vorteil (−0.27), mittel- und langfristig kein Unterschied.
+- **Finucane 2020:** J Orthop Sports Phys Ther. 50(7):350–372. Internationales Rahmenwerk Warnzeichen Wirbelsäule. Nur Abstract.
+- **Wolf 2023:** Int J Strength Cond. 3(1). Voller gegen teilweiser Bewegungsweg: trivialer Vorteil voll (0.12). Teilwiederholungen in gedehnter Position: −0.28, Intervall schliesst null ein.
+- **Ribeiro 2021:** Motricidade. 17(1):87–94. Review, 11 Studien: Nutzen von Aufwärmsätzen uneinheitlich.
+- **Mang 2025:** J Strength Cond Res. 39(11):1216–1234. Review Supersätze: gleiche Anpassungen in weniger Zeit (zweite Quelle zu Zhang 2025).
+- **Spiering 2021:** J Strength Cond Res (über Zusammenfassung gelesen). Erhalt: 1 Krafteinheit pro Woche mit 1 Satz pro Übung hält Kraft und Muskeln bis 32 Wochen, wenn die Last bleibt. Ausdauer: 2 Einheiten pro Woche bis 15 Wochen, wenn die Intensität bleibt.
+
+### Ergebnis pro Punkt
+| Punkt | Ergebnis | Quellen | Im Code |
+|---|---|---|---|
+| Stufen nach Trainingsjahren | Nicht belegt, Erfahrung ändert die Empfehlungen kaum | ACSM 2026, Nuzzo 2024 | Entfernt. Stufe = Technikstand aus den Antworten. Frage nach Jahren und Pause gestrichen |
+| 2 oder 3 Sätze je nach Stufe | Nicht belegt. Belegt: mindestens 2 Sätze pro Übung | ACSM 2026 | Grundübung 3, sonst 2, Rest über Wochenumfang |
+| Bonus «gedehnte Position» | Nicht gesichert (Intervall schliesst null ein, ACSM: ungenügend) | Wolf 2023, ACSM 2026 | Entfernt |
+| Bonus Maschine/Kabel bei Muskelaufbau | Keine gelesene Quelle | – | Entfernt |
+| Langhantel bei Ziel Kraft | Definition des Ziels («schwerer heben in den Grundübungen»), keine Wirkungsaussage | – | Bleibt |
+| Faktor 0.5 für Arme | Nicht belegt, Zielbereich gilt pro Muskelgruppe | ACSM 2026 | Entfernt |
+| Rumpf, Adduktoren | Kein Aufbauziel: Mindestumfang 4–10 (abgeleitet) | ACSM 2026 | Geändert |
+| Schwerpunkt ×1.3 | Abgeleitet: obere Hälfte des belegten Bereichs, 15–20 Sätze | ACSM 2026, Pelland 2024 | Geändert |
+| Erstes Mal: 2 Sätze, RIR 3–4 | Abgeleitet: eine leichtere erste Einheit schützt deutlich. Höhe der Reserve nicht belegt | Boyd 2023, Bridgeman 2015 | Bleibt |
+| Wiedereinstieg über 2 Wochen mit RIR 2–3 | Nicht belegt, eine Einheit reicht für den Schutz | Boyd 2023 | Entfernt. Nur noch erste Einheit pro Übung |
+| Grenze 4 Wochen Pause | Abgeleitet: Schutz hält 2–8 Wochen (leicht: rund 3). Kraftverlust ohne feste Schwelle | Boyd 2023, Bridgeman 2015, Bosquet 2013 | Bleibt |
+| Epley-Formel | Nicht direkt belegt. Nuzzo deutet auf rund 2 % 1RM pro Wiederholung, Epley schätzt eher zu hoch | Nuzzo 2024, Mayhew 2008 | **Offen:** Formel bleibt als Trendanzeige, bis die volle Tabelle gelesen ist. Ableitungen (Progression, 80 % ≈ 10 Wdh.) laufen neu über Nuzzo |
+| «Gewicht finden» Schritte +10/25/50 % | Suchverfahren, keine Wirkungsaussage. Wird durch Krafttest N5 ersetzt. Für N5: Testsatz unter 10 Wiederholungen, nicht 10–15 | Mayhew 2008, Nuzzo 2024 | Bleibt bis N5 |
+| Aufwärmsätze 50/70/85 % | Nutzen uneinheitlich, Prozente nicht belegt | Ribeiro 2021 | Als freiwillig beschrieben |
+| Nordics: Verletzungsschutz, kleine Stufen | Belegt | van Dyk 2019, Cuthbert 2020 | Bleibt. Unbelegte Aussage «Erhalt 1×/Woche» gestrichen |
+| Muskelkater: +1 RIR | Abgeleitet: Kraft 24–96 h reduziert. Höhe nicht belegt | Boyd 2023 | Bleibt |
+| «Gestern intensiv»: +1 RIR, kein Bein-Gym am Folgetag | Keine Quelle für den Folgetag (belegt ist nur der Abstand von 3 h) | Schumann 2022, Petré 2021 | Entfernt (Frage und Regel) |
+| Rundrücken: Kräftigung oberer Rücken | Belegt | González-Gálvez 2019 | Bleibt, Mobility wegen Rundrücken entfernt |
+| Hohlkreuz: Rumpf, Gesäss, Hüftbeuger | Nicht belegt | González-Gálvez 2019 | Entfernt, Plan sagt das offen |
+| Kopf nach vorne: Übungen | Wirkung belegt, Auswahl der Übungen nicht (Volltext nötig) | Sheikhhoseini 2018 | **Offen:** bleibt vorerst |
+| Sitzende Arbeit: Sonderplätze | Nicht belegt | Swain 2020 | Entfernt, Frage gestrichen |
+| Mobility nach Tests | Belegt: Dehnen verbessert eingeschränkte Beweglichkeit | Ingram 2024, Afonso 2021 | Bleibt. **Offen:** Dosis an 4 min pro Einheit und 10 min pro Woche ausrichten |
+| Übungen bei Beschwerden weglassen, Warnzeichen | Sicherheitsregel, vorsichtiger als die Evidenz | Smith 2017, Finucane 2020 | Bleibt, so beschrieben |
+| Zeitmodell (40 s pro Satz usw.) | Keine Sportaussage, Schätzung. Mit Logbuch-Daten kalibrieren | – | Bleibt |
+| Nicht mehr zitiert, weil nicht gelesen | Currier 2023, Petersen 2011, Haugen 2023 | – | – |
+
+## Noch offen nach dem Audit
+1. Epley ersetzen: volle Nuzzo-Tabelle lesen (liegt nur als Bild vor), zusammen mit Krafttest N5.
+2. Kopf nach vorne: Volltext Sheikhhoseini für die Übungsauswahl.
+3. Mobility-Dosis an Ingram 2024 ausrichten.
+4. Aarons Projekt-Anleitung im Coaching-Projekt nennt noch «erste 2 Gym-Wochen 2 Sätze», «RIR 2–3» und «nach Padel kein beinlastiges Gym». Aaron entscheidet, ob er sie anpasst.

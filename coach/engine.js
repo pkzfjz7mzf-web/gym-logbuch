@@ -60,10 +60,7 @@ function mobNeeds(p){
   T('squat','mob_ankle',1); T('squat','mob_hip',1); T('overhead','mob_shoulder',1); T('overhead','mob_tspine',1);
   T('toes','mob_chain',1); T('hipflex','mob_hipflex',1); T('wall','mob_tspine',1); T('wall','mob_shoulder',0.5);
   const po = p.posture||[];
-  if(po.includes('kyphosis')){ add('mob_tspine',2,'Rundrücken'); add('mob_shoulder',1,'Rundrücken'); }
-  if(po.includes('lordosis')) add('mob_hipflex',2,'Hohlkreuz');
   if(po.includes('head')){ add('mob_neck',2,'Kopf nach vorne'); add('mob_tspine',1,'Kopf nach vorne'); }
-  if(p.work==='sit'){ add('mob_hipflex',1,'sitzende Arbeit'); add('mob_tspine',1,'sitzende Arbeit'); }
   return {n, why};
 }
 function pickMob(pattern, p, EX, CAT, gear, used, preferHold, week){
@@ -88,7 +85,9 @@ function mobBlock(prefix, order, need, count, sets, p, EX, CAT, gear, preferHold
   return items.length ? {rest:'short', mob:true, name:'Mobility', items} : null;
 }
 
-function levelOf(p){ const y=p.years||0; return y<1 ? 1 : y<3 ? 2 : 3; }
+/* Stufe = Technikstand aus den Antworten zu den Grundbewegungen (0–2), nicht Trainingsjahre:
+   Laut ACSM 2026 ändert Trainingserfahrung die Empfehlungen kaum. Die Stufe steuert nur, wie anspruchsvoll die Übungsvarianten sind. */
+function levelOf(p){ const v=Object.values(p.skill||{}).filter(x=>x!=null); if(!v.length) return 2; return 1+Math.round(v.reduce((a,b)=>a+b,0)/v.length); }
 function gearOf(p){
   if(p.equip==='gym' || !p.equip) return null;                       // null = alles vorhanden
   const g = new Set(p.equip==='bw' ? [] : (p.gear||[])); if(g.has('bb')) g.add('rack'); return g;
@@ -122,10 +121,7 @@ function score(id, ex, c, slot, p, ctx){
   if(lvl===1 && c.level===1) s += 2;
   const sk = {squat:'squat', single:'squat', hinge:'hinge', hpush:'push', vpush:'push', hpull:'pull', vpull:'pull'}[c.pattern];
   if(sk && (p.skill||{})[sk]!=null && p.skill[sk]<2 && c.level>=2) s -= 3;
-  if(c.lengthened) s += 1 + gw(p,'muscle');
   if(slot.main && (ex.equip==='bb') && lvl>=2) s += 3*gw(p,'strength');
-  if(!slot.main && (ex.equip==='machine' || ex.equip==='cable')) s += gw(p,'muscle');
-  if((p.posture||[]).includes('lordosis') && c.triggers.includes('axial')) s -= 2;
   if((p.like||[]).includes(id)) s += 3;
   if(ctx.usedWeek[id] && !(slot.main && p.goal==='strength')) s -= 3;
   return s;
@@ -180,8 +176,10 @@ function weeklyVolume(days, EX){
    darum hängt der Zielbereich nicht mehr von der Stufe ab. legMin = Beine nur auf Mindestumfang (Vorrang Sport). */
 function targetFor(muscle, p, level, legMin){
   const LEGM = ['quads','glutes','hams','adductors'];
-  const base = (gw(p,'muscle') && !(legMin && LEGM.includes(muscle))) ? [10,20] : [4,10];
-  let f = ['core','adductors','arms'].includes(muscle) ? 0.5 : 1;
+  /* Rumpf und Adduktoren: kein Aufbauziel, darum Mindestumfang. Schwerpunkt: obere Hälfte des belegten Bereichs (15–20). */
+  if((p.focus||[]).includes(muscle)) return [15,20];
+  const base = (gw(p,'muscle') && !(legMin && LEGM.includes(muscle)) && !['core','adductors'].includes(muscle)) ? [10,20] : [4,10];
+  let f = 1;
   if((p.focus||[]).includes(muscle)) f *= 1.3;
   return [Math.round(base[0]*f), Math.round(base[1]*f)];
 }
@@ -216,8 +214,8 @@ function buildPlan(profile, EX, CAT){
     if(text && (added || have)) why.push({topic:'profil', text});
   };
   const posture = p.posture||[];
-  if(posture.includes('kyphosis') || p.work==='sit') ensure('rear', 2, 2, 'Sitzende Arbeit oder Rundrücken: hintere Schulter und oberer Rücken bekommen einen festen Platz.');
-  if(posture.includes('lordosis')){ ensure('antiext', 2, 2, 'Hohlkreuz: Rumpfübungen gegen das Überstrecken und Gesässarbeit sind fix dabei.'); ensure('glute', 1, 2); }
+  if(posture.includes('kyphosis')) ensure('rear', 2, 2, 'Rundrücken: Kräftigung des oberen Rückens verkleinert den Winkel der Brustwirbelsäule deutlich (González-Gálvez 2019). Darum ein fester Platz an zwei Tagen.');
+  if(posture.includes('lordosis')) why.push({topic:'haltung', text:'Hohlkreuz: Für Übungsprogramme ist keine gesicherte Wirkung auf die Lendenlordose belegt (González-Gálvez 2019). Der Plan enthält deshalb keine Sonderregeln dafür.'});
   if(gw(p,'posture')){ ensure('rear', 2, 2, 'Ziel Haltung: hintere Schulter und oberer Rücken an zwei Tagen.'); ensure('antiext', 2, 2, 'Ziel Haltung: Rumpfkontrolle an zwei Tagen.'); }
   if(gw(p,'athletic')){ ensure('single', 1, 2, 'Ziel Athletik: einbeinige Kraft und Rumpf gegen Drehung sind fix dabei.'); ensure('antirot', 1, 2); }
   if(kinds.some(k => ['court','padel','tennis','football','team'].includes(k))){ ensure('lateral', 1, 2, 'Spielsport: seitliche Bewegungen und Rumpf gegen Drehung für Richtungswechsel.'); ensure('antirot', 1, 2); }
@@ -227,7 +225,8 @@ function buildPlan(profile, EX, CAT){
 
   // 3) Übungen wählen
   const ctx = {level, gear, usedWeek:{}}, missing = [];
-  const baseSets = slot => slot.main ? 3 : (ISO.includes(slot.pattern)||CORE.includes(slot.pattern)) ? 2 : (level===1 ? 2 : 3);
+  /* ACSM 2026: mindestens 2 Sätze pro Übung, für Kraft 2–3. Start bei 3 (Grundübung) und 2, der Rest kommt über den Wochenumfang. */
+  const baseSets = slot => slot.main ? 3 : 2;
   days.forEach(d => {
     const used = {}; d.items = [];
     d.slots.forEach(slot => {
