@@ -132,7 +132,12 @@ with sync_playwright() as p:
     c('[data-a="ob-tog"][data-k="issueRegions"][data-v="shoulder"]'); nx()
     st('issue.0.status','sensitive'); c('[data-a="ob-tog"][data-k="issue.0.triggers"][data-v="overhead"]'); nx()
     st('redflag','false'); st('mobNow','false'); st('work','stand'); c('[data-a="ob-none"][data-k="posture"]')
-    st('days',4); st('minutes',60); c('[data-a="ob-none"][data-k="weekdays"]'); st('equip','gym'); st('supersets','true')
+    ok('Onboarding: Häufigkeit mit Empfehlung', 'empfohlen' in pg.inner_text('#sheet').lower())
+    st('days',1)
+    ok('Onboarding: Coach fragt bei 1 Training und Ziel Muskelaufbau nach', pg.query_selector('#sheet .ob-coach') is not None and 'trotzdem' in pg.inner_text('#ob-nx').lower())
+    st('days',4); nx() if pg.query_selector('#sheet [data-k="days"]') else None
+    st('minutes',60); nx() if pg.query_selector('#sheet [data-k="minutes"]') else None
+    c('[data-a="ob-none"][data-k="weekdays"]'); st('equip','gym'); st('supersets','true')
     tx=pg.inner_text('#sheet').lower()
     ok('Onboarding: Plan-Vorschau mit 4 Tagen, Mobility und Begründung', 'dein plan' in tx and 'oberkörper 2' in tx and 'mobility' in tx and 'warum dieser plan' in tx and 'schulterdrücken' not in tx)
     pg.click('[data-a="ob-save"]'); pg.wait_for_timeout(300)

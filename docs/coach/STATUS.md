@@ -2,9 +2,10 @@
 
 **Zuerst lesen. Nach jedem Paket nachführen.**
 
-Letzte Aktualisierung: 12.11.2026
+Letzte Aktualisierung: 13.11.2026
 
 ## Fertig
+- N2 Coach reagiert im Onboarding (1.5 Test 12, 13.11.): `obRecDays` markiert die empfohlene Häufigkeit mit Begründung, `obAdvice(o,id)` liefert eine Rückfrage (Callout `.ob-coach`, Knopf «Trotzdem weiter», kein automatisches Weiter) bei: 1 Training mit Ziel Aufbau/Kraft, 4+ Trainings im ersten Jahr oder neben viel Sport, Vorrang Kraft bei über 4 h Sport, Dauer zu kurz (rechnet den Plan probehalber und nennt die Muskeln unter Ziel), Wochentage weniger als Trainings oder direkt hintereinander bei Ganzkörper, Schwerpunkt in einer Region mit Beschwerden. `test_app.py` 42 OK.
 - N1 Onboarding als Gespräch (1.5 Test 11, 12.11.): eine Frage pro Bildschirm (`obScreens` liefert die Liste abhängig von den Antworten, `obAnswered`, `obOpts`, `obNone`), nichts vorbelegt, «Weiter» gesperrt bis zur Antwort, Einfachauswahl geht direkt weiter. Drei Kapitel mit eigenem Fortschritt. Mehrere Ziele mit Rangfolge (`profile.goals`, `goal` = erstes; Engine `gw()`: Hauptziel 1, weitere 0.5; Haltung und Athletik bekommen feste Plätze). Erfahrung als Regler (`OB_YEARS`), «letzte 3 Monate durchgehend?» (`steady`), bei Nein setzt «Plan übernehmen» den Wiedereinstieg (7 oder 14 Tage). Wettkampfdatum gestrichen (hatte keine Wirkung). Bestehendes Profil gilt beim Bearbeiten als beantwortet (`state.ob.edit`). `test_app.py` 40 OK, `test_engine.js` OK.
 - P0 Setup: Arbeitsplan, Stand-Datei, Regel in CLAUDE.md.
 - P1 Konzept: `docs/coach/konzept.md`, inkl. Aarons Entscheide, Gewicht finden mit Coach, Reaktion auf Situationen.
@@ -20,8 +21,8 @@ Letzte Aktualisierung: 12.11.2026
 - nichts offen. Stand in der Testumgebung: 1.5 Test 9. Kommentar 11.11. (Thread e7384228): Wochenübersicht zeigte den Coach-Plan nicht. Neu: offene Einheiten als gestrichelte Vorschläge an den üblichen Trainingstagen (`planWeekdays`, Onboarding-Schritt Zeit fragt `weekdays` ab), Zähler «Gym x von n». Kommentar 11.11. (Thread 9f097e4b): Antwortoptionen bei den Grundbewegungen waren zu vage, jetzt drei beobachtbare Stufen pro Bewegung (`OB_SKILL`). Aaron erwartet generell Fragen und Antworten wie von einem echten Coach: übrige Onboarding-Schritte daraufhin prüfen.
 
 ## Als Nächstes
-**Neu priorisiert am 11.11. abends, siehe konzept.md Abschnitt 12.** Aaron ist mit dem Onboarding unzufrieden («Ein Coach würde nicht vorschlagen, sondern die Bedürfnisse abfragen») und hat eine Referenz-App aufgenommen. Aaron hat am 12.11. mit «weiter» freigegeben. N1 ist fertig, weiter mit N2.
-0. N2 Coach reagiert auf Antworten → N3 Beschwerden auf Körperfigur 0–10 → N4 Wochenplanung → N5 Krafttest beim ersten Mal statt Probesätze → N6 Screening nachholbar. Erst danach die Punkte unten.
+**Neu priorisiert am 11.11. abends, siehe konzept.md Abschnitt 12.** Aaron ist mit dem Onboarding unzufrieden («Ein Coach würde nicht vorschlagen, sondern die Bedürfnisse abfragen») und hat eine Referenz-App aufgenommen. Aaron hat am 12.11. mit «weiter» freigegeben. N1 und N2 sind fertig, weiter mit N3.
+0. N3 Beschwerden auf Körperfigur 0–10 → N4 Wochenplanung → N5 Krafttest beim ersten Mal statt Probesätze → N6 Screening nachholbar. Erst danach die Punkte unten.
 1. P5b Rest: Gewicht finden mit Schätzung aus verwandten Übungen (konzept.md Abschnitt 9). Heute startet eine neue Übung mit festem `FIND_START` oder 50 % des früheren Gewichts. Neu: Startwert aus dem e1RM einer Übung desselben Musters mal Verhältnis, minus 10–15 %. Dafür Verhältnis-Tabelle pro Muster in `coach/engine.js` und Aufruf in `findPlan()`.
 2. P6 Katalog erweitern: Waden, Körpergewichtsübungen (Kniebeuge, Liegestütz-Varianten, Ziehen ohne Stange), Bizeps und Trizeps als eigene Muskeln statt `arms`. Danach Reise-Modus «ohne Geräte» ergänzen (heute nur Hotel-Gym und Pause).
 3. P7 Erklärungen pro Übung in drei Teilen (Aufbau, Ausführung, häufige Fehler) statt einem `cue`. P8 Animation Prototyp mit 2–3 Übungen, Aaron entscheidet über Qualität.
