@@ -125,8 +125,12 @@ with sync_playwright() as p:
     c('[data-a="ob-none"][data-k="focus"]')
     for k in ['squat','hinge','push','pull']: st('skill.'+k, 2)
     c('[data-a="ob-none"][data-k="sports"]')
-    c('[data-a="ob-tog"][data-k="issueRegions"][data-v="shoulder"]'); nx()
-    st('issue.0.status','sensitive'); c('[data-a="ob-tog"][data-k="issue.0.triggers"][data-v="overhead"]'); nx()
+    c('.bd-pt[data-v="shoulder"]')
+    ok('Onboarding: Körperfigur wählt die Region', pg.query_selector('#sheet .rchip.on[data-v="shoulder"]') is not None and pg.query_selector('#sheet .bd-pt.on') is not None); nx()
+    ok('Onboarding: Schmerz ohne Angabe gesperrt', pg.is_disabled('#ob-nx'))
+    pg.evaluate("()=>{const r=document.getElementById('ob-pain'); r.value=3; r.dispatchEvent(new Event('input',{bubbles:true}))}")
+    ok('Onboarding: Schmerz 3 von 10 lässt Training zu', '3 von 10' in pg.inner_text('#ob-pain-l').lower() and 'unter 5' in pg.inner_text('#ob-pain-t'))
+    c('[data-a="ob-tog"][data-k="issue.0.triggers"][data-v="overhead"]'); nx()
     st('redflag','false'); st('mobNow','false'); c('[data-a="ob-none"][data-k="posture"]')
     st('minutes',60)
     ok('Onboarding: Häufigkeit mit Quelle und Empfehlung', 'acsm' in pg.inner_text('#sheet').lower() and pg.query_selector('#sheet .opt .rec') is not None)
@@ -137,7 +141,7 @@ with sync_playwright() as p:
     tx=pg.inner_text('#sheet').lower()
     ok('Onboarding: Plan-Vorschau mit 4 Tagen, Mobility und Begründung', 'dein plan' in tx and 'oberkörper 2' in tx and 'mobility' in tx and 'warum dieser plan' in tx and 'schulterdrücken' not in tx)
     pg.click('[data-a="ob-save"]'); pg.wait_for_timeout(300)
-    ok('Onboarding: Profil in den Einstellungen gespeichert', pg.evaluate("()=>{const s=JSON.parse(localStorage.getItem('gymlog.pwa.v1')).settings; return s.profile && s.profile.goal==='muscle' && s.profile.goals[1]==='posture' && s.profile.days===4 && s.profile.issues[0].region==='shoulder' && s.planProposal.days.length===4}"))
+    ok('Onboarding: Profil in den Einstellungen gespeichert', pg.evaluate("()=>{const s=JSON.parse(localStorage.getItem('gymlog.pwa.v1')).settings; return s.profile && s.profile.goal==='muscle' && s.profile.goals[1]==='posture' && s.profile.days===4 && s.profile.issues[0].region==='shoulder' && s.profile.issues[0].pain===3 && s.profile.issues[0].status==='sensitive' && s.planProposal.days.length===4}"))
     # Coach-Plan übernehmen, Einheit daraus starten, zurück zum Standardplan
     pg.click('[data-a="ob-start"]'); pg.wait_for_timeout(150)
     for i in range(40):

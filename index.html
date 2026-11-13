@@ -292,6 +292,15 @@ details.cue p{margin:0 2px 12px;color:var(--muted)}
 .ob-bars{flex:1;display:flex;gap:6px}
 .ob-bars .ob-bar{flex:1}
 .opt .rec{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font:700 11px/1.4 var(--f-body);letter-spacing:.04em;text-transform:uppercase;vertical-align:1px}
+.bd{display:block;width:100%;max-width:340px;margin:4px auto 0;touch-action:manipulation}
+.bd-body circle,.bd-body rect{fill:var(--sunken)}
+.bd-body line{stroke:var(--sunken);stroke-linecap:round}
+.bd-pt{cursor:pointer}
+.bd-hit{fill:transparent}
+.bd-dot{fill:var(--surface);stroke:var(--line-strong);stroke-width:2}
+.bd-pt.on .bd-dot{fill:var(--bad);stroke:var(--bad)}
+.bd-pt text{font:700 12px/1 var(--f-body);fill:#fff;pointer-events:none}
+.bd-l{font:600 12px/1 var(--f-body);fill:var(--muted)}
 .ob-src{display:block;margin-top:6px;font-size:12px;color:var(--muted)}
 .ob-big{font:700 30px/1.1 var(--f-display);text-transform:uppercase;letter-spacing:.01em;margin-top:8px}
 .ob-range{width:100%;height:40px;accent-color:var(--accent);margin:0}
@@ -2376,7 +2385,7 @@ function obAnswered(o, id){
   if(id==='goals') return p.goals.length>0;
   if(OB_NONE[id]) return !!((id==='issues' ? p.issues : p[id]).length || o.edit || o.none[id]);
   if(k[0]==='skill' || k[0]==='mobility') return p[k[0]][k[1]]!=null;
-  if(k[0]==='issue') return !!(p.issues[+k[1]]||{}).status;
+  if(k[0]==='issue'){ const is=p.issues[+k[1]]||{}; return is.pain!=null || (o.edit && !!is.status); }
   return p[id]!=null;
 }
 function obSeg(key, opts, cur, extra){ return '<div class="seg'+(extra||'')+'">'+opts.map(o=>'<button class="'+(cur===o[0]?'on':'')+'" data-a="ob-set" data-k="'+key+'" data-v="'+o[0]+'" aria-pressed="'+(cur===o[0])+'">'+o[1]+'</button>').join('')+'</div>'; }
@@ -2413,6 +2422,23 @@ function obAdvice(o, id){
 function obOpts(key, list, cur){
   return '<div class="opts">'+list.map(o=>'<button class="opt'+(cur===o[0]?' on':'')+'" data-a="ob-set" data-k="'+key+'" data-v="'+o[0]+'" aria-pressed="'+(cur===o[0])+'"><span class="radio"></span><span class="tx"><b>'+o[1]+(o[3]?' <span class="rec">'+o[3]+'</span>':'')+'</b>'+(o[2]?'<small>'+o[2]+'</small>':'')+'</span></button>').join('')+'</div>';
 }
+/* Körperfigur für Beschwerden: Vorder- und Rückseite, Punkte = Regionen aus OB_REGIONS. Beide Körperseiten zählen als dieselbe Region. */
+const OB_BODY = {
+  front:[['shoulder',-36,62],['shoulder',36,62],['elbow',-49,110],['elbow',49,110],['wrist',-55,156],['wrist',55,156],['hip',-25,150],['hip',25,150],['adductors',0,176],['knee',-18,218],['knee',18,218]],
+  back:[['lowback',0,132],['hams',-18,184],['hams',18,184]]
+};
+function obBody(p){
+  const fig=(cx, label, pts)=>{
+    const L=(x1,y1,x2,y2,w)=>'<line x1="'+(cx+x1)+'" y1="'+y1+'" x2="'+(cx+x2)+'" y2="'+y2+'" stroke-width="'+w+'"/>';
+    let g='<g class="bd-body"><circle cx="'+cx+'" cy="26" r="16"/><rect x="'+(cx-30)+'" y="48" width="60" height="108" rx="18"/>'
+      +[-1,1].map(d=>L(d*36,62,d*49,110,17)+L(d*49,110,d*55,156,15)+L(d*17,156,d*18,218,22)+L(d*18,218,d*18,282,18)).join('')+'</g>';
+    g+=pts.map(q=>{ const is=p.issues.find(x=>x.region===q[0]), nm=OB_REGIONS.find(r=>r[0]===q[0])[1];
+      return '<g class="bd-pt'+(is?' on':'')+'" data-a="ob-tog" data-k="issueRegions" data-v="'+q[0]+'" role="button" aria-label="'+nm+'" aria-pressed="'+!!is+'"><circle cx="'+(cx+q[1])+'" cy="'+q[2]+'" r="22" class="bd-hit"/><circle cx="'+(cx+q[1])+'" cy="'+q[2]+'" r="11" class="bd-dot"/>'+(is && is.pain!=null?'<text x="'+(cx+q[1])+'" y="'+(q[2]+4)+'" text-anchor="middle">'+is.pain+'</text>':'')+'</g>'; }).join('');
+    return g+'<text class="bd-l" x="'+cx+'" y="304" text-anchor="middle">'+label+'</text>';
+  };
+  return '<svg class="bd" viewBox="0 0 320 312" aria-label="Körperfigur: Stellen antippen">'+fig(82,'Vorne',OB_BODY.front)+fig(238,'Hinten',OB_BODY.back)+'</svg>';
+}
+const OB_PAIN_TXT = n => n===0 ? 'Zurzeit schmerzfrei. Auslösende Bewegungen bleiben vorsichtshalber weg.' : n<5 ? 'Training ist möglich, auslösende Bewegungen fallen weg. Richtwert für dich: Der Schmerz bleibt unter 5, ist am nächsten Morgen weg und nimmt von Woche zu Woche nicht zu.' : 'Ab 5 pausiert der Plan die Belastung dieser Region, bis der Wert tiefer liegt.';
 function obNone(o, id){ const arr=id==='issues' ? o.p.issues : o.p[id], on=!arr.length && (o.none[id] || o.edit); return '<div class="opts"><button class="opt'+(on?' on':'')+'" data-a="ob-none" data-k="'+id+'" aria-pressed="'+!!on+'"><span class="radio"></span><span class="tx"><b>'+OB_NONE[id]+'</b></span></button></div>'; }
 function obHead(t, lead){ return '<h2 id="sh-t">'+t+'</h2>'+(lead?'<p class="lead">'+lead+'</p>':''); }
 
@@ -2447,10 +2473,13 @@ function sheetOb(){
   } else if(id==='priority'){
     h+=obHead('Wenn es eng wird: Was hat Vorrang?', 'Hat dein Sport Vorrang, bekommen die Beine im Krafttraining nur den Mindestumfang.')+obOpts('priority', [['strength','Krafttraining','Der Sport läuft nebenher'],['both','Beides gleich'],['endurance','Mein Sport','Das Krafttraining unterstützt ihn']], p.priority);
   } else if(id==='issues'){
-    h+=obHead('Hast du Beschwerden oder Verletzungen?', 'Tippe alle Stellen an, die du im Training oder Alltag spürst. Ausgeheiltes, das dich nicht mehr einschränkt, lässt du weg.')+obChips('issueRegions', OB_REGIONS, p.issues.map(x=>x.region))+obNone(o,'issues');
+    h+=obHead('Hast du Beschwerden oder Verletzungen?', 'Tippe auf der Figur oder in der Liste alle Stellen an, die du im Training oder Alltag spürst. Ausgeheiltes, das dich nicht mehr einschränkt, lässt du weg.')+obBody(p)+obChips('issueRegions', OB_REGIONS, p.issues.map(x=>x.region))+obNone(o,'issues');
   } else if(k[0]==='issue'){
     const is=p.issues[+k[1]], rn=OB_REGIONS.find(r=>r[0]===is.region)[1];
-    h+=obHead(esc(rn)+': Wie ist der Stand?', '«Akut» lässt die Region im Plan ganz weg. Bei den anderen fallen nur die auslösenden Bewegungen weg, der Rest startet vorsichtig.')+obOpts(id+'.status', OB_STATUS.map(x=>[x[0], x[1].charAt(0).toUpperCase()+x[1].slice(1), OB_STATUS_SUB[x[0]]]), is.status);
+    h+=obHead(esc(rn)+': Wie stark ist der Schmerz bei Belastung?', '0 = kein Schmerz, 10 = stärkster vorstellbarer Schmerz. Nimm den höchsten Wert der letzten Woche.');
+    h+='<div class="ob-big" id="ob-pain-l">'+(is.pain==null?'Regler bewegen':is.pain+' von 10')+'</div><input type="range" class="ob-range" id="ob-pain" data-i="'+k[1]+'" min="0" max="10" step="1" value="'+(is.pain==null?0:is.pain)+'" aria-label="Schmerz 0 bis 10"><p class="lead" id="ob-pain-t">'+(is.pain==null?'':OB_PAIN_TXT(is.pain))+'</p>';
+    if(is.pain==null) h+='<div class="opts" id="ob-pain-0"><button class="opt" data-a="ob-set" data-k="'+id+'.pain" data-v="0"><span class="radio"></span><span class="tx"><b>0, zurzeit schmerzfrei</b><small>Die Stelle ist aber anfällig</small></span></button></div>';
+    h+='<span class="ob-src">Quellen: Silbernagel et al. 2007, Am J Sports Med (Studie an der Achillessehne: Weitertrainieren mit Schmerz unter 5 schadete nicht) · Smith et al. 2017, BJSM (Meta-Analyse)</span>';
     h+=obQ('Was löst es aus?', obChips(id+'.triggers', OB_REGION_TRIG[is.region].map(t=>[t,OB_TRIG[t]]), is.triggers||[]), 'Falls du es weisst. Mehrere möglich.');
   } else if(id==='redflag'){
     h+=obHead('Trifft eines dieser Warnzeichen zu?', 'Taubheit oder Ausstrahlen in Arm oder Bein, Schmerz in Ruhe oder nachts, oder ein ärztliches Sportverbot.')+obOpts('redflag', [[false,'Nein, nichts davon'],[true,'Ja, mindestens eines']], p.redflag);
@@ -2527,7 +2556,7 @@ function sheetPlan(){
 function obSetPath(p, key, v){
   const k=key.split('.');
   if(k[0]==='skill' || k[0]==='mobility'){ p[k[0]][k[1]]=v; return; }
-  if(k[0]==='issue'){ p.issues[+k[1]][k[2]]=v; return; }
+  if(k[0]==='issue'){ const is=p.issues[+k[1]]; is[k[2]]=v; if(k[2]==='pain') is.status = v>=5 ? 'acute' : 'sensitive'; return; }
   p[key]=v;
 }
 function obAction(a, d){
@@ -3047,6 +3076,7 @@ async function exportCsv(){
 
 function onInput(ev){
   const el=ev.target, f=el.dataset.f;
+  if(el.id==='ob-pain'){ const o=state.ob; if(!o) return; const is=o.p.issues[+el.dataset.i], n=+el.value; if(!is) return; is.pain=n; is.status=n>=5?'acute':'sensitive'; o.plan=null; const l=document.getElementById('ob-pain-l'), t=document.getElementById('ob-pain-t'), nx=document.getElementById('ob-nx'); if(l) l.textContent=n+' von 10'; if(t) t.textContent=OB_PAIN_TXT(n); const z=document.getElementById('ob-pain-0'); if(z) z.remove(); if(nx) nx.disabled=false; return; }
   if(el.id==='ob-years'){ const o=state.ob; if(!o) return; const y=OB_YEARS[+el.value]; o.p.years=y[0]; o.plan=null; const l=document.getElementById('ob-years-l'), nx=document.getElementById('ob-nx'); if(l) l.textContent=y[1]; if(nx) nx.disabled=false; return; }
   if(f==='w' || f==='r'){
     const s=curSession(); if(!s) return;

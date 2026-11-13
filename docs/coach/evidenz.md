@@ -137,6 +137,10 @@ Aarons Präzisierung: Das Vorgehen wird aus Studien abgeleitet, nicht nachträgl
 | Mobility-Dosis | Ingram 2024: Maximum 10 min pro Woche und Muskelgruppe, höchstens 4 min pro Einheit. | Plan rechnet aus, wie viele Durchgänge der Routine das ausschöpfen (`routine.dose`), und sagt es in der Begründung. Dynamische Übungen im Gym-Block: für sie gilt die Dosis nicht (Ingram untersucht statisches Dehnen) |
 | Engine füllt freie Zeit nicht | Kein Evidenzthema, Fehler. | Wenn alle Übungen eines Muskels bei 4 Sätzen stehen, kommt eine Ergänzungsübung dazu (`FILL`), sofern Zeit bleibt und die Übung zur Stufe passt |
 
+## N3 Beschwerden auf der Körperfigur (13.11.)
+- **Silbernagel 2007:** Silbernagel KG, Thomeé R, Eriksson BI, Karlsson J. Am J Sports Med. 2007;35(6):897–906. doi:10.1177/0363546506298279. RCT, 38 Personen mit Achillessehnen-Beschwerden: Weitertrainieren nach Schmerz-Monitoring gegen 6 Wochen Pause, kein Unterschied, keine Nachteile. Regeln: Schmerz bei Belastung erreicht 5 von 10 nicht, ist am nächsten Morgen weg, nimmt von Woche zu Woche nicht zu. Über PEDro und eine Zusammenfassung gelesen, nicht im Volltext.
+- **Ableitung:** Schmerz 0–10 pro Region. Ab 5 pausiert der Plan die Region (`status:'acute'`), darunter fallen nur auslösende Bewegungen weg (`'sensitive'`). Zweite Quelle: Smith 2017 (schmerzhafte Übungen bei chronischen Beschwerden schaden nicht). Grenze: Die Studie betrifft eine Sehne und chronische Beschwerden, nicht frische Verletzungen. Dafür bleiben die Warnzeichen-Frage und der Hinweis auf Fachpersonen. Die alten Stufen «in Reha» und «kommt wieder» hatten keine eigene Wirkung und sind weg.
+
 ## Noch offen nach dem Audit
 1. Volle Nuzzo-Tabelle (übungsspezifische Kurven) für den Krafttest N5.
 2. Statisches Dehnen direkt vor dem Krafttraining (akute Wirkung auf die Kraft): nicht geprüft. Der Gym-Block bevorzugt dynamische Übungen, diese Wahl ist noch ohne Quelle.
