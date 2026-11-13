@@ -292,6 +292,12 @@ details.cue p{margin:0 2px 12px;color:var(--muted)}
 .ob-bars{flex:1;display:flex;gap:6px}
 .ob-bars .ob-bar{flex:1}
 .opt .rec{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font:700 11px/1.4 var(--f-body);letter-spacing:.04em;text-transform:uppercase;vertical-align:1px}
+.pw{display:flex;flex-direction:column;gap:6px}
+.pw-n{font:600 14px/1.2 var(--f-body)}
+.pw-d{display:flex;gap:4px}
+.pw-d button{flex:1;min-width:0;height:40px;padding:0;text-align:center;border:0;border-radius:10px;background:var(--raised);box-shadow:inset 0 0 0 1px var(--line);font:600 13px/1 var(--f-body);color:var(--muted);cursor:pointer}
+.pw-d button.taken{color:var(--faint);background:var(--sunken)}
+.pw-d button.on{background:var(--fg);color:var(--bg);box-shadow:none}
 .bd{display:block;width:100%;max-width:340px;margin:4px auto 0;touch-action:manipulation}
 .bd-body circle,.bd-body rect{fill:var(--sunken)}
 .bd-body line{stroke:var(--sunken);stroke-linecap:round}
@@ -2525,15 +2531,46 @@ function sheetObResult(){
   let h='<h2 id="sh-t">Dein Plan</h2><p class="lead">'+pl.days.length+' '+(pl.days.length===1?'Einheit':'Einheiten')+' pro Woche. Du kannst zurückgehen und Angaben ändern.</p>';
   h+=pl.days.map(planDayHtml).join('');
   if(pl.routine) h+=planDayHtml(Object.assign({}, pl.routine, {name:pl.routine.name}));
+  h+=planWeekHtml(pl, o.p.weekdays, 'ob', (o.p.sports||[]).length>0);
   h+='<div class="prose"><h3>Warum dieser Plan?</h3><ul class="ob-why">'+pl.why.map(w=>'<li>'+esc(w.text)+'</li>').join('')+'</ul></div>';
   h+='<div class="callout info">'+I.info+'<div>Mit «Plan übernehmen» wird das dein aktiver Plan. Dein Verlauf bleibt erhalten, und du kannst jederzeit zum bisherigen Plan zurück.</div></div>';
   h+='<button class="link" style="align-self:center" data-a="ob-save">Nur Profil speichern, Plan noch nicht übernehmen</button>';
   h+='<div class="ob-nav"><button class="btn sec" data-a="ob-back">Zurück</button><button class="btn pri" data-a="ob-apply">Plan übernehmen</button></div>';
   return h;
 }
-/* Übliche Trainingstage (getDay: 0 = So). Aus dem Profil, sonst gleichmässig über die Woche verteilt. */
+/* Wochenplanung: jede Einheit des Plans hat einen Wochentag (plan.week = {P1:1, …}, getDay: 0 = So).
+   Fehlt die Zuordnung, wird sie aus den bevorzugten Tagen (Profil) oder gleichmässig verteilt abgeleitet. */
+const WDO = [1,2,3,4,5,6,0];
+function planWeekOf(pl, prefs){
+  const ids=pl.days.map(d=>d.id), w=pl.week||{}, out={}, used={};
+  ids.forEach(id=>{ if(w[id]!=null && !used[w[id]]){ out[id]=+w[id]; used[w[id]]=true; } });
+  const spread={1:[3], 2:[1,4], 3:[1,3,5], 4:[1,2,4,5], 5:[1,2,3,5,6], 6:[1,2,3,4,5,6]}[ids.length] || [1,4];
+  const pr=(prefs||[]).map(Number), cand=WDO.filter(d=>pr.includes(d)).concat(pr.length>=ids.length ? [] : spread, WDO).filter(d=>!used[d]);
+  /* Reihenfolge der Woche behalten: freie Einheiten bekommen die Kandidaten in Wochenreihenfolge. */
+  const free=[]; cand.forEach(d=>{ if(!free.includes(d)) free.push(d); });
+  const need=ids.filter(id=>out[id]==null), take=free.slice(0, need.length).sort((x,y)=>WDO.indexOf(x)-WDO.indexOf(y));
+  need.forEach((id,i)=>{ out[id]=take[i]; });
+  return out;
+}
+function planWeekHtml(pl, prefs, ctx, hasSport){
+  const m=planWeekOf(pl, prefs), by={}; Object.keys(m).forEach(id=>{ by[m[id]]=id; });
+  let h='<div class="prose"><h3>Deine Woche</h3><p>Lege jede Einheit auf einen Wochentag. Wie du sie verteilst, spielt für den Muskelaufbau bei gleichem Umfang keine Rolle. Auch bei Tagen direkt hintereinander fand eine Studie keinen Nachteil. Nimm die Tage, die in dein Leben passen.'+(hasSport?' Einzige Regel: zwischen Ausdauer und Krafttraining mindestens 3 Stunden Abstand.':'')+'<span class="ob-src">Quellen: ACSM Position Stand 2026 · Yang et al. 2018, Front Physiol'+(hasSport?' · Schumann et al. 2022 · Petré et al. 2021, Sports Med':'')+'</span></p></div>';
+  h+=pl.days.map(d=>'<div class="pw"><span class="pw-n">'+esc(d.name)+'</span><div class="pw-d">'+WDO.map(w=>{ const on=m[d.id]===w, other=!on && by[w]; return '<button class="'+(on?'on':other?'taken':'')+'" data-a="pw-set" data-id="'+d.id+'" data-v="'+w+'" data-ctx="'+ctx+'" aria-pressed="'+on+'" aria-label="'+esc(d.name)+' am '+WD[w]+'">'+WD[w]+'</button>'; }).join('')+'</div></div>').join('');
+  return h+'<p class="ob-src" style="margin-top:0">Ein belegter Tag tauscht mit der anderen Einheit. Die Tage sind ein Vorschlag: Trainierst du an einem anderen Tag, rückt die Reihenfolge nach.</p>';
+}
+function planWeekSet(d){
+  const ob=d.ctx==='ob', pl=ob ? (state.ob||{}).plan : state.settings.plan; if(!pl) return;
+  const prefs=ob ? state.ob.p.weekdays : (state.settings.profile||{}).weekdays, m=planWeekOf(pl, prefs), v=+d.v;
+  const other=Object.keys(m).find(id=>m[id]===v);
+  if(other && other!==d.id) m[other]=m[d.id];
+  m[d.id]=v; pl.week=m;
+  if(!ob){ Store.saveSettings(); renderMain(); }
+  renderSheet();
+}
 function planWeekdays(){
-  const w=((state.settings.profile||{}).weekdays||[]).map(Number), n=planIds().length;
+  const pl=state.settings.plan, prefs=(state.settings.profile||{}).weekdays;
+  if(pl && pl.days) return Object.values(planWeekOf(pl, prefs));
+  const w=(prefs||[]).map(Number), n=planIds().length;
   return w.length ? w : ({1:[3], 2:[1,4], 3:[1,3,5], 4:[1,2,4,5], 5:[1,2,3,5,6], 6:[1,2,3,4,5,6]}[n] || [1,4]);
 }
 function planTitle(pl){ return pl && pl.days ? (pl.name || 'Coach-Plan · '+pl.days.length+' '+(pl.days.length===1?'Einheit':'Einheiten')+' pro Woche') : 'Ganzkörper A/B'; }
@@ -2550,6 +2587,7 @@ function sheetPlan(){
   const pl=state.settings.plan; if(!pl) return '';
   let h='<h2 id="sh-t">Dein Plan</h2><p class="lead">'+esc(planTitle(pl))+', aktiv seit '+fmtDate(String(pl.created||'').slice(0,10)||todayStr())+'.</p>';
   h+=pl.days.map(planDayHtml).join('')+(pl.routine?planDayHtml(pl.routine):'');
+  h+=planWeekHtml(pl, (state.settings.profile||{}).weekdays, 'plan', ((state.settings.profile||{}).sports||[]).length>0);
   h+='<div class="prose"><h3>Warum dieser Plan?</h3><ul class="ob-why">'+(pl.why||[]).map(w=>'<li>'+esc(w.text)+'</li>').join('')+'</ul></div>';
   return h+'<button class="btn pri block" data-a="sheet-close">Schliessen</button>';
 }
@@ -2589,7 +2627,7 @@ function obAction(a, d){
   else if(a==='ob-back') move=-1;
   else if(a==='ob-save' || a==='ob-apply'){
     const st=state.settings; st.profile=Object.assign({}, p, {done:todayStr()});
-    if(a==='ob-apply'){ if(!o.plan || !planActivate(o.plan)) return true;
+    if(a==='ob-apply'){ if(!o.plan) return true; o.plan.week=planWeekOf(o.plan, p.weekdays); if(!planActivate(o.plan)) return true;
 }
     else { st.planProposal=o.plan||null; Store.saveSettings(); }
     state.ob=null; closeSheet(); if(a==='ob-apply') go('home'); else renderMain();
@@ -2961,6 +2999,7 @@ function onClick(ev){
     case 'fd-assist': { swapEntry(s, bi, ii, 'pullupA', 'once'); persist(s); render(); toast('Heute Klimmzüge assistiert'); break; }
     case 'rir-fix': { const cs=curSession(); if(!cs) break; const i=cs.blocks.findIndex(b=>missingRir(b)>0); state.sheet=null; if(i>-1) setCur(cs,i); render(); if(i>-1) scrollToBlock(i); break; }
     case 'ob-start': obStart(); break;
+    case 'pw-set': planWeekSet(d); break;
     case 'ob-set': case 'ob-tog': case 'ob-none': case 'ob-next': case 'ob-back': case 'ob-save': case 'ob-apply': obAction(a, d); break;
     case 'plan-open': openSheet('plan'); break;
     case 'life-open': lifeOpen(); break;

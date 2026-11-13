@@ -138,6 +138,9 @@ with sync_playwright() as p:
     ok('Onboarding: Coach reagiert auf 1 Training mit Quelle', pg.query_selector('#sheet .ob-coach .ob-src') is not None and 'trotzdem' in pg.inner_text('#ob-nx').lower())
     st('days',4); nx() if pg.query_selector('#sheet [data-k="days"]') else None
     c('[data-a="ob-none"][data-k="weekdays"]'); st('equip','gym'); st('supersets','true')
+    ok('Wochenplanung: 4 Einheiten, jede mit einem Tag', len(pg.query_selector_all('#sheet .pw'))==4 and len(pg.query_selector_all('#sheet .pw-d button.on'))==4)
+    pg.locator('#sheet .pw').first.locator('button[data-v="6"]').click(); pg.wait_for_timeout(80)
+    ok('Wochenplanung: Einheit 1 auf Samstag gelegt', pg.evaluate("()=>document.querySelector('#sheet .pw .pw-d button.on').dataset.v")=='6')
     tx=pg.inner_text('#sheet').lower()
     ok('Onboarding: Plan-Vorschau mit 4 Tagen, Mobility und Begründung', 'dein plan' in tx and 'oberkörper 2' in tx and 'mobility' in tx and 'warum dieser plan' in tx and 'schulterdrücken' not in tx)
     pg.click('[data-a="ob-save"]'); pg.wait_for_timeout(300)
