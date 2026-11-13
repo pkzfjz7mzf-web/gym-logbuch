@@ -157,9 +157,11 @@ function repsFor(slot, id, p){
 }
 
 /* ---------- Zeit und Volumen ---------- */
+let REST = {main:90, acc:90};
 function slotSeconds(it, EX, paired){
   if(it.mob){ const e = EX[it.ex]; return it.sets*(e.side?2:1)*(e.hold ? it.reps[0]+10 : 40); }
-  const side = EX[it.ex].side ? 70 : 40, rest = it.main ? 150 : 90;
+  /* Pausen: die eingestellten Zeiten des Nutzers, sonst 90 s (Singer 2024: über 60 s kleiner Vorteil für Muskelaufbau, über 90 s kein nachweisbarer Zusatznutzen). */
+  const side = EX[it.ex].side ? 70 : 40, rest = it.main ? REST.main : REST.acc;
   return it.sets*(side + (paired ? 45 : rest));
 }
 function dayMinutes(day, EX){
@@ -191,6 +193,7 @@ function canPair(a, b, EX){ return !a.main && !b.main && !primary(a,EX).some(m =
 function buildPlan(profile, EX, CAT){
   const p = profile||{}, why = [], level = levelOf(p), gear = gearOf(p);
   const nDays = Math.max(1, Math.min(6, p.days||2)), minutes = p.minutes||60;
+  REST = {main:(p.rest && +p.rest.main) || 90, acc:(p.rest && +p.rest.acc) || 90};
   const sports = p.sports||[], hours = sports.reduce((a,s)=>a+(s.hours||0),0);
   const kinds = sports.map(s=>s.kind);
   const enduranceFirst = p.priority==='endurance';
