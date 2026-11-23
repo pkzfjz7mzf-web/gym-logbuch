@@ -32,6 +32,9 @@ const SRC = {
   webmdart: 'WebMD, How to Do Back Extensions (Twu, physiotherapeutisch geprüft 2026)',
   fukunaga: 'Fukunaga et al. (2022): Band Pull-Apart Exercise. International Journal of Sports Physical Therapy 17(3)',
   lockie: 'Lockie et al. (2018): Close-Grip Bench Press versus Traditional Bench Press. Sports 6(3)',
+  maeo: 'Maeo et al. (2023): Triceps hypertrophy is substantially greater after elbow extension training in the overhead versus neutral arm position. European Journal of Sport Science',
+  kinoshita: 'Kinoshita et al. (2023): Triceps surae muscle hypertrophy is greater after standing versus seated calf-raise training. Frontiers in Physiology 14',
+  buonsenso: 'Buonsenso et al. (2025): Electromyographic Analysis of Back Muscle Activation During Lat Pulldown Exercise. Journal of Functional Morphology and Kinesiology 10(3)',
   asca: 'Snarr, Esco (2013): Exercise Technique: Inverted Row. Journal of Australian Strength and Conditioning 21(4)',
   nscaptq: 'Lincoln, Ill, Ibrahim (2023): Progressive Strategies for Teaching Fundamental Resistance Training Movement Patterns. NSCA Personal Training Quarterly 10(2)'
 };
@@ -467,7 +470,19 @@ const EXPLAIN = {
   cgbench: ['Rückenlage auf der Flachbank: Kopf, Schultern und Gesäss auf der Bank, beide Füsse am Boden. Langhantel im Obergriff, etwa 95 Prozent der Schulterbreite (Abstand der Schulterhöhen), die Hände liegen also knapp innerhalb der Schultern. Augen unter der Stange, Bauch fest.',
     'Die Stange kontrolliert zur Brust absenken, bis sie die Brust berührt, die Handgelenke bleiben über den Ellbogen. Dann bis zu gestreckten Armen nach oben drücken.',
     ['Stange federt von der Brust ab: kontrolliert absenken, kurz berühren.', 'Gesäss oder Kopf heben von der Bank ab: Kontakt halten.'],
-    ['lockie','nscab']]
+    ['lockie','nscab']],
+  ohext: ['Stehend am Kabelzug, mit dem Rücken zum Gerät. Der Oberarm zeigt senkrecht nach oben neben dem Kopf und bleibt dort fix. Der Ellbogen ist etwa rechtwinklig gebeugt.',
+    'Nur den Ellbogen strecken, bis der Arm gerade ist, dann wieder bis etwa 90° beugen. Je etwa 2 Sekunden für Strecken und Beugen, ohne Pause. Die Studie trainierte jeden Arm einzeln. Über Kopf wuchs der Trizeps, vor allem der lange Kopf, deutlich stärker als beim Strecken mit dem Arm neben dem Körper.',
+    ['Oberarm wandert nach vorne oder zur Seite: senkrecht über dem Kopf lassen.', 'Nur halbe Bewegung: von etwa 90° bis ganz gestreckt.'],
+    ['maeo']],
+  seatedcalf: ['In die Wadenmaschine sitzen, das Knie etwa rechtwinklig gebeugt unter dem Polster. Der Fuss zeigt gerade nach vorne.',
+    'Die Fersen heben und wieder senken, je etwa 2 Sekunden. In der Studie wurde jedes Bein einzeln trainiert. Mit gebeugtem Knie wuchs vor allem der tiefe Wadenmuskel (Soleus), der Zwillingswadenmuskel kaum. Für ihn ist Wadenheben stehend die bessere Wahl.',
+    ['Fuss dreht nach innen oder aussen: gerade halten.', 'Wippen statt gleichmässig: je 2 Sekunden hoch und runter.'],
+    ['kinoshita']],
+  latpdn: ['Oberschenkelpolster so einstellen, dass es die Beine fest am Sitz hält. Den engen Griff mit neutraler Handhaltung fassen, die Hände etwa schulterbreit. Aufrecht sitzen, Brust hoch, Rücken flach, Bauch fest.',
+    'Zuerst die Schulterblätter nach unten-hinten ziehen, dann die Ellbogen gerade nach unten führen und den Griff zur Brust ziehen, etwa 2 Sekunden. Kontrolliert nachgeben, ebenfalls etwa 2 Sekunden, bis die Arme gestreckt sind. Der Latissimus arbeitet mit diesem Griff etwa gleich stark wie mit dem breiten Griff.',
+    ['Mit Zurücklehnen starten oder schwingen: Oberkörper ruhig und aufrecht.', 'Ziehen nur aus den Armen: zuerst die Schulterblätter nach unten.', 'Nur halbe Bewegung: oben die Arme ganz strecken.'],
+    ['buonsenso','nscab']]
 };
 const api = {EXPLAIN, SRC};
 if(typeof module !== 'undefined' && module.exports) module.exports = api; else root.COACH_EXPLAIN = api;

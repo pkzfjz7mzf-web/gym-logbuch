@@ -537,7 +537,7 @@ const EQUIP_LABEL = {bb:'Langhantel', db:'Kurzhanteln', cable:'Kabelzug', lm:'La
 
 const EX = {
   calfraise:{name:'Wadenheben stehend', short:'Wadenheben', equip:'machine', gear:'Wadenmaschine oder Smith-Maschine', m:{calves:1}, cue:'Fussballen auf der Kante. Unten ganz absinken lassen und kurz halten, oben auf die Zehenspitzen. Langsam, ohne Wippen.'},
-  seatedcalf:{retired:true, name:'Wadenheben sitzend', equip:'machine', gear:'Wadenmaschine sitzend', m:{calves:1}, cue:'Knie unter dem Polster, Fussballen auf der Kante. Unten ganz dehnen, oben kurz halten.'},
+  seatedcalf:{name:'Wadenheben sitzend', equip:'machine', gear:'Wadenmaschine sitzend', m:{calves:1}, cue:'Sitzend, Knie 90° unter dem Polster, Fuss gerade. Je 2 s hoch und runter. Trainiert vor allem den Schollenmuskel, für den Zwillingswadenmuskel stehend.'},
   slcalf:   {name:'Wadenheben einbeinig', equip:'bw', bwLoad:true, side:true, m:{calves:1}, cue:'Auf einer Stufe, mit einer Hand festhalten. Ferse ganz absinken lassen, dann auf die Zehenspitzen. Zusatzgewicht mit einer Kurzhantel in der freien Hand.'},
   pikepush: {retired:true, name:'Pike-Liegestütze', equip:'bw', m:{shoulders:1, triceps:.5}, cue:'Hüfte hoch, Körper wie ein umgekehrtes V. Kopf zwischen die Hände Richtung Boden senken, Ellbogen leicht nach hinten.'},
   glutebridge:{name:'Glute Bridge', equip:'bw', m:{glutes:1, hams:.5}, cue:'Rückenlage, Füsse hüftbreit nahe am Gesäss. Becken hochdrücken, bis Knie, Hüfte und Schulter eine Linie bilden. Oben Gesäss anspannen, Rippen unten.'},
@@ -589,7 +589,7 @@ const EX = {
   chop:     {name:'Holzhacker am Kabel', equip:'cable', side:true, rir:[2,3], m:{core:1}, cue:'Bewegung kommt aus Hüfte und Rumpf, Arme bleiben lang. Kontrolliert zurück, Becken stabil.'},
   hammercurl:{name:'Hammer-Curls', equip:'db', pair:true, m:{biceps:1}, cue:'Daumen zeigen nach oben, Ellbogen bleiben am Körper.'},
   cablecurl:{name:'Bizeps-Curls am Kabel', equip:'cable', m:{biceps:1}, cue:'Griff am tiefen Kabelzug, Handfläche nach oben. Ellbogen am Körper, langsam hoch und langsam zurück, kein Schwung.'},
-  ohext:    {retired:true, name:'Trizepsstrecken über Kopf', equip:'cable', m:{triceps:1}, cue:'Ellbogen zeigen nach vorne, Rippen unten. Unten volle Dehnung.'},
+  ohext:    {name:'Trizepsstrecken über Kopf', equip:'cable', m:{triceps:1}, cue:'Stehend am Kabel, Oberarm senkrecht über dem Kopf. Nur den Ellbogen bewegen, von etwa 90° bis gestreckt, je 2 s hoch und runter.'},
   /* Weitere Alternativen: gleiche Bewegung in anderer Ausführung oder gleiche Muskeln mit anderer Mechanik */
   hacksquat:{retired:true, name:'Hackenschmidt-Kniebeuge', short:'Hackenschmidt', equip:'machine', main:true, legs:true, m:{quads:1, glutes:.5}, cue:'Rücken ganz an der Lehne, Füsse schulterbreit mittig auf der Platte. Kontrolliert tief, ohne dass das Becken abkippt.'},
   legext:   {name:'Beinstrecker', equip:'machine', legs:true, reps:[10,15], m:{quads:1}, cue:'Rücken an der Lehne, Knie auf Höhe der Drehachse, Polster vorne an den Knöcheln. Bis fast gestreckt, kurz halten, langsam ganz zurück.'},
@@ -606,7 +606,7 @@ const EX = {
   invrow:   {name:'Inverted Rows', equip:'bw', gear:'Stange im Rack oder Schlingentrainer', m:{upback:1, lats:.5, biceps:.5}, cue:'Körper bleibt ein Brett. Brust zur Stange ziehen, Schulterblätter zusammen. Je flacher, desto schwerer.'},
   revpec:   {retired:true, name:'Reverse Butterfly Maschine', short:'Reverse Butterfly', equip:'machine', reps:[12,15], m:{upback:1, shoulders:.5}, cue:'Brust am Polster, Arme leicht gebeugt. Weit nach hinten führen, Schultern bleiben tief.'},
   chinup:   {name:'Klimmzüge Untergriff', short:'Chin-ups', equip:'bw', bwLoad:true, main:true, m:{lats:1, biceps:.5, upback:.5}, cue:'Schulterbreiter Untergriff. Schulterblätter zuerst nach unten, dann Brust zur Stange.'},
-  latpdn:   {retired:true, name:'Latzug enger Griff', equip:'cable', main:true, m:{lats:1, upback:.5, biceps:.5}, cue:'Neutralgriff, zur oberen Brust ziehen. Ellbogen Richtung Hüfte, Oberkörper ruhig.'},
+  latpdn:   {name:'Latzug enger Griff', equip:'cable', main:true, m:{lats:1, upback:.5, biceps:.5}, cue:'Enger Neutralgriff etwa schulterbreit, aufrecht sitzen. Schulterblätter nach unten, Ellbogen nach unten führen, je 2 s ziehen und nachgeben.'},
   straightarm:{name:'Lat-Überzüge am Kabel', equip:'cable', reps:[10,15], m:{lats:1}, cue:'Arme fast gestreckt, leicht vorgeneigt. Stange oder Seil im Bogen bis zu den Oberschenkeln ziehen, Rippen unten.'},
   dbpullover:{name:'Überzüge KH', equip:'db', pair:true, gear:'zwei Kurzhanteln', reps:[10,12], m:{lats:1, chest:.5}, cue:'Rückenlage auf der Bank, Kurzhanteln über der Brust, Handflächen zueinander. Arme gestreckt langsam über den Kopf, dann zurück.'},
   bbbench:  {name:'Bankdrücken Langhantel', short:'Bankdrücken', equip:'bb', main:true, m:{chest:1, shoulders:.5, triceps:.5}, cue:'Schulterblätter zusammen und unten, Füsse fest. Stange kontrolliert zur unteren Brust, Ellbogen etwa 45°.'},
