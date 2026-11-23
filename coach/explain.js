@@ -13,6 +13,7 @@ const SRC = {
   ace: 'ACE (Exercise Library und Fachartikel)',
   hkbrown: 'Brown, Lower Body Training, Human Kinetics (Auszug)',
   harvard: 'Harvard Health Publishing (Solan, 2025, fachlich geprüft durch Physiotherapie)',
+  acekovar: 'Kovar, Top Exercises to Gain Thoracic Mobility, ACE Fachartikel',
   asca: 'Snarr, Esco (2013): Exercise Technique: Inverted Row. Journal of Australian Strength and Conditioning 21(4)',
   nscaptq: 'Lincoln, Ill, Ibrahim (2023): Progressive Strategies for Teaching Fundamental Resistance Training Movement Patterns. NSCA Personal Training Quarterly 10(2)'
 };
@@ -266,7 +267,32 @@ const EXPLAIN = {
     'Rückenlage auf der Flachbank, Füsse am Boden, Wirbelsäule neutral. In jeder Hand eine Kurzhantel. Schulterblätter nach hinten-unten, die Hanteln über der Brust, Ellbogen leicht gebeugt, Handgelenke gerade, Handflächen zueinander.',
     'Einatmen und die Hanteln in einem weiten Bogen seitlich absenken, bis etwa auf Schulter- oder Brusthöhe. Ausatmen und auf demselben Bogen zurück. Ellbogen und Handgelenke bleiben gleich.',
     ['Ellbogen beugen und strecken sich, es wird ein Drücken: Ellbogenwinkel gleich lassen.', 'Zu tief: nur bis etwa Schulter- oder Brusthöhe.'],
-    ['ace']]
+    ['ace']],
+  catcow: [
+    'Vierfüsslerstand: Hände direkt unter den Schultern, schulterbreit, Finger nach vorne. Knie unter der Hüfte, Knie und Füsse hüftbreit. Bauch leicht anspannen, Wirbelsäule neutral.',
+    'Katze: ausatmen, den Bauch anspannen und den Rücken nach oben zur Decke rund machen, der Kopf sinkt Richtung Brust und bleibt in Linie mit der Wirbelsäule. Kuh: locker lassen, der Bauch sinkt Richtung Boden, das Hohlkreuz wird grösser und die Schulterblätter gehen zur Wirbelsäule. Dann zurück in die neutrale Ausgangslage.',
+    ['Hände oder Knie nicht unter Schultern bzw. Hüfte: Ausgangslage anpassen.'],
+    ['ace']],
+  hipflexstretch: [
+    'Halber Kniestand: ein Knie direkt unter der Hüfte am Boden, der andere Fuss vorne, das vordere Knie über dem Knöchel und die vordere Hüfte etwa rechtwinklig. Beide Hände auf dem vorderen Oberschenkel, Wirbelsäule lang. Bei Druck am Knie eine Matte unterlegen.',
+    'Schultern nach hinten-unten, ohne ins Hohlkreuz zu gehen. Bauch fest, das Becken bleibt gerade und ruhig. In die vordere Hüfte lehnen, das hintere Knie bleibt am Boden. Das Gesäss des hinteren Beins anspannen, das verstärkt die Dehnung. Etwa 30 bis 45 Sekunden halten, mit jeder Wiederholung etwas tiefer. Erst alle Wiederholungen auf einer Seite.',
+    ['Becken kippt nach vorne, Hohlkreuz: Bauch fest, Gesäss des hinteren Beins anspannen.'],
+    ['ace']],
+  inchworm: [
+    'Füsse zusammen oder leicht auseinander. Bauch anspannen.',
+    'Ausatmen und aus der Hüfte vorbeugen, die Knie gestreckt, aber nicht durchgedrückt, bis die Finger oder Hände vor dir den Boden berühren. Ein flacher Rücken mit leicht gebeugten Knien ist in Ordnung. Mit den Händen in kleinen Schritten nach vorne gehen, die Füsse bleiben stehen, bis zum Liegestütz mit Rücken, Hüfte und Kopf in einer Linie. Einen Liegestütz machen. Dann mit den Füssen in kleinen Schritten zu den Händen gehen, die Hände bleiben stehen.',
+    ['Unterer Rücken rundet: Rücken flach halten, Knie etwas beugen.', 'Im Stütz sackt der Rücken durch oder die Hüfte geht hoch: Rumpf fest, Linie halten.'],
+    ['ace']],
+  calfstretch: [
+    'Etwa eine Armlänge vor der Wand, Füsse hüftbreit, Handflächen etwas über Schulterhöhe an der Wand. Bauch fest, Schultern nach hinten-unten. Ein Bein in Schrittstellung nach hinten, beide Füsse flach, Zehen nach vorne, Kopf in Linie mit der Wirbelsäule.',
+    'Zur Wand lehnen, Hüfte gerade, Wirbelsäule in Linie. Das vordere Knie stärker beugen, das hintere Bein bleibt gestreckt und die Ferse drückt in den Boden. 15 bis 30 Sekunden halten, mit jeder Wiederholung etwas tiefer. Für die tiefere Wadenmuskulatur das hintere Knie leicht beugen, die Ferse bleibt am Boden.',
+    ['Hintere Ferse hebt ab: Ferse in den Boden drücken, weniger weit lehnen.', 'Fuss dreht nach aussen: Zehen gerade nach vorne.'],
+    ['ace']],
+  lungerot: [
+    'Tiefer Ausfallschritt: ein Bein weit nach hinten, der vordere Knöchel unter dem Knie, je eine Hand links und rechts neben dem vorderen Fuss. Einfacher: das hintere Knie am Boden absetzen.',
+    'Den Arm auf der Seite des vorderen Beins zur Decke strecken und den Oberkörper zur Innenseite des vorderen Oberschenkels drehen. Zurück zur Mitte, die Wiederholungen machen, dann Seite wechseln.',
+    ['Vorderes Knie schiebt vor den Knöchel: Knöchel unter dem Knie.'],
+    ['acekovar']]
 };
 const api = {EXPLAIN, SRC};
 if(typeof module !== 'undefined' && module.exports) module.exports = api; else root.COACH_EXPLAIN = api;
