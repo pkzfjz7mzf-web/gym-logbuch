@@ -47,7 +47,7 @@ const NEEDS = {pullup:['bar'], chinup:['bar'], kneeraise:['bar'], invrow:['bar']
   skull:['bench'], inclinecurl:['bench'], dbfly:['bench'], dbpullover:['bench'], hipthrust:['bench'], seatedpress:['bench'], slhipthrust:['bench'], bss:['bench'], stepup:['bench'],
   backext:['gym'], rollout:['gym'], ballcurl:['gym'], tspineroll:['gym'], latstretch:['bench'], pullapart:['bands'], landmine:['gym'], frontsq:['rack'], goodmorning:['rack'], ohp:['rack']};
 const REPS = {nordic:[3,5], deadbug:[8,8], birddog:[8,8], pallof:[10,10], copenhagen:[6,10], hamslide:[6,10], rollout:[6,10], latlunge:[8,8], cossack:[6,8]};
-const TEST_NAME = {squat:'tiefe Hocke', overhead:'Arme über Kopf', toes:'Finger zum Boden', hipflex:'Hüftbeuger', wall:'Wand-Engel'};
+const TEST_NAME = {squat:'tiefe Hocke', overhead:'Arme über Kopf', toes:'Finger zum Boden', hipflex:'Hüftbeuger'};
 const TRIG_NAME = {deepknee:'tiefes Kniebeugen', overhead:'Überkopf-Bewegungen', rotation:'Drehung', bend:'Vorbeugen unter Last', axial:'Last auf der Wirbelsäule', pull:'Hängen und Zug', pushdeep:'tiefe Schulterstreckung', kneel:'Knien', wrist:'Stütz auf dem Handgelenk'};
 const REGION_NAME = {knee:'Knie', hip:'Hüfte', lowback:'unterer Rücken', shoulder:'Schulter', elbow:'Ellbogen', wrist:'Handgelenk', hams:'Hamstrings', adductors:'Adduktoren'};
 
@@ -60,7 +60,7 @@ function mobNeeds(p){
   const d = t => 2 - mob(p, t), tested = t => (p.mobility||{})[t] != null;
   const T = (t, k, f) => add(k, d(t)*f, tested(t) ? 'Test «'+TEST_NAME[t]+'»' : null);
   T('squat','mob_ankle',1); T('squat','mob_hip',1); T('overhead','mob_shoulder',1); T('overhead','mob_tspine',1);
-  T('toes','mob_chain',1); T('hipflex','mob_hipflex',1); T('wall','mob_tspine',1); T('wall','mob_shoulder',0.5);
+  T('toes','mob_chain',1); T('hipflex','mob_hipflex',1);
   const po = p.posture||[];
   if(po.includes('head')){ add('mob_neck',2,'Kopf nach vorne'); add('mob_tspine',1,'Kopf nach vorne'); }
   return {n, why};

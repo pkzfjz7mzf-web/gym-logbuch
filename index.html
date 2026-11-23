@@ -306,6 +306,12 @@ details.cue p{margin:0 2px 12px;color:var(--muted)}
 .pw-d button{flex:1;min-width:0;height:40px;padding:0;text-align:center;border:0;border-radius:10px;background:var(--raised);box-shadow:inset 0 0 0 1px var(--line);font:600 13px/1 var(--f-body);color:var(--muted);cursor:pointer}
 .pw-d button.taken{color:var(--faint);background:var(--sunken)}
 .pw-d button.on{background:var(--fg);color:var(--bg);box-shadow:none}
+.ti{display:block;width:100%;max-width:260px;height:auto;margin:6px auto 0}
+.ti-b{stroke:var(--muted);stroke-linecap:round}
+.ti-g{stroke:var(--ok);stroke-linecap:round;stroke-dasharray:2 7}
+.ti-h{fill:var(--muted)}
+.ti-w{fill:var(--sunken)}
+.ti-f{stroke:var(--line-strong)}
 .bd{display:block;width:100%;max-width:340px;margin:4px auto 0;touch-action:manipulation}
 .bd-body circle,.bd-body rect{fill:var(--sunken)}
 .bd-body line{stroke:var(--sunken);stroke-linecap:round}
@@ -1752,6 +1758,7 @@ function viewHome(){
     h+='<section class="hero"><div class="hero-top"><div class="plate '+plateCls(act.type)+'">'+plateTxt(act.type)+'</div><div><h2>'+typeName(act.type)+' läuft</h2><div class="hero-sub">Gestartet '+fmtDate(act.date)+', '+new Date(act.startedAt).toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'})+' · '+d+' von '+n+' Sätzen</div></div></div><button class="btn pri block" data-a="resume">Weitertrainieren</button><div class="alt"><button class="link" data-a="discard">Einheit verwerfen</button></div></section>';
   } else {
     h+=lifeBanner()+agendaPrompt();
+    if(st.plan && st.profile && !Object.keys(st.profile.mobility||{}).length && !st.scrHide) h+='<div class="callout info">'+I.info+'<div><b>Plan verbessern:</b> Vier kurze Beweglichkeitstests zeigen, welche Übungen und welche Mobility zu dir passen. Rund 3 Minuten.<div class="row-links"><button class="link" data-a="scr-open">Jetzt testen</button><button class="link" data-a="scr-hide">Später</button></div></div></div>';
     const nt=nextType(), pv=buildSession(nt,{preview:true}), ag0=(agendaItems()||[])[0], when=ag0 && ag0.u===nt ? (ag0.d<t?'offen seit '+fmtDate(ag0.d):ag0.d===t?'geplant heute':'geplant '+fmtDate(ag0.d)) : 'Als Nächstes dran';
     const alts = planIds().filter(x=>x!==nt);
     h+='<section class="hero"><div class="hero-top"><div class="plate '+plateCls(nt)+'">'+plateTxt(nt)+'</div><div><h2>'+typeName(nt)+'</h2><div class="hero-sub">'+when+' · ca. '+estimateMin(pv)+' min</div></div></div>';
@@ -2260,6 +2267,7 @@ function viewSettings(){
     if(st.plan) h+='<button class="srow" style="width:100%;text-align:left" data-a="plan-open"><div class="tx"><b>Aktiver Plan: '+esc(planTitle(st.plan))+'</b><small>Ansehen, mit Begründung</small></div><span class="chev">'+I.chev+'</span></button>';
     else h+='<div class="srow"><div class="tx"><b>Aktiver Plan: Ganzkörper A/B</b><small>Zwei Ganzkörper-Einheiten im Wechsel</small></div></div>';
     h+='<button class="srow" style="width:100%;text-align:left" data-a="ob-start"><div class="tx"><b>Neuen Plan erstellen</b><small>'+(pr?'Profil vom '+fmtDate(pr.done)+(goal?' · Ziel '+esc(goal):'')+' · anpassen und neu planen':'Der Coach fragt Ziel, Zeit, Beschwerden und Beweglichkeit ab, rund 5 Minuten')+'</small></div><span class="chev">'+I.chev+'</span></button>';
+    if(pr) h+='<button class="srow" style="width:100%;text-align:left" data-a="scr-open"><div class="tx"><b>Plan verbessern: Beweglichkeit testen</b><small>'+(pr.mobDone?'Zuletzt am '+fmtDate(pr.mobDone)+' · ':(Object.keys(pr.mobility||{}).length?'':'Noch nicht getestet · '))+'4 Tests, rund 3 Minuten</small></div><span class="chev">'+I.chev+'</span></button>';
     if(st.plan) h+='<button class="srow" style="width:100%;text-align:left" data-a="plan-std"><div class="tx"><b>Zurück zu Ganzkörper A/B</b><small>Der Coach-Plan bleibt im Verlauf gespeichert</small></div><span class="chev">'+I.chev+'</span></button>';
     h+='</div></section>'; }
   const prow=key=>{ const it=planItemAny(key); if(!it) return ''; const cur=resolveEx(it), sw=cur!==it.ex; return '<button class="srow" style="width:100%;text-align:left" data-a="plan-swap" data-k="'+key+'"><div class="tx"><b>'+esc(EX[cur].name)+'</b><small>'+esc(GROUPS[it.group].label)+(sw?' · statt '+esc(EX[it.ex].name):'')+'</small></div><span class="chev">'+I.chev+'</span></button>'; };
@@ -2327,6 +2335,7 @@ function renderSheet(){
   else if(t==='brief') h=sheetBrief();
   else if(t==='backlog') h=sheetBacklog();
   else if(t==='move') h=sheetMove();
+  else if(t==='screen') h=sheetScreen();
   else if(t==='swap') h=sheetSwap();
   else if(t==='news') h=sheetNews();
   else if(t==='steps') h=sheetSteps();
@@ -2460,8 +2469,17 @@ const OB_TESTS = [
   ['squat','Tiefe Hocke','Füsse schulterbreit, ganz nach unten gehen. Die Fersen bleiben am Boden, du hältst dich nicht fest.'],
   ['overhead','Arme über Kopf','Rücken und Gesäss an die Wand. Gestreckte Arme nach oben führen, bis die Daumen die Wand berühren, ohne Hohlkreuz.'],
   ['toes','Finger zum Boden','Mit gestreckten Knien vorbeugen und den Boden mit den Fingerspitzen berühren.'],
-  ['hipflex','Hüftbeuger','Halber Kniestand, Becken aufrichten, Gesäss anspannen. Lässt sich die Hüfte nach vorne schieben, ohne ins Hohlkreuz zu fallen?'],
-  ['wall','Wand-Engel','Rücken, Gesäss und Hinterkopf an die Wand, Arme in U-Form. Liegen Ellbogen und Handrücken an der Wand an?']];
+  ['hipflex','Hüftbeuger','Rücklings an die Bettkante, Gesäss am Rand. Ein Knie mit beiden Händen zur Brust ziehen, das andere Bein hängt locker. Bleibt der Oberschenkel des hängenden Beins auf der Matratze? Danach Seite wechseln, die engere Seite zählt.']];
+/* Bilder zu den Tests: einfache Figuren, Zielposition grün gestrichelt. */
+function testImg(id){
+  const B='class="ti-b"', G='class="ti-g"', L=(x1,y1,x2,y2,w,c)=>'<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke-width="'+(w||10)+'" '+(c||B)+'/>', H=(x,y)=>'<circle cx="'+x+'" cy="'+y+'" r="11" class="ti-h"/>';
+  let g='';
+  if(id==='squat') g=H(118,42)+L(116,56,104,104,14)+L(104,104,148,112,12)+L(148,112,120,150,11)+L(120,150,140,150,8)+L(112,66,150,84,8)+L(150,84,160,72,7)+L(60,152,190,152,3,'class="ti-f"');
+  else if(id==='overhead') g='<rect x="62" y="10" width="8" height="150" class="ti-w"/>'+H(86,46)+L(82,60,82,112,14)+L(82,112,84,150,11)+L(82,66,72,14,8,G)+L(82,66,112,96,8)+L(60,152,190,152,3,'class="ti-f"');
+  else if(id==='toes') g=H(150,96)+L(140,90,98,60,14)+L(98,60,104,150,11)+L(134,92,140,140,8)+L(140,140,140,150,8,G)+L(60,152,190,152,3,'class="ti-f"');
+  else if(id==='hipflex') g='<rect x="10" y="94" width="130" height="16" rx="4" class="ti-w"/>'+H(26,82)+L(40,84,134,86,14)+L(134,86,110,56,11)+L(110,56,134,48,9)+L(78,80,106,60,7)+L(136,88,180,90,11,G)+L(180,90,182,140,9)+L(10,152,200,152,3,'class="ti-f"');
+  return '<svg class="ti" viewBox="0 0 210 160" aria-hidden="true">'+g+'</svg>';
+}
 /* Grundbewegungen: drei beobachtbare Stufen pro Bewegung (Index = Wert 0, 1, 2). */
 const OB_SKILL = [
   ['squat','Kniebeuge',['Noch nie mit Zusatzgewicht gemacht','Schon gemacht, aber ich komme nicht sauber tief oder bin unsicher','Mache ich regelmässig: tief, stabil, Fersen am Boden']],
@@ -2609,10 +2627,10 @@ function sheetOb(){
     h+=obHead('Trifft eines dieser Warnzeichen zu?', 'Taubheit oder Ausstrahlen in Arm oder Bein, Schmerz in Ruhe oder nachts, oder ein ärztliches Sportverbot.')+obOpts('redflag', [[false,'Nein, nichts davon'],[true,'Ja, mindestens eines']], p.redflag);
     if(p.redflag) h+='<div class="callout">'+I.info+'<div><b>Bitte zuerst abklären lassen.</b> Der Plan lässt die betroffenen Regionen ganz weg. Die App ersetzt keine Physio und keinen Arzt.</div></div>';
   } else if(id==='mobNow'){
-    h+=obHead('Hast du drei Minuten für fünf Beweglichkeitstests?', 'Du brauchst etwas Platz und eine Wand. Die Tests steuern, welche Übungen zu dir passen und welche Mobility du bekommst.')+obOpts('mobNow', [[true,'Ja, jetzt testen'],[false,'Später','Der Plan rechnet bis dahin vorsichtig mit eingeschränkter Beweglichkeit']], p.mobNow);
+    h+=obHead('Hast du drei Minuten für vier Beweglichkeitstests?', 'Du brauchst etwas Platz, eine Wand und ein Bett. Die Tests steuern, welche Übungen zu dir passen und welche Mobility du bekommst.')+obOpts('mobNow', [[true,'Ja, jetzt testen'],[false,'Später','Der Plan rechnet bis dahin vorsichtig mit eingeschränkter Beweglichkeit']], p.mobNow);
   } else if(k[0]==='mobility'){
     const t=OB_TESTS.find(x=>x[0]===k[1]), ti=OB_TESTS.indexOf(t);
-    h+=obHead('Test '+(ti+1)+' von '+OB_TESTS.length+': '+t[1], t[2])+obOpts(id, [[2,'Geht sauber'],[1,'Knapp oder nur mit Mühe'],[0,'Geht nicht']], p.mobility[k[1]]);
+    h+=obHead('Test '+(ti+1)+' von '+OB_TESTS.length+': '+t[1], t[2])+testImg(t[0])+obOpts(id, [[2,'Geht sauber'],[1,'Knapp oder nur mit Mühe'],[0,'Geht nicht']], p.mobility[k[1]]);
   } else if(id==='work'){
     h+=obHead('Wie sieht dein Arbeitsalltag aus?', 'Wer viel sitzt, bekommt feste Plätze für den oberen Rücken und die Hüftbeuger.')+obOpts('work', [['sit','Überwiegend sitzend'],['stand','Überwiegend stehend oder gehend'],['physical','Körperlich anstrengend']], p.work);
   } else if(id==='posture'){
@@ -2795,6 +2813,55 @@ function agendaChain(x){
     if(!moved) break;
   }
   agendaSort(ag);
+}
+/* =========================================================
+   Screening «Plan verbessern»: Beweglichkeitstests jederzeit nachholen oder wiederholen.
+   Danach wird der Plan mit dem neuen Profil neu berechnet und die Änderungen angezeigt.
+   Quellen der Tests: docs/coach/evidenz.md (Moran 2016, Perret 2001, González-de-la-Flor 2025).
+   ========================================================= */
+function screenOpen(){ const pr=state.settings.profile; if(!pr) return; state.scr={i:0, mob:Object.assign({}, pr.mobility||{}), fresh:{}}; openSheet('screen'); }
+function screenPlanDiff(a, b){
+  const out=[];
+  b.days.forEach((d,i)=>{ const o=a && a.days[i]; if(!o) return;
+    const ex=x=>{ const r=[]; x.blocks.forEach(bl=>bl.items.forEach(it=>r.push(it.ex))); return r; }, oe=ex(o), ne=ex(d);
+    const add=ne.filter(x=>!oe.includes(x)), rem=oe.filter(x=>!ne.includes(x));
+    if(add.length || rem.length) out.push('<b>'+esc(d.name)+':</b> '+(add.length?'neu '+add.map(x=>esc(EX[x].name)).join(', '):'')+(add.length&&rem.length?' · ':'')+(rem.length?'raus '+rem.map(x=>esc(EX[x].name)).join(', '):''));
+  });
+  return out;
+}
+function sheetScreen(){
+  const S=state.scr, pr=state.settings.profile; if(!S || !pr) return '';
+  if(S.i<OB_TESTS.length){
+    const t=OB_TESTS[S.i], v=S.fresh[t[0]];
+    let h='<div class="ob-top"><span class="ob-ch">Beweglichkeit</span><div class="ob-bars"><div class="ob-bar"><i style="width:'+Math.round((S.i+1)/OB_TESTS.length*100)+'%"></i></div></div></div>';
+    h+='<h2 id="sh-t">Test '+(S.i+1)+' von '+OB_TESTS.length+': '+t[1]+'</h2><p class="lead">'+t[2]+'</p>'+testImg(t[0]);
+    h+='<div class="opts">'+[[2,'Geht sauber'],[1,'Knapp oder nur mit Mühe'],[0,'Geht nicht']].map(o=>'<button class="opt'+(v===o[0]?' on':'')+'" data-a="scr-set" data-v="'+o[0]+'" aria-pressed="'+(v===o[0])+'"><span class="radio"></span><span class="tx"><b>'+o[1]+'</b></span></button>').join('')+'</div>';
+    if(S.mob[t[0]]!=null) h+='<p class="ob-sub">Letztes Mal: '+(['Geht nicht','Knapp','Geht sauber'][S.mob[t[0]]])+'</p>';
+    h+='<p class="ob-src">Selbsttest: Die Zuverlässigkeit dieser Tests ist mit geschulten Prüfern untersucht, allein ist das Ergebnis etwas unsicherer.</p>';
+    return h+'<div class="ob-nav">'+(S.i>0?'<button class="btn sec" data-a="scr-back">Zurück</button>':'<button class="btn sec" data-a="sheet-close">Abbrechen</button>')+'<button class="btn pri" data-a="scr-next"'+(v==null?' disabled':'')+'>'+(S.i===OB_TESTS.length-1?'Auswerten':'Weiter')+'</button></div>';
+  }
+  const prof=Object.assign({}, pr, {mobility:Object.assign({}, S.mob, S.fresh), mobNow:true}), old=state.settings.plan;
+  const pl=S.plan || (S.plan=COACH.buildPlan(obProfile(prof), EX, COACH_CAT)), diff=old ? screenPlanDiff(old, pl) : [];
+  const mw=pl.why.filter(w=>w.topic==='mobility').map(w=>'<li>'+esc(w.text)+'</li>').join('');
+  let h='<h2 id="sh-t">Auswertung</h2><p class="lead">'+OB_TESTS.map(t=>t[1]+': '+['geht nicht','knapp','sauber'][S.fresh[t[0]]]).join(' · ')+'</p>';
+  h+=diff.length ? '<div class="prose"><h3>Was sich im Plan ändert</h3><ul class="ob-why">'+diff.map(x=>'<li>'+x+'</li>').join('')+'</ul></div>' : '<div class="callout info">'+I.info+'<div>Die Übungen bleiben gleich. Angepasst werden höchstens die Mobility-Blöcke.</div></div>';
+  if(mw) h+='<div class="prose"><h3>Mobility</h3><ul class="ob-why">'+mw+'</ul></div>';
+  return h+'<div class="ob-nav"><button class="btn sec" data-a="scr-back">Zurück</button><button class="btn pri" data-a="scr-apply">'+(old?'Plan aktualisieren':'Speichern')+'</button></div>';
+}
+function screenAction(a, d){
+  const S=state.scr, st=state.settings; if(!S) return;
+  if(a==='scr-set'){ S.fresh[OB_TESTS[S.i][0]]=+d.v; S.plan=null; renderSheet(); return; }
+  if(a==='scr-next'){ if(S.fresh[OB_TESTS[S.i][0]]==null) return; S.i++; renderSheet(); const sh=document.querySelector('#sheet .sheet'); if(sh) sh.scrollTop=0; return; }
+  if(a==='scr-back'){ S.i=Math.max(0, S.i-1); renderSheet(); return; }
+  if(a==='scr-apply'){
+    st.profile.mobility=Object.assign({}, S.mob, S.fresh); st.profile.mobNow=true; st.profile.mobDone=todayStr();
+    if(st.plan && S.plan){
+      const old=st.plan, ag=st.agenda; const np=Object.assign({}, S.plan, {week:old.week, name:old.name});
+      if(!planActivate(np)) return;
+      if(ag){ ag.plan=String(st.plan.created||''); st.agenda=ag; }
+    }
+    Store.saveSettings(); state.scr=null; closeSheet(); render(); toast(st.plan?'Plan aktualisiert.':'Beweglichkeit gespeichert.');
+  }
 }
 function sheetMove(){
   const mv=state.mv||{}, x=agendaFind(mv.k);
@@ -3284,6 +3351,9 @@ function onClick(ev){
     case 'rir-fix': { const cs=curSession(); if(!cs) break; const i=cs.blocks.findIndex(b=>missingRir(b)>0); state.sheet=null; if(i>-1) setCur(cs,i); render(); if(i>-1) scrollToBlock(i); break; }
     case 'ob-start': obStart(); break;
     case 'pw-set': planWeekSet(d); break;
+    case 'scr-open': screenOpen(); break;
+    case 'scr-hide': state.settings.scrHide=true; Store.saveSettings(); render(); break;
+    case 'scr-set': case 'scr-next': case 'scr-back': case 'scr-apply': screenAction(a, d); break;
     case 'mv-open': case 'mv-back': case 'mv-day': case 'mv-force': case 'mv-chain': case 'mv-next': case 'mv-skip': moveAction(a, d); break;
     case 'ag-skip': { const x=agendaFind(d.k); if(x){ state.mv={k:d.k}; moveAction('mv-skip', d); } break; }
     case 'ag-backlog': { const x=agendaFind(d.k); if(x){ state.backlog={type:x.u, date:x.d}; openSheet('backlog'); } break; }

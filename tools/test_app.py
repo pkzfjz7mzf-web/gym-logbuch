@@ -170,6 +170,16 @@ with sync_playwright() as p:
     pg.evaluate("()=>{const k='gymlog.pwa.v1'; const d=JSON.parse(localStorage.getItem(k)); for(const id in d.sessions) if(d.sessions[id].status==='active') delete d.sessions[id]; localStorage.setItem(k, JSON.stringify(d));}")
     pg.reload(); pg.wait_for_timeout(700)
     if pg.is_visible('#ex-0-0') or not pg.query_selector('[data-a="tab"][data-v="settings"]'): pg.goto('http://127.0.0.1:8765/'); pg.wait_for_timeout(700)
+    # Screening «Plan verbessern»: vier Tests, Auswertung, Plan aktualisieren
+    pg.click('[data-a="tab"][data-v="settings"]'); pg.wait_for_timeout(150); pg.click('[data-a="scr-open"]'); pg.wait_for_timeout(150)
+    ok('Screening: Test 1 mit Bild, Weiter gesperrt', pg.is_visible('#sheet svg.ti') and pg.is_disabled('#sheet [data-a="scr-next"]'))
+    for v in ['0','2','0','2']:
+        pg.click('#sheet [data-a="scr-set"][data-v="%s"]' % v); pg.wait_for_timeout(60); pg.click('#sheet [data-a="scr-next"]'); pg.wait_for_timeout(80)
+    ok('Screening: Auswertung zeigt Änderungen oder Mobility', 'auswertung' in pg.inner_text('#sheet').lower() and pg.is_visible('#sheet [data-a="scr-apply"]'))
+    pg.click('#sheet [data-a="scr-apply"]'); pg.wait_for_timeout(300)
+    sm=pg.evaluate("()=>{ const st=JSON.parse(localStorage.getItem('gymlog.pwa.v1')).settings; return {m:st.profile.mobility, ag:!!st.agenda && st.agenda.plan===String(st.plan.created)} }")
+    ok('Screening gespeichert, Plan aktualisiert, Agenda bleibt', sm['m']=={'squat':0,'overhead':2,'toes':0,'hipflex':2} and sm['ag'])
+    pg.click('[data-a="tab"][data-v="home"]'); pg.wait_for_timeout(200)
     # Agenda: geplante Tage, Nachfrage bei Offenem, Verschieben mit Erholungscheck
     G="const {state,render,todayStr,addDays,parseYmd,dayDiff,officialDays,agendaExtend,planIds,blocksMuscles,PLANS}=window.__gl;"
     ev=lambda js, arg=None: pg.evaluate("(A)=>{ "+G+" return (()=>{ "+js+" })(); }", arg)

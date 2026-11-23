@@ -196,6 +196,23 @@ Aarons Präzisierung: Das Vorgehen wird aus Studien abgeleitet, nicht nachträgl
 | Rückkehr nach Krankheit: 2 Sätze, 3–4 Reserve | Abgeleitet: Konsens empfiehlt eine erste Belastung mit 60–70 % der normalen (Schwellnus 2022). 2 statt 3 Sätze = 67 % Umfang, mehr Reserve senkt die Intensität. Danach normal, wenn keine Warnzeichen | bleibt, Warnzeichen im Hinweis |
 | «Hals-Regel» | Expertenmeinung laut Konsens | als solche benannt, keine Regel mehr |
 
+## Beweglichkeitstests (23.11., N6)
+### Quellen
+- **Moran 2016:** Moran RW, Schneiders AG, Major KM, Sullivan SJ. How reliable are Functional Movement Screening scores? Br J Sports Med. 2016;50(9):527–536. Tiefe Hocke: Zuverlässigkeit zwischen Prüfern akzeptabel (κ ≥ 0.4, mittlere Evidenz). Abstract.
+- **Perret 2001:** Validity, reliability, and responsiveness of the fingertip-to-floor test. Arch Phys Med Rehabil. 2001. ICC 0.99, Korrelation −0.96 mit Röntgen der Rumpfbeugung. Misst das Vorbeugen insgesamt, nicht die Hamstrings allein. Abstract.
+- **González-de-la-Flor 2025:** Reliability of physical examination tests for assessing hip flexor flexibility. PM&R. doi:10.1002/pmrj.70062. Thomas-Test und Varianten: insgesamt hohe Zuverlässigkeit, Protokolle uneinheitlich. Abstract.
+- **Schulterbeugung, Fotomessung:** Int J Environ Res Public Health. 2022;19(21):14442. Intra 0.76–0.86, inter 0.75. Volltext teilweise.
+
+### Ergebnis
+| Test | Ergebnis | Im Code |
+|---|---|---|
+| Tiefe Hocke | Belegt mit Prüfer (Moran 2016) | bleibt |
+| Finger zum Boden | Belegt (Perret 2001). Misst Rumpf und Hüfte zusammen. Dass er die Auswahl beim Kreuzheben steuert, ist abgeleitet | bleibt |
+| Hüftbeuger im Kniestand | Nicht untersucht | ersetzt durch Thomas-Test auf der Bettkante (González-de-la-Flor 2025) |
+| Wand-Engel | Keine Quelle gefunden, doppelt mit «Arme über Kopf» | entfernt (Engine, Katalog: Frontkniebeuge braucht nur noch die Hocke) |
+| Arme über Kopf an der Wand | Schulterbeugung zuverlässig messbar (Foto), die Wand-Variante nicht validiert. Abgeleitet: prüft genau den Bewegungsumfang der Überkopf-Übungen | bleibt, so beschrieben |
+| Selbsttest statt Prüfer | Alle Zuverlässigkeitsdaten stammen von Prüfern. Allein ist das Ergebnis unsicherer | Hinweis im Screening |
+
 ## Noch offen nach dem Audit
 1. Volle Nuzzo-Tabelle (übungsspezifische Kurven) für den Krafttest N5.
 2. Statisches Dehnen direkt vor dem Krafttraining (akute Wirkung auf die Kraft): nicht geprüft. Der Gym-Block bevorzugt dynamische Übungen, diese Wahl ist noch ohne Quelle.

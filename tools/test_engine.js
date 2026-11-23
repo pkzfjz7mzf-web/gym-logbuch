@@ -6,7 +6,7 @@ const EX = grab('EX'), PLANS = grab('PLANS'), WARMUP = grab('WARMUP');
 let fail = 0; const ok = (name, cond, info) => { console.log((cond?'OK   ':'FEHLER ')+name+(cond||!info?'':' → '+info)); if(!cond) fail++; };
 const items = pl => [].concat(...pl.days.map(d => [].concat(...d.blocks.map(b => b.items.map(it => Object.assign({day:d.name}, it))))));
 const ids = pl => items(pl).map(i => i.ex);
-const full = {squat:2, overhead:2, toes:2, hipflex:2, wall:2}, sure = {squat:2, hinge:2, push:2, pull:2};
+const full = {squat:2, overhead:2, toes:2, hipflex:2}, sure = {squat:2, hinge:2, push:2, pull:2};
 
 const P = {
   aaron:   {goal:'fitness', years:4, days:2, minutes:60, equip:'gym', sports:[{kind:'run',perWeek:2,hours:1.5},{kind:'padel',perWeek:1,hours:1.5}], priority:'both', work:'sit', posture:['kyphosis','lordosis'], mobility:full, skill:sure},
@@ -74,7 +74,7 @@ for(const name in P){
   ok('Aaron: Mobility deckt Brustwirbelsäule und Hüftbeuger ab (Rundrücken, Hohlkreuz, sitzend)', m.every(x => x.includes('mob_tspine') && x.includes('mob_hipflex')), JSON.stringify(m));
   ok('Aaron: Routine für freie Tage mit Brustwirbelsäule, Hüftbeuger, Schulter', ['mob_tspine','mob_hipflex','mob_shoulder'].every(k => pl.routine.blocks[0].items.some(i => CATALOG[i.ex].pattern===k)) && pl.routine.minutes>=5 && pl.routine.minutes<=14, pl.routine.minutes+' min');
   ok('Haltung: Rundrücken bekommt Kräftigung mit Quelle, Hohlkreuz keine Sonderregel', pl.why.some(w => /González-Gálvez/.test(w.text) && /Rundrücken/.test(w.text)) && pl.why.some(w => w.topic==='haltung' && /Hohlkreuz/.test(w.text)));
-  const tight = E.buildPlan({days:4, minutes:60, years:3, mobility:{squat:0, overhead:2, toes:0, hipflex:2, wall:2}}, EX, CATALOG);
+  const tight = E.buildPlan({days:4, minutes:60, years:3, mobility:{squat:0, overhead:2, toes:0, hipflex:2}}, EX, CATALOG);
   const leg = tight.days.find(d => /Unterkörper/.test(d.name)).blocks[0].items.map(i => CATALOG[i.ex].pattern), up = tight.days.find(d => /Oberkörper/.test(d.name)).blocks[0].items.map(i => CATALOG[i.ex].pattern);
   ok('Hocke und Zehen «geht nicht»: Beintag mit Sprunggelenk, Hüfte, hinterer Kette', ['mob_ankle','mob_hip','mob_chain'].every(k => leg.includes(k)), leg.join(','));
   ok('Oberkörpertag: Mobility für Brustwirbelsäule oder Schulter', up.some(k => k==='mob_tspine' || k==='mob_shoulder'), up.join(','));

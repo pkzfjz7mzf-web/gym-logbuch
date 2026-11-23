@@ -17,7 +17,7 @@
 (function(root){
 const ROWS = {
   goblet:     ['squat',1,'squat1','deepknee','knee hip',1],
-  frontsq:    ['squat',3,'squat2 wall1','deepknee axial','knee hip lowback wrist',1],
+  frontsq:    ['squat',3,'squat2','deepknee axial','knee hip lowback wrist',1],
   legpress:   ['squat',1,'','deepknee','knee hip',1],
   hacksquat:  ['squat',1,'squat1','deepknee','knee hip',1],
   rdl:        ['hinge',2,'toes1','bend','lowback hams',1],
@@ -123,7 +123,7 @@ const ROWS = {
   inchworm:   ['mob_chain',1,'','wrist bend','',0]
 };
 const PATTERNS = ['squat','hinge','single','hpush','vpush','hpull','vpull','glute','kneeflex','kneeext','lateral','abduct','rear','latiso','chestiso','deltiso','biceps','triceps','antiext','antirot','coreflex','mob_tspine','mob_shoulder','mob_neck','mob_hipflex','mob_hip','mob_ankle','mob_chain'];
-const TESTS = ['squat','overhead','toes','hipflex','wall'];
+const TESTS = ['squat','overhead','toes','hipflex'];
 const TRIGGERS = ['deepknee','overhead','rotation','bend','axial','pull','pushdeep','kneel','wrist'];
 const REGIONS = ['knee','hip','lowback','shoulder','elbow','wrist','hams','adductors'];
 const words = s => s ? s.split(' ') : [];

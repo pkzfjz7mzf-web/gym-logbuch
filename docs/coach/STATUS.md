@@ -9,6 +9,7 @@ Letzte Aktualisierung: 23.11.2026
 - SQL für die 21 Mobility-Übungen an Aaron geben.
 
 ## Fertig
+- N6 Screening (1.5 Test 25, 23.11.): `sheetScreen`, `screenAction`, `screenOpen`, Bilder `testImg`. Einstieg in den Einstellungen («Plan verbessern») und als Karte auf der Startseite, solange nie getestet (`scrHide`). Auswertung zeigt Änderungen pro Einheit (`screenPlanDiff`), «Plan aktualisieren» behält Wochentage und Agenda. Wand-Engel entfernt, Hüftbeuger = Thomas-Test. `test_app.py` 57 OK.
 - Ferien und Krankheit geprüft (1.5 Test 24, 23.11.): Texte nach Spiering 2021, Ogasawara 2013, Chen 2012, Schwellnus 2022 (IOC), Weidner 1998. Leichte Erkältung ohne +1 RIR, Warnzeichen ergänzt. Ableitungen in evidenz.md.
 - N5 Krafttest (1.5 Test 22, 23.11.): `testEligible`, `testPanel`, `testRate`, `testFinish`, `testUndo`, Modus `find.mode='test'` mit `phase` approach/test. Ableitung in evidenz.md. Probe-Tests in `test_app.py` laufen für Block 1+ im alten Modus. CHANGELOG 1.5 neu geschrieben. `test_app.py` 54 OK.
 - Verschieben und Verpasstes (1.5 Test 21, 23.11., Aarons Vorgabe in konzept.md Abschnitt 13): Agenda-Modul (`agendaSync`, `agendaExtend`, `agendaDone`, `sheetMove`, `moveAction`, `agendaPrompt`), Erholungscheck nach Sousa 2024, Belcher 2019, Morán-Navarro 2017, Pareja-Blanco 2019, Yang 2018. Wochenübersicht und «Als Nächstes» aus der Agenda. Texte «Einheit verschieben» ohne die alten 48-h-Regeln. Testzugang `window.__gl` nur auf 127.0.0.1. `test_app.py` 51 OK.
@@ -35,7 +36,7 @@ Letzte Aktualisierung: 23.11.2026
 
 ## Als Nächstes
 **Neu priorisiert am 11.11. abends, siehe konzept.md Abschnitt 12.** Aaron ist mit dem Onboarding unzufrieden («Ein Coach würde nicht vorschlagen, sondern die Bedürfnisse abfragen») und hat eine Referenz-App aufgenommen. Aaron hat am 12.11. mit «weiter» freigegeben. N1 und N2 sind fertig, weiter mit N3.
-0. **Als Nächstes N6 Screening (Beweglichkeitstests als eigene Karte «Plan verbessern», mit Bild pro Test). Check vor der Einheit: Schmerz auf 0–10 angleichen.**
+0. **Pakete N1–N6 fertig. Offen: Check vor der Einheit Schmerz auf 0–10 angleichen; danach Katalog erweitern (Waden, Körpergewicht, Arme getrennt), Erklärungen in drei Teilen, Animation. Vor Release: Aarons Freigabe, Release-Schritte oben.**
 1. P5b Rest: Gewicht finden mit Schätzung aus verwandten Übungen (konzept.md Abschnitt 9). Heute startet eine neue Übung mit festem `FIND_START` oder 50 % des früheren Gewichts. Neu: Startwert aus dem e1RM einer Übung desselben Musters mal Verhältnis, minus 10–15 %. Dafür Verhältnis-Tabelle pro Muster in `coach/engine.js` und Aufruf in `findPlan()`.
 2. P6 Katalog erweitern: Waden, Körpergewichtsübungen (Kniebeuge, Liegestütz-Varianten, Ziehen ohne Stange), Bizeps und Trizeps als eigene Muskeln statt `arms`. Danach Reise-Modus «ohne Geräte» ergänzen (heute nur Hotel-Gym und Pause).
 3. P7 Erklärungen pro Übung in drei Teilen (Aufbau, Ausführung, häufige Fehler) statt einem `cue`. P8 Animation Prototyp mit 2–3 Übungen, Aaron entscheidet über Qualität.
