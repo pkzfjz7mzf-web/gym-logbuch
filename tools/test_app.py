@@ -57,7 +57,6 @@ with sync_playwright() as p:
     db=json.loads(pg.evaluate("localStorage.getItem('mockdb')"))
     sid=list(db['sessions'].keys())
     e0=db['sessions'][sid[0]]['blocks'][0]['items'][0]
-    ok('Name und Muster der Übung in der Einheit gespeichert', e0.get('n')=='Goblet Squat' and e0.get('mu')=='Kniebeuge')
     ok('Einheit in Datenbank gespeichert, Testschritte separat', len(sid)==1 and e0['sets'][0]['done'] and e0['sets'][0].get('probe') and len(e0['find']['steps'])==2 and e0['find'].get('e1rm'))
     te=pg.evaluate("()=>{ const T=window.__gl.testEligible, P={settings:{profile:{skill:{squat:2}, issues:[]}}}; return {ok:T('goblet',P).ok, sore:T('goblet',Object.assign({check:{sore:['front'],pain:[]}},P)).ok, issue:T('goblet',{settings:{profile:{issues:[{region:'knee'}]}}}).ok, skill0:T('goblet',{settings:{profile:{skill:{squat:0}}}}).ok, nordic:T('nordic',P).ok}; }")
     ok('Kein Krafttest bei Muskelkater, Beschwerden, neuer Technik und Nordics', te['ok'] and not te['sore'] and not te['issue'] and not te['skill0'] and not te['nordic'])
