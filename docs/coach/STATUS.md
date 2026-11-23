@@ -6,6 +6,7 @@ Letzte Aktualisierung: 23.11.2026
 
 ## Release 1.5: Schritte beim Live-Gang
 - **1.5 live seit 23.11.2026 (`a78e088`).** Standardplan A/B ist noch drin (Rückfall, falls kein Coach-Plan): `tools/test_app.py` baut fast komplett auf Einheit A auf, das Entfernen kommt mit 1.6 zusammen mit dem Umbau der Tests. 17 Übungen ohne Quelle bleiben ausgemustert (Aaron: «ohne die 17 gehen»).
+- **1.6 live seit 23.11.2026 abends (`9e5e439`):** Standardplan A/B entfernt, Heimroutine ohne Hamstring Slides (Glute Bridge einbeinig und Nordics). Gewichtsschätzung aus verwandten Übungen nicht umgesetzt, keine Quellen für die Verhältnisse (evidenz.md), Aaron informiert.
 - **1.6 Test 1 (23.11.): Standardplan A/B entfernt.** `STD_PLANS` nur noch für die Anzeige alter Einheiten, ohne Coach-Plan zeigt die Startseite «Noch kein Plan» mit «Plan erstellen» und der Heimroutine. Kein Rückweg zu A/B, Einstellungen-Abschnitt «In beiden Einheiten» entfernt. `test_app.py` setzt nach dem Login den früheren A/B-Plan per `__gl.planActivate(standardPlan(...))`, 62 OK. Offen: Heimroutine `H` enthält noch Hamstring Slides (ausgemustert).
 - Kein SQL nötig: Die Tabelle `exercises` wird nicht mehr nachgeführt (Aarons Grundsatz in CLAUDE.md).
 
@@ -45,7 +46,7 @@ Letzte Aktualisierung: 23.11.2026
 ## Als Nächstes
 **Neu priorisiert am 11.11. abends, siehe konzept.md Abschnitt 12.** Aaron ist mit dem Onboarding unzufrieden («Ein Coach würde nicht vorschlagen, sondern die Bedürfnisse abfragen») und hat eine Referenz-App aufgenommen. Aaron hat am 12.11. mit «weiter» freigegeben. N1 und N2 sind fertig, weiter mit N3.
 0. **Pakete N1–N6 fertig. Offen: Erklärungen in drei Teilen, Animation. Vor Release: Aarons Freigabe, Release-Schritte oben.**
-1. P5b Rest: Gewicht finden mit Schätzung aus verwandten Übungen (konzept.md Abschnitt 9). Heute startet eine neue Übung mit festem `FIND_START` oder 50 % des früheren Gewichts. Neu: Startwert aus dem e1RM einer Übung desselben Musters mal Verhältnis, minus 10–15 %. Dafür Verhältnis-Tabelle pro Muster in `coach/engine.js` und Aufruf in `findPlan()`.
+1. ~~P5b Rest: Gewicht finden mit Schätzung aus verwandten Übungen~~ (23.11.: mangels Quellen nicht umgesetzt, siehe evidenz.md) (konzept.md Abschnitt 9). Heute startet eine neue Übung mit festem `FIND_START` oder 50 % des früheren Gewichts. Neu: Startwert aus dem e1RM einer Übung desselben Musters mal Verhältnis, minus 10–15 %. Dafür Verhältnis-Tabelle pro Muster in `coach/engine.js` und Aufruf in `findPlan()`.
 2. P6 Katalog erweitern: Waden, Körpergewichtsübungen (Kniebeuge, Liegestütz-Varianten, Ziehen ohne Stange), Bizeps und Trizeps als eigene Muskeln statt `arms`. Danach Reise-Modus «ohne Geräte» ergänzen (heute nur Hotel-Gym und Pause).
 3. P7 Erklärungen pro Übung in drei Teilen (Aufbau, Ausführung, häufige Fehler) statt einem `cue`. P8 Animation Prototyp mit 2–3 Übungen, Aaron entscheidet über Qualität.
 4. Politur: Mobility-Übungen nicht in Statistik und Briefing-Volumen mitzählen. Phasen-Chips auf der Startseite sind auf Aarons Z10 gemünzt.
