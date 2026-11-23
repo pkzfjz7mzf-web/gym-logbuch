@@ -18,6 +18,7 @@ const SRC = {
   haroy: 'Harøy et al. (2017): Copenhagen Adduction Exercise im FIFA 11+, randomisierte Studie. American Journal of Sports Medicine 45',
   hkbaechle: 'Baechle, Earle, Weight Training, 5. Aufl., Human Kinetics (Auszug)',
   hkboyle: 'Boyle, New Functional Training for Sports, Human Kinetics (Auszug Overhead Pressing)',
+  hkvanasten: 'van Asten, Complete Conditioning for Hockey, Human Kinetics (Auszug)',
   asca: 'Snarr, Esco (2013): Exercise Technique: Inverted Row. Journal of Australian Strength and Conditioning 21(4)',
   nscaptq: 'Lincoln, Ill, Ibrahim (2023): Progressive Strategies for Teaching Fundamental Resistance Training Movement Patterns. NSCA Personal Training Quarterly 10(2)'
 };
@@ -326,6 +327,21 @@ const EXPLAIN = {
     'In jeder Hand eine Kurzhantel im neutralen Griff, Daumen nach vorne, Arme gestreckt seitlich. Schrittstellung, Bauch fest, Schultern nach hinten-unten, Kopf in Linie mit der Wirbelsäule.',
     'Ausatmen und einen oder beide Ellbogen beugen, die Hanteln Richtung vordere Schulter führen. Oberkörper aufrecht, die Ellbogen wandern nicht nach vorne, Handgelenke gerade, Schultern nicht hochziehen. Einatmen und langsam absenken, bis die Arme gestreckt sind.',
     ['Ellbogen wandern nach vorne: seitlich am Körper lassen.', 'Schultern ziehen hoch: unten lassen.', 'Handgelenke knicken: gerade halten.'],
+    ['ace']],
+  splitsq: [
+    'Schrittstellung: die Ferse des vorderen Fusses etwa 1 m vor dem hinteren Fuss, die Füsse etwa schulterbreit nebeneinander. In jeder Hand eine Kurzhantel seitlich. Bauch fest, die Wirbelsäule bleibt ruhig.',
+    'Das hintere Knie Richtung Boden senken und kurz vor dem Boden stoppen. Unten eine sportliche Position: das vordere Schienbein leicht nach vorne geneigt, der grösste Teil des Gewichts auf dem vorderen Bein. Zurück nach oben. Alle Wiederholungen, dann Seite wechseln.',
+    ['Vorderes Knie fällt nach innen: Knie nach aussen drücken.', 'Oberkörper kippt nach vorne: Bauch fest, notfalls weniger Gewicht.'],
+    ['hkvanasten']],
+  glutebridge: [
+    'Rückenlage, Knie gebeugt, Füsse flach am Boden und hüftbreit. Arme seitlich, Handflächen nach unten.',
+    'Bauch anspannen, die Füsse stehen unter den Knien. Gesäss anspannen und über die Füsse die Hüfte nach oben drücken, bis Knie, Hüfte und Schultern eine Linie bilden. Kontrolliert absenken, das Gesäss bleibt dabei angespannt.',
+    ['Arbeit kommt aus Hamstrings oder unterem Rücken: bewusst das Gesäss anspannen.', 'Hüfte sackt oben ab: Linie Knie–Hüfte–Schulter halten.', 'Hohlkreuz oben: nicht höher als die Linie.', 'Ruckartig: gleichmässig.', 'Hüfte zu wenig hoch: bis zur geraden Linie.'],
+    ['nasm']],
+  cablelat: [
+    'Kabelzug etwa auf Hüfthöhe mit einem Einzelgriff. Seitlich zum Gerät stehen und den Griff mit der Hand weg vom Gerät fassen, das Kabel läuft vor dem Körper.',
+    'Brust hoch, Hüfte gestreckt, die Füsse in den Boden drücken. Den Arm seitlich vom Körper weg heben, bis er waagrecht ist. Eine Sekunde halten, dann langsam zurück. Danach Seite wechseln.',
+    ['Oberkörper lehnt sich weg oder dreht: Brust hoch, ruhig stehen.', 'Arm schnellt zurück: langsam absenken.'],
     ['ace']]
 };
 const api = {EXPLAIN, SRC};
