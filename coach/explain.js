@@ -7,10 +7,12 @@
 (function(root){
 const SRC = {
   nsca: 'NSCA, Exercise Technique Manual for Resistance Training, 3. Aufl. (Auszug Kinetic Select)',
+  nsca4: 'NSCA, Exercise Technique Manual for Resistance Training, 4. Aufl. (Auszug Human Kinetics)',
   nscab: 'NSCA, Basics of Strength and Conditioning Manual (Sands, Wurth, Hewit 2012)',
   nasm: 'NASM (Exercise Library und Fachblog)',
   ace: 'ACE (Exercise Library und Fachartikel)',
-  hkbrown: 'Brown, Lower Body Training, Human Kinetics (Auszug)'
+  hkbrown: 'Brown, Lower Body Training, Human Kinetics (Auszug)',
+  nscaptq: 'Lincoln, Ill, Ibrahim (2023): Progressive Strategies for Teaching Fundamental Resistance Training Movement Patterns. NSCA Personal Training Quarterly 10(2)'
 };
 const EXPLAIN = {
   goblet: [
@@ -112,7 +114,52 @@ const EXPLAIN = {
     'Langhantel im Obergriff, Handgelenke, Ellbogen und Schultern in einer Linie. Die Stange aus dem Ständer oder vom Boden über die Knie heben und aufrichten.',
     'Aus der Hüfte nach vorne beugen, Knie leicht gebeugt, Rücken flach, der Oberkörper etwa waagrecht. Die Arme hängen gestreckt. Die Schulterblätter zusammenziehen und die Stange Richtung Bauchnabel ziehen, der Rücken bleibt flach. Langsam zurück in die Ausgangslage.',
     ['Rücken rundet: Rücken flach halten, notfalls weniger Gewicht.', 'Schwung aus dem Oberkörper: Oberkörperwinkel bleibt gleich.'],
-    ['ace','nscab']]
+    ['ace','nscab']],
+  curl: [
+    'Stehend mit hüftbreiten Füssen oder sitzend mit dem Rücken an der Lehne. In jeder Hand eine Kurzhantel, Arme gestreckt, Handflächen nach vorne. Schulterblätter nach hinten-unten, Bauch fest, Handgelenke gerade.',
+    'Ausatmen und beide Ellbogen beugen, die Hanteln Richtung Schultern führen. Die Ellbogen bleiben seitlich am Körper, die Brust bleibt ruhig, nur die Arme arbeiten. Einatmen und langsam zurück, bis die Arme gestreckt sind.',
+    ['Schwung aus dem Oberkörper oder Hohlkreuz: ruhig stehen oder sitzen, weniger Gewicht.', 'Ellbogen wandern nach vorne: seitlich am Körper lassen.', 'Schultern rollen nach vorne oder ziehen hoch: Schultern hinten-unten.', 'Handgelenke knicken: gerade halten.'],
+    ['ace','nscab']],
+  pushup: [
+    'Liegestützposition: Hände etwas breiter als schulterbreit unter den Schultern, Füsse zusammen oder hüftbreit. Kopf, Rumpf und Fersen in einer Linie, Wirbelsäule neutral.',
+    'Bauch fest. Die Ellbogen beugen, sie zeigen etwa 45° vom Körper weg, und absenken, bis die Brust fast den Boden berührt. Der Körper bleibt starr wie ein Brett. Wieder hochdrücken, die Ellbogen oben nicht ganz durchstrecken.',
+    ['Hüfte sackt durch: Bauch fest, Linie halten.', 'Ellbogen weit nach aussen: etwa 45° vom Körper.', 'Nur halbe Bewegung: bis die Brust fast am Boden ist.', 'Ruckartig: gleichmässig.', 'Zu schwer: Hände erhöht abstützen, zum Beispiel auf einer Bank.'],
+    ['nasm','nscaptq']],
+  seatedpress: [
+    'Auf einer Bank mit Rückenlehne sitzen, Gesäss und Rücken an der Lehne, Füsse flach am Boden. In jeder Hand eine Kurzhantel auf Schulterhöhe, Handflächen nach vorne, Handgelenke gerade, Unterarme senkrecht. Bauch fest, Schulterblätter nach hinten-unten.',
+    'Ausatmen und die Hanteln senkrecht nach oben drücken, bis die Arme gestreckt sind. Der Körper bleibt an der Lehne. Einatmen und die Hanteln langsam und kontrolliert zurück auf Schulterhöhe führen.',
+    ['Hohlkreuz beim Drücken: Bauch fest, Rücken an der Lehne.', 'Hanteln fallen nach unten: aktiv und langsam absenken.', 'Unterarme schräg: senkrecht unter den Hanteln.'],
+    ['ace','nscaptq']],
+  machpress: [
+    'Rücken an der Lehne. Sitz so einstellen, dass die Griffe auf oder knapp über Schulterhöhe sind. Griffe fest fassen, Handgelenke gerade, Füsse flach am Boden oder auf den Fussstützen. Bauch fest, Schulterblätter nach hinten-unten.',
+    'Ausatmen und die Griffe kontrolliert nach oben drücken, der Kopf bleibt in Linie mit der Wirbelsäule. Arme strecken, ohne die Ellbogen durchzudrücken. Kurz halten, dann kontrolliert zurück in die Ausgangslage.',
+    ['Hohlkreuz beim Drücken: Bauch fest.', 'Ellbogen oben durchgedrückt: kurz vorher stoppen.', 'Griffe fallen zurück: kontrolliert absenken.'],
+    ['ace']],
+  dbrow: [
+    'Eine Kurzhantel in einer Hand. Vorbeugen und das gegenüberliegende Knie und die Hand auf einer Bank abstützen. Rücken flach, Kopf in Linie mit der Wirbelsäule. Schulterblätter nach hinten-unten, ohne ins Hohlkreuz zu gehen. Der Arm mit der Hantel hängt gestreckt zum Boden, der Oberkörper dreht nicht und die Schulter sinkt nicht ab.',
+    'Ausatmen und die Hantel langsam hochziehen, der Ellbogen beugt sich und der Oberarm geht nach hinten, nah am Körper. So hoch, wie es ohne Aufdrehen des Oberkörpers geht. Einatmen und zurück in die Ausgangslage, Rücken bleibt flach.',
+    ['Oberkörper dreht auf: nur so hoch ziehen, wie der Oberkörper ruhig bleibt.', 'Rücken rundet oder Hohlkreuz: Rücken flach halten.', 'Arm weit vom Körper: Ellbogen nah am Körper führen.'],
+    ['ace']],
+  nordic: [
+    'Auf einer weichen Unterlage knien, Zehen aufgestellt. Ein Partner oder ein fixes Gerät hält Knöchel und Unterschenkel fest. Oberkörper aufrecht, Hüfte gestreckt, Gesäss angespannt: Ohr, Hüfte und Knie in einer Linie. Schultern zurück, Arme seitlich oder auf den Oberschenkeln.',
+    'Bauch fest. Die Knie strecken sich und der Körper fällt langsam nach vorne, die Hamstrings bremsen den Fall. Die Linie Ohr–Hüfte–Knie bleibt. Kurz vor dem Boden mit den Händen abfangen wie unten bei einem Liegestütz und etwa 5 cm über dem Boden stoppen. Mit den Händen zurückdrücken und gleichzeitig mit den Hamstrings den Oberkörper zurück in die Ausgangslage ziehen.',
+    ['Hüfte knickt ein: Gesäss anspannen, Linie Ohr–Hüfte–Knie halten.', 'Schnell nach vorne fallen: so langsam wie möglich bremsen.'],
+    ['nsca4']],
+  dbrdl: [
+    'Füsse hüftbreit, in jeder Hand eine Kurzhantel, Arme gestreckt seitlich oder vor den Oberschenkeln. Bauch fest, Schultern nach hinten-unten, Wirbelsäule neutral, Knie leicht gebeugt.',
+    'Hüfte nach hinten schieben, der Rücken bleibt neutral und die Knie gleich leicht gebeugt. Absenken, bis die Hamstrings deutlich dehnen, meist etwa auf Höhe der Mitte des Schienbeins oder etwas darüber. Hüfte nach vorne bringen und aufrichten, die Wirbelsäule bleibt neutral.',
+    ['Unterer Rücken rundet: weniger tief, notfalls weniger Gewicht.', 'Knie beugen sich immer mehr, es wird eine Kniebeuge: Knie fix lassen, Hüfte nach hinten.', 'Ruckartig oder mit Schwung: gleichmässig.', 'Zu schwere Hanteln: nur so viel, wie der Rücken neutral bleibt.'],
+    ['nasm']],
+  ballcurl: [
+    'Rückenlage, Unterschenkel und Fersen auf dem Ball, Füsse etwa hüftbreit, Zehen zeigen nach oben. Bauch leicht anspannen, Arme seitlich am Boden, Handflächen nach unten.',
+    'Ausatmen, Gesäss anspannen und die Hüfte anheben, bis Oberkörper und Beine eine gerade Linie bilden. Nicht höher, sonst entsteht ein Hohlkreuz. Dann mit den Hamstrings den Ball langsam zur Hüfte ziehen, die Hüfte bleibt oben. Einatmen und langsam zurückrollen.',
+    ['Hohlkreuz beim Anheben: Hüfte nur bis zur geraden Linie, Bauch fest.', 'Hüfte sinkt beim Ziehen ab: Gesäss anspannen, Hüfte oben lassen.'],
+    ['ace']],
+  latlunge: [
+    'Füsse hüftbreit, ohne Gewicht oder mit einer Kurzhantel in jeder Hand, Handflächen zueinander.',
+    'Einen grossen Schritt direkt zur Seite. Der Fuss setzt parallel zum anderen auf. Die Hüfte auf dieser Seite nach hinten schieben und mit beiden Händen links und rechts am Bein Richtung Fuss greifen. Zum Aufstehen den Fuss in den Boden drücken und den Körper mit der Innenseite des anderen Beins zurück zur Mitte ziehen.',
+    ['Fuss dreht beim Aufsetzen nach aussen: parallel zum anderen Fuss aufsetzen.', 'Oberkörper fällt nach vorne statt Hüfte nach hinten: Hüfte nach hinten schieben.'],
+    ['ace']]
 };
 const api = {EXPLAIN, SRC};
 if(typeof module !== 'undefined' && module.exports) module.exports = api; else root.COACH_EXPLAIN = api;
