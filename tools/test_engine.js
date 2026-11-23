@@ -2,7 +2,7 @@
 const {grab} = require('./extract.js');
 const {CATALOG} = require('../coach/catalog.js');
 const E = require('../coach/engine.js');
-const EX = grab('EX'), PLANS = grab('PLANS'), WARMUP = grab('WARMUP');
+const EX = grab('EX'), PLANS = grab('STD_PLANS'), WARMUP = grab('WARMUP');
 let fail = 0; const ok = (name, cond, info) => { console.log((cond?'OK   ':'FEHLER ')+name+(cond||!info?'':' → '+info)); if(!cond) fail++; };
 const items = pl => [].concat(...pl.days.map(d => [].concat(...d.blocks.map(b => b.items.map(it => Object.assign({day:d.name}, it))))));
 const ids = pl => items(pl).map(i => i.ex);

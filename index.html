@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
 <title>Gym-Logbuch</title>
-<meta name="description" content="Persönliches Trainingslogbuch für Einheit A/B mit Progressionsvorschlägen.">
+<meta name="description" content="Persönliches Trainingslogbuch mit Coach-Plan und Progressionsvorschlägen.">
 <meta name="theme-color" content="#EDF0F3" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0E1114" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -710,7 +710,8 @@ Object.keys(GROUPS).forEach(g=>GROUPS[g].ex.forEach(id=>{ if(!EX_GROUP[id]) EX_G
 Object.values(GROUPS).forEach(g=>{ g.ex=g.ex.filter(id=>EX[id] && !EX[id].retired); });
 Object.values(FAMILIES).forEach(f=>{ f.ex=f.ex.filter(id=>EX[id] && !EX[id].retired); });
 
-const PLANS = {
+/* Der frühere Standardplan A/B (bis 1.5). Nur noch für die Anzeige alter Einheiten (Name, Aufwärmen). */
+const STD_PLANS = {
   A:{name:'Einheit A', blocks:[
     {rest:'main', items:[{key:'A.squat', group:'squat', ex:'goblet', sets:3, reps:[6,8]}]},
     {rest:'main', items:[{key:'A.hinge', group:'hinge', ex:'rdl', sets:3, reps:[6,8]}]},
@@ -727,7 +728,9 @@ const PLANS = {
     {rest:'acc', items:[{key:'B.row', group:'hrow', ex:'dbrow', sets:3, reps:[10,12]}]},
     {rest:'ss', ss:true, items:[{key:'B.lat', group:'lateral', ex:'latlunge', sets:2, reps:[8,8]}, {key:'B.rot', group:'antirot', ex:'pallof', sets:2, reps:[10,10]}]},
     {rest:'ss', ss:true, opt:'arms', items:[{key:'X.curl', group:'curl', ex:'curl', sets:2, reps:[10,12]}, {key:'X.tri', group:'tri', ex:'pushdown', sets:2, reps:[10,12]}]}
-  ]},
+  ]}
+};
+const PLANS = {
   H:{name:'Heimroutine', blocks:[
     {rest:'short', items:[{ex:'slbridge', sets:2, reps:[10,10]}]},
     {rest:'short', items:[{ex:'hamslide', sets:2, reps:[8,8]}]},
@@ -735,9 +738,8 @@ const PLANS = {
   ]}
 };
 
-/* Aktiver Plan: PLANS enthält immer die Tage des aktiven Plans. Ohne settings.plan ist das der Standardplan A/B.
+/* Aktiver Plan: PLANS enthält immer die Tage des aktiven Plans. Ohne settings.plan gibt es keine Plantage (seit 1.6), die Startseite führt zum Coach.
    Mit Coach-Plan: Tage P1…Pn und die Mobility-Routine M. H (Heimroutine) bleibt immer. syncPlans() läuft vor jedem Render. */
-const STD_PLANS = {A:PLANS.A, B:PLANS.B};
 let planStamp = null;
 function syncPlans(){
   const pl=state.settings.plan, aw=state.settings.away, trip = aw && aw.day && aw.until>=todayStr() ? aw.day : null;
@@ -745,7 +747,7 @@ function syncPlans(){
   if(stamp===planStamp) return; planStamp=stamp;
   Object.keys(PLANS).forEach(k=>{ if(k!=='H') delete PLANS[k]; });
   if(trip) PLANS.T={name:trip.name, blocks:trip.blocks, warmup:trip.warmup||null};
-  if(base==='std'){ PLANS.A=STD_PLANS.A; PLANS.B=STD_PLANS.B; return; }
+  if(base==='std') return;
   pl.days.forEach(d=>{ PLANS[d.id]={name:d.name, blocks:d.blocks, warmup:d.warmup||null}; });
   if(pl.routine) PLANS.M={name:pl.routine.name, blocks:pl.routine.blocks, warmup:[]};
 }
@@ -887,8 +889,10 @@ const state = {
    Release hoch, nicht pro Änderung. Alle Änderungen bis zum Release sammeln sich im obersten CHANGELOG-Eintrag
    (date: null, solange er nicht live ist). In der Testumgebung kommt «Test n» dazu (tools/build-preview.py).
    Die echte App zeigt nach einem Release einmal pro Gerät «Was ist neu». */
-const APP_VERSION = '1.5';
+const APP_VERSION = '1.6';
 const CHANGELOG = [
+  {v:'1.6', date:null, items:[
+    'Der alte Plan «Ganzkörper A/B» ist weg. Ohne Plan startet die Startseite mit dem Coach. Deine bisherigen Einheiten A und B bleiben im Verlauf und in den Auswertungen.']},
   {v:'1.5', date:'2026-11-23', items:[
     'Coach: Unter Einstellungen → «Neuen Plan erstellen» fragt dich der Coach Schritt für Schritt nach Zielen, Technik, Sport, Beschwerden (auf einer Körperfigur), Beweglichkeit und Zeit. Er reagiert auf deine Antworten und erstellt daraus deinen Plan mit Begründung und Quellen.',
     'Wochenplanung: Jede Einheit bekommt einen Wochentag. Verschieben mit Erholungscheck, und liegt eine Einheit offen, fragt die App nach, was passieren soll.',
@@ -1110,7 +1114,7 @@ function saveUi(){ try{ localStorage.setItem(UI_KEY, JSON.stringify({cur:state.c
 function doneSessions(){ return Object.values(state.sessions).filter(s=>s.status==='done').sort((a,b)=>(b.startedAt||0)-(a.startedAt||0)); }
 function activeSession(){ const a=Object.values(state.sessions).filter(s=>s.status==='active').sort((a,b)=>(b.startedAt||0)-(a.startedAt||0)); return a[0]||null; }
 function curSession(){ return state.editId ? (state.sessions[state.editId]||null) : activeSession(); }
-function nextType(){ const ag=agendaItems(); if(ag && ag.length && PLANS[ag[0].u]) return ag[0].u; const ids=planIds(), l=doneSessions().find(s=>ids.includes(s.type)); return l ? ids[(ids.indexOf(l.type)+1)%ids.length] : ids[0]; }
+function nextType(){ const ag=agendaItems(); if(ag && ag.length && PLANS[ag[0].u]) return ag[0].u; const ids=planIds(), l=doneSessions().find(s=>ids.includes(s.type)); if(!ids.length) return null; return l ? ids[(ids.indexOf(l.type)+1)%ids.length] : ids[0]; }
 
 function perfHistory(exId, beforeTs, excludeId){
   const out=[];
@@ -1793,13 +1797,19 @@ function viewHome(){
   } else {
     h+=lifeBanner()+agendaPrompt();
     if(st.plan && st.profile && !Object.keys(st.profile.mobility||{}).length && !st.scrHide) h+='<div class="callout info">'+I.info+'<div><b>Plan verbessern:</b> Vier kurze Beweglichkeitstests zeigen, welche Übungen und welche Mobility zu dir passen. Rund 3 Minuten.<div class="row-links"><button class="link" data-a="scr-open">Jetzt testen</button><button class="link" data-a="scr-hide">Später</button></div></div></div>';
-    const nt=nextType(), pv=buildSession(nt,{preview:true}), ag0=(agendaItems()||[])[0], when=ag0 && ag0.u===nt ? (ag0.d<t?'offen seit '+fmtDate(ag0.d):ag0.d===t?'geplant heute':'geplant '+fmtDate(ag0.d)) : 'Als Nächstes dran';
-    const alts = planIds().filter(x=>x!==nt);
-    h+='<section class="hero"><div class="hero-top"><div class="plate '+plateCls(nt)+'">'+plateTxt(nt)+'</div><div><h2>'+typeName(nt)+'</h2><div class="hero-sub">'+when+' · ca. '+estimateMin(pv)+' min</div></div></div>';
-    const nf=findActive(pv);
-    if(pv.reentry || nf) h+='<div class="chips">'+(pv.reentry?'<span class="chip warn">Wiedereinstieg · 2 Sätze · RIR '+({all:'3–4',none:'2–3',mixed:'2–3, Neues 3–4'}[freshKind(pv)])+'</span>':'')+(nf?(()=>{ let tn=0; pv.blocks.forEach(b=>b.items.forEach(x=>{ if(!x.skipped && x.find && x.find.status==='active' && x.find.mode==='test') tn++; })); const fn=nf-tn; return (tn?'<span class="chip acc">Krafttest bei '+tn+' '+(tn===1?'Übung':'Übungen')+'</span>':'')+(fn?'<span class="chip acc">Gewicht finden bei '+fn+' '+(fn===1?'Übung':'Übungen')+'</span>':''); })():'')+'</div>';
-    h+=planList(pv);
-    h+='<button class="btn pri block" data-a="start" data-t="'+nt+'">'+typeName(nt)+' starten</button><div class="alt">'+alts.map(x=>'<button class="link" data-a="start" data-t="'+x+'">Stattdessen '+esc(typeName(x))+'</button>').join('')+(PLANS.M?'<button class="link" data-a="start" data-t="M">Mobility für freie Tage</button>':'')+'<button class="link" data-a="start" data-t="H">Heimroutine, 10 min</button><button class="link" data-a="life-open">Etwas ist dazwischengekommen</button></div></section>';
+    if(!st.plan){
+      h+='<section class="hero"><div class="hero-top"><div class="plate">+</div><div><h2>Noch kein Plan</h2><div class="hero-sub">Der Coach fragt Ziele, Zeit, Beschwerden und Beweglichkeit ab, rund 5 Minuten</div></div></div>'
+        +'<p class="phase-t" style="font-size:14px">Daraus entsteht dein Plan mit Wochentagen, Mobility und Begründung. Deine bisherigen Einheiten bleiben im Verlauf.</p>'
+        +'<button class="btn pri block" data-a="ob-start">Plan erstellen</button><div class="alt"><button class="link" data-a="start" data-t="H">Heimroutine, 10 min</button></div></section>';
+    } else {
+      const nt=nextType(), pv=buildSession(nt,{preview:true}), ag0=(agendaItems()||[])[0], when=ag0 && ag0.u===nt ? (ag0.d<t?'offen seit '+fmtDate(ag0.d):ag0.d===t?'geplant heute':'geplant '+fmtDate(ag0.d)) : 'Als Nächstes dran';
+      const alts = planIds().filter(x=>x!==nt);
+      h+='<section class="hero"><div class="hero-top"><div class="plate '+plateCls(nt)+'">'+plateTxt(nt)+'</div><div><h2>'+typeName(nt)+'</h2><div class="hero-sub">'+when+' · ca. '+estimateMin(pv)+' min</div></div></div>';
+      const nf=findActive(pv);
+      if(pv.reentry || nf) h+='<div class="chips">'+(pv.reentry?'<span class="chip warn">Wiedereinstieg · 2 Sätze · RIR '+({all:'3–4',none:'2–3',mixed:'2–3, Neues 3–4'}[freshKind(pv)])+'</span>':'')+(nf?(()=>{ let tn=0; pv.blocks.forEach(b=>b.items.forEach(x=>{ if(!x.skipped && x.find && x.find.status==='active' && x.find.mode==='test') tn++; })); const fn=nf-tn; return (tn?'<span class="chip acc">Krafttest bei '+tn+' '+(tn===1?'Übung':'Übungen')+'</span>':'')+(fn?'<span class="chip acc">Gewicht finden bei '+fn+' '+(fn===1?'Übung':'Übungen')+'</span>':''); })():'')+'</div>';
+      h+=planList(pv);
+      h+='<button class="btn pri block" data-a="start" data-t="'+nt+'">'+typeName(nt)+' starten</button><div class="alt">'+alts.map(x=>'<button class="link" data-a="start" data-t="'+x+'">Stattdessen '+esc(typeName(x))+'</button>').join('')+(PLANS.M?'<button class="link" data-a="start" data-t="M">Mobility für freie Tage</button>':'')+'<button class="link" data-a="start" data-t="H">Heimroutine, 10 min</button><button class="link" data-a="life-open">Etwas ist dazwischengekommen</button></div></section>';
+    }
   }
 
   // Woche
@@ -2301,19 +2311,13 @@ function viewSettings(){
   { const pr=st.profile, goal=pr && (OB_GOALS.find(g=>g[0]===pr.goal)||[])[1];
     h+='<section class="sec"><h2 class="eyebrow">Coach</h2><div class="sgroup">';
     if(st.plan) h+='<button class="srow" style="width:100%;text-align:left" data-a="plan-open"><div class="tx"><b>Aktiver Plan: '+esc(planTitle(st.plan))+'</b><small>Ansehen, mit Begründung</small></div><span class="chev">'+I.chev+'</span></button>';
-    else h+='<div class="srow"><div class="tx"><b>Aktiver Plan: Ganzkörper A/B</b><small>Zwei Ganzkörper-Einheiten im Wechsel</small></div></div>';
+    else h+='<div class="srow"><div class="tx"><b>Noch kein Plan</b><small>Erstelle ihn mit dem Coach</small></div></div>';
     h+='<button class="srow" style="width:100%;text-align:left" data-a="ob-start"><div class="tx"><b>Neuen Plan erstellen</b><small>'+(pr?'Profil vom '+fmtDate(pr.done)+(goal?' · Ziel '+esc(goal):'')+' · anpassen und neu planen':'Der Coach fragt Ziel, Zeit, Beschwerden und Beweglichkeit ab, rund 5 Minuten')+'</small></div><span class="chev">'+I.chev+'</span></button>';
     if(pr) h+='<button class="srow" style="width:100%;text-align:left" data-a="scr-open"><div class="tx"><b>Plan verbessern: Beweglichkeit testen</b><small>'+(pr.mobDone?'Zuletzt am '+fmtDate(pr.mobDone)+' · ':(Object.keys(pr.mobility||{}).length?'':'Noch nicht getestet · '))+'4 Tests, rund 3 Minuten</small></div><span class="chev">'+I.chev+'</span></button>';
-    if(st.plan) h+='<button class="srow" style="width:100%;text-align:left" data-a="plan-std"><div class="tx"><b>Zurück zu Ganzkörper A/B</b><small>Der Coach-Plan bleibt im Verlauf gespeichert</small></div><span class="chev">'+I.chev+'</span></button>';
     h+='</div></section>'; }
   const prow=key=>{ const it=planItemAny(key); if(!it) return ''; const cur=resolveEx(it), sw=cur!==it.ex; return '<button class="srow" style="width:100%;text-align:left" data-a="plan-swap" data-k="'+key+'"><div class="tx"><b>'+esc(EX[cur].name)+'</b><small>'+esc(GROUPS[it.group].label)+(sw?' · statt '+esc(EX[it.ex].name):'')+'</small></div><span class="chev">'+I.chev+'</span></button>'; };
   const keysOf=t=>{ const out=[]; PLANS[t].blocks.forEach(b=>b.items.forEach(it=>{ if(it.key && it.key.indexOf('X.')!==0 && !out.includes(it.key)) out.push(it.key); })); return out; };
   planIds().forEach((t,i)=>{ h+='<section class="sec"><h2 class="eyebrow">Übungen in '+esc(typeName(t))+'</h2>'+(i===0?'<p class="phase-t" style="font-size:14px">Tippe auf eine Übung, um sie dauerhaft zu tauschen. Für ein einzelnes Training tauschst du direkt in der Übung.</p>':'')+'<div class="sgroup">'+keysOf(t).filter(k=>{ const it=planItemAny(k); return it && GROUPS[it.group]; }).map(prow).join('')+'</div></section>'; });
-  if(!st.plan){
-  h+='<section class="sec"><h2 class="eyebrow">In beiden Einheiten</h2><div class="sgroup">'+['X.ecc','X.curl','X.tri'].map(prow).join('');
-  h+='<div class="srow"><div class="tx"><b>Nordics auch in Einheit A</b><small>2 × 3–5, damit die Nordics jede Woche drankommen</small></div>'+tgl('nordicA')+'</div>';
-  h+='<div class="srow"><div class="tx"><b>Optik-Bonus</b><small>Bizeps + Trizeps als Supersatz am Ende</small></div>'+tgl('arms')+'</div></div></section>';
-  }
 
   h+='<section class="sec"><h2 class="eyebrow">Wiedereinstieg</h2><div class="sgroup">';
   h+='<div class="srow"><div class="tx"><b>Wiedereinstieg aktiv</b><small>Beim ersten Mal pro Übung: 2 Sätze und RIR 3–4. Ab dem zweiten Mal normal.</small></div>'+tgl('reentry')+'</div>';
@@ -2945,13 +2949,13 @@ function moveAction(a, d){
   if(a==='mv-skip'){ const it=agendaItems(); it.splice(it.indexOf(x),1); agendaExtend(state.settings.agenda); done('Ausgelassen. Es wird nichts nachgeholt.'); return; }
 }
 /* Nur für tools/test_app.py (lokaler Testserver): Zugriff auf Zustand und Agenda-Funktionen. */
-if(location.hostname==='127.0.0.1') window.__gl={get state(){ return state; }, render, renderMain, persist, repF, testEligible, todayStr, addDays, parseYmd, dayDiff, officialDays, agendaExtend, planIds, blocksMuscles, PLANS};
+if(location.hostname==='127.0.0.1') window.__gl={get state(){ return state; }, planActivate, STD_PLANS, WARMUP, render, renderMain, persist, repF, testEligible, todayStr, addDays, parseYmd, dayDiff, officialDays, agendaExtend, planIds, blocksMuscles, PLANS};
 /* Proaktiv: liegen gebliebene Einheit auf der Startseite klären. */
 function agendaPrompt(){
   const x=agendaOverdue(); if(!x) return '';
   return '<div class="callout warn-c">'+I.info+'<div><b>'+esc(typeName(x.u))+' war für '+fmtDate(x.d)+' geplant und ist noch offen.</b> Was ist passiert?<div class="row-links"><button class="link" data-a="mv-open" data-k="'+agendaKey(x)+'">Verschieben</button><button class="link" data-a="ag-backlog" data-k="'+agendaKey(x)+'">Habe ich gemacht, nachtragen</button><button class="link" data-a="ag-skip" data-k="'+agendaKey(x)+'">Auslassen</button></div></div></div>';
 }
-function planTitle(pl){ return pl && pl.days ? (pl.name || 'Coach-Plan · '+pl.days.length+' '+(pl.days.length===1?'Einheit':'Einheiten')+' pro Woche') : 'Ganzkörper A/B'; }
+function planTitle(pl){ return pl && pl.days ? (pl.name || 'Coach-Plan · '+pl.days.length+' '+(pl.days.length===1?'Einheit':'Einheiten')+' pro Woche') : 'kein Plan'; }
 /* Plan aktivieren. Der bisherige Plan wandert in den Verlauf (max. 5). Der Übungsverlauf hängt an der Übung und bleibt. */
 function planActivate(pl){
   const st=state.settings;
@@ -3058,7 +3062,7 @@ function lifeAction(a, d){
   const keep=()=>{ const el=document.getElementById('life-until'); if(el && el.value) L.until=el.value; };
   if(a==='life-view'){
     if(d.v==='move' && (agendaItems()||[]).length){ const x=agendaOverdue()||agendaItems()[0]; state.mv={k:agendaKey(x), step:'pick'}; openSheet('move'); return; }
-    if(d.v==='short'){ closeSheet(); if(activeSession()){ toast('Es läuft schon eine Einheit.'); return; } state.check={type:nextType(), energy:null, sore:[], pain:[], intense:null, short:true, shortTouched:true}; openSheet('check'); return; }
+    if(d.v==='short'){ closeSheet(); if(activeSession()){ toast('Es läuft schon eine Einheit.'); return; } if(!nextType()){ toast('Erstelle zuerst einen Plan.'); return; } state.check={type:nextType(), energy:null, sore:[], pain:[], intense:null, short:true, shortTouched:true}; openSheet('check'); return; }
     L.view=d.v; renderSheet(); return;
   }
   if(a==='life-mode'){ keep(); L.mode=d.v; renderSheet(); return; }
@@ -3404,7 +3408,6 @@ function onClick(ev){
     case 'plan-open': openSheet('plan'); break;
     case 'life-open': lifeOpen(); break;
     case 'life-view': case 'life-mode': case 'life-away-save': case 'life-away-end': case 'life-sick': case 'life-well': lifeAction(a, d); break;
-    case 'plan-std': if(planActivate(null)){ render(); toast('Ganzkörper A/B ist wieder aktiv.'); } break;
     case 'steps-open': { const e=s.blocks[bi].items[ii]; state.stepsRef={ex:e.ex}; openSheet('steps'); break; }
     case 'steps-save': case 'steps-reset': {
       const r=state.stepsRef; if(!r) break; const st=state.settings; st.steps=st.steps||{};
@@ -3482,7 +3485,7 @@ function onClick(ev){
     case 'news-open': state.newsAll=true; openSheet('news'); break;
     case 'news-all': state.newsAll=true; renderSheet(); break;
 
-    case 'backlog-open': state.backlog={type:nextType(), date:addDays(todayStr(),-1)}; openSheet('backlog'); break;
+    case 'backlog-open': state.backlog={type:nextType()||'H', date:addDays(todayStr(),-1)}; openSheet('backlog'); break;
     case 'bl-type': state.backlog.type=d.v; renderSheet(); break;
     case 'bl-go': {
       const b=state.backlog; if(!b.date || b.date>todayStr()){ toast('Bitte ein Datum bis heute wählen.'); break; }

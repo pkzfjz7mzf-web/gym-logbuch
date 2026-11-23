@@ -6,7 +6,7 @@ Letzte Aktualisierung: 23.11.2026
 
 ## Release 1.5: Schritte beim Live-Gang
 - **1.5 live seit 23.11.2026 (`a78e088`).** Standardplan A/B ist noch drin (Rückfall, falls kein Coach-Plan): `tools/test_app.py` baut fast komplett auf Einheit A auf, das Entfernen kommt mit 1.6 zusammen mit dem Umbau der Tests. 17 Übungen ohne Quelle bleiben ausgemustert (Aaron: «ohne die 17 gehen»).
-- **Für 1.6: Standardplan A/B entfernen** (Aaron, 23.11.): Ohne Coach-Plan startet das Onboarding. Verlauf mit Einheiten A/B bleibt lesbar (Namen aus `STD_PLANS` für die Anzeige behalten), nur nicht mehr wählbar.
+- **1.6 Test 1 (23.11.): Standardplan A/B entfernt.** `STD_PLANS` nur noch für die Anzeige alter Einheiten, ohne Coach-Plan zeigt die Startseite «Noch kein Plan» mit «Plan erstellen» und der Heimroutine. Kein Rückweg zu A/B, Einstellungen-Abschnitt «In beiden Einheiten» entfernt. `test_app.py` setzt nach dem Login den früheren A/B-Plan per `__gl.planActivate(standardPlan(...))`, 62 OK. Offen: Heimroutine `H` enthält noch Hamstring Slides (ausgemustert).
 - Kein SQL nötig: Die Tabelle `exercises` wird nicht mehr nachgeführt (Aarons Grundsatz in CLAUDE.md).
 
 ## Fertig
