@@ -159,7 +159,42 @@ const EXPLAIN = {
     'Füsse hüftbreit, ohne Gewicht oder mit einer Kurzhantel in jeder Hand, Handflächen zueinander.',
     'Einen grossen Schritt direkt zur Seite. Der Fuss setzt parallel zum anderen auf. Die Hüfte auf dieser Seite nach hinten schieben und mit beiden Händen links und rechts am Bein Richtung Fuss greifen. Zum Aufstehen den Fuss in den Boden drücken und den Körper mit der Innenseite des anderen Beins zurück zur Mitte ziehen.',
     ['Fuss dreht beim Aufsetzen nach aussen: parallel zum anderen Fuss aufsetzen.', 'Oberkörper fällt nach vorne statt Hüfte nach hinten: Hüfte nach hinten schieben.'],
-    ['ace']]
+    ['ace']],
+  legcurl: [
+    'Bauchlage auf der Maschine, Beine gestreckt. Die Mitte des Kniegelenks liegt auf Höhe der Drehachse der Maschine. Das Polster liegt hinten am Unterschenkel knapp über der Ferse. Griffe locker halten, Bauch fest, die Hüfte bleibt die ganze Zeit auf dem Polster.',
+    'Ausatmen und mit den Hamstrings die Knie beugen, die Fersen gleichmässig Richtung Gesäss ziehen. Kein Hohlkreuz. Bis die Knie mehr als rechtwinklig gebeugt sind oder das Polster fast das Gesäss berührt. Kurz halten, langsam absenken und kurz vor dem ganzen Strecken stoppen.',
+    ['Zu viel Gewicht, die Bewegung wird ruckartig: weniger Gewicht, gleichmässig.', 'Nur halbe Bewegung: so weit beugen, wie es geht.', 'Absenken zu schnell: hoch und runter gleich kontrolliert.', 'Hüfte hebt ab oder dreht: Hüfte auf dem Polster lassen, Bauch fest.'],
+    ['nasm','ace']],
+  seatcurl: [
+    'Sitzen, der Rücken fest an der Lehne. Den Sitz so einstellen, dass das Polster knapp über den Knöcheln liegt. Beide Beine unter dem Polster, die Knie etwa rechtwinklig. Bauch fest, Hände an den Griffen.',
+    'Mit den Hamstrings das Polster nach unten ziehen, die Fersen Richtung Gesäss. Kontrolliert zurück und kurz vor dem ganzen Strecken stoppen.',
+    ['Zu viel Gewicht, die Bewegung wird ruckartig: weniger Gewicht, gleichmässig.', 'Nur halbe Bewegung: ganz beugen.', 'Zurück zu schnell: hin und zurück gleich kontrolliert.', 'Hüfte rutscht oder dreht: Rücken an der Lehne lassen.'],
+    ['nasm']],
+  cableadd: [
+    'Kabelzug ganz unten, eine Fussmanschette knapp über dem Knöchel befestigen. Drei bis vier Schritte vom Gerät weg, sodass das Bein mit der Manschette zum Gerät zeigt und vom Kabel nach aussen gezogen wird. Rücken gerade, das Standbein leicht gebeugt.',
+    'Den Fuss mit der Manschette zur Körpermitte führen, bis er direkt vor dem Standbein ist. Eine Sekunde halten. Langsam zurück, das Kabel zieht das Bein wieder nach aussen. Danach Seite wechseln.',
+    ['Oberkörper kippt zur Seite: Rücken gerade halten.', 'Bein schnellt zurück: langsam nachgeben.'],
+    ['ace']],
+  goodmorning: [
+    'Füsse etwa hüftbreit. Die Langhantel liegt auf dem oberen Rücken und den Schultern, Griff etwas breiter als schulterbreit, die Stange liegt sicher. Wirbelsäule neutral, Bauch fest.',
+    'Die Hüfte nach hinten schieben und den Oberkörper nach vorne neigen, die Knie bleiben nur leicht gebeugt und der Rücken neutral. Absenken, bis die Hamstrings deutlich dehnen. Die Hüfte nach vorne bringen und aufrichten, kurz vor dem ganzen Strecken der Hüfte stoppen.',
+    ['Unterer Rücken rundet: weniger tief, notfalls weniger Gewicht.', 'Knie beugen sich immer mehr, es wird eine Kniebeuge: Knie nur leicht gebeugt lassen.', 'Ruckartig: gleichmässig.', 'Zu viel Gewicht: nur so viel, wie der Rücken neutral bleibt.'],
+    ['nasm']],
+  slrdl: [
+    'Auf einem Bein stehen, eine Kurzhantel in der Hand auf der Gegenseite.',
+    'Aus der Hüfte nach vorne neigen, das Standknie leicht gebeugt, der Rücken gerade. Das freie Bein geht gestreckt nach hinten, die Zehen zeigen nach unten, das hilft beim Gleichgewicht. Der Arm bleibt gestreckt, die Hantel hängt direkt vor dem Standbein. Über den Standfuss drücken, das Knie nach hinten ziehen und aufrichten. Kurz im Gleichgewicht stehen, dann die nächste Wiederholung.',
+    ['Rücken rundet: Rücken gerade halten, weniger tief.', 'Hantel schwingt vom Bein weg: direkt vor dem Standbein hängen lassen.'],
+    ['ace']],
+  stepup: [
+    'Vor einer Box oder Stufe stehen, Füsse etwa hüftbreit, in jeder Hand eine Kurzhantel, Handflächen zueinander. Schultern nach hinten-unten, nicht hochziehen.',
+    'Einen Fuss ganz auf die Box setzen und fest nach unten drücken. Oberkörper aufrecht, das Knie über der zweiten Zehe. Hochsteigen und das andere Bein daneben stellen. Oberkörper und Schienbein gehen leicht nach vorne, aber nicht stark vorlehnen. Zum Abstieg das Gewicht auf das obere Bein, mit dem anderen Fuss zurück zum Boden, dann den ersten Fuss nachziehen.',
+    ['Knie, Fussgelenk oder Fuss knicken nach innen oder aussen: Knie über der zweiten Zehe.', 'Starkes Vorlehnen: Oberkörper aufrecht.', 'Schultern hochgezogen: Schultern unten lassen.'],
+    ['ace']],
+  revlunge: [
+    'Füsse etwa hüftbreit, in jeder Hand eine Kurzhantel seitlich am Körper. Schultern nach hinten-unten.',
+    'Mit einem Bein langsam einen Schritt nach hinten. Sobald der Fuss am Boden ist, die Hüfte des vorderen Beins nach hinten schieben und das hintere Knie langsam Richtung Boden senken, die Brust bleibt oben. Über den vorderen Fuss drücken, das vordere Knie gedanklich nach hinten ziehen und das hintere Bein nach vorne zurück in den Stand bringen.',
+    ['Brust fällt nach vorne: Brust oben halten.', 'Schnelles Absinken: langsam und kontrolliert.', 'Hüfte und Schultern drehen sich: gerade nach vorne ausrichten.'],
+    ['ace','nscab']]
 };
 const api = {EXPLAIN, SRC};
 if(typeof module !== 'undefined' && module.exports) module.exports = api; else root.COACH_EXPLAIN = api;
