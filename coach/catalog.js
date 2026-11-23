@@ -94,7 +94,16 @@ const ROWS = {
   latstretch: ['mob_shoulder',1,'','kneel overhead','',0],
   neckflex:   ['mob_neck',1,'','','',0],
   hamwall:    ['mob_chain',1,'','','',0],
-  hip9090h:   ['mob_hip',1,'','rotation','',0]
+  hip9090h:   ['mob_hip',1,'','rotation','',0],
+  skull: ['triceps',1,'','','elbow',1],
+  kickback: ['triceps',1,'','','elbow',0],
+  cablecurl: ['biceps',1,'','','elbow',0],
+  dbpullover: ['latiso',2,'overhead2','overhead','shoulder',1],
+  chintuck: ['mob_neck',1,'','','',0],
+  pecstretch: ['mob_shoulder',1,'','','',0],
+  figure4: ['mob_hip',1,'','','',0],
+  squathold: ['mob_hip',1,'','deepknee','',0],
+  kneetowall: ['mob_ankle',1,'','','',0]
 };
 const PATTERNS = ['calf','squat','hinge','single','hpush','vpush','hpull','vpull','glute','kneeflex','kneeext','lateral','abduct','rear','latiso','chestiso','deltiso','biceps','triceps','antiext','antirot','coreflex','mob_tspine','mob_shoulder','mob_neck','mob_hipflex','mob_hip','mob_ankle','mob_chain'];
 const TESTS = ['squat','overhead','toes','hipflex'];
