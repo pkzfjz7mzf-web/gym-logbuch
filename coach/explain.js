@@ -12,6 +12,7 @@ const SRC = {
   nasm: 'NASM (Exercise Library und Fachblog)',
   ace: 'ACE (Exercise Library und Fachartikel)',
   hkbrown: 'Brown, Lower Body Training, Human Kinetics (Auszug)',
+  harvard: 'Harvard Health Publishing (Solan, 2025, fachlich geprüft durch Physiotherapie)',
   nscaptq: 'Lincoln, Ill, Ibrahim (2023): Progressive Strategies for Teaching Fundamental Resistance Training Movement Patterns. NSCA Personal Training Quarterly 10(2)'
 };
 const EXPLAIN = {
@@ -194,7 +195,37 @@ const EXPLAIN = {
     'Füsse etwa hüftbreit, in jeder Hand eine Kurzhantel seitlich am Körper. Schultern nach hinten-unten.',
     'Mit einem Bein langsam einen Schritt nach hinten. Sobald der Fuss am Boden ist, die Hüfte des vorderen Beins nach hinten schieben und das hintere Knie langsam Richtung Boden senken, die Brust bleibt oben. Über den vorderen Fuss drücken, das vordere Knie gedanklich nach hinten ziehen und das hintere Bein nach vorne zurück in den Stand bringen.',
     ['Brust fällt nach vorne: Brust oben halten.', 'Schnelles Absinken: langsam und kontrolliert.', 'Hüfte und Schultern drehen sich: gerade nach vorne ausrichten.'],
-    ['ace','nscab']]
+    ['ace','nscab']],
+  cablefly: [
+    'Zwei Kabelzüge mit Handgriffen etwa auf Brust- bis knapp über Schulterhöhe. Mit dem Rücken zum Gerät je einen Griff fassen und nach vorne treten, die Arme sind seitlich ausgestreckt, Handflächen nach vorne. Bauch fest, Schulterblätter nach hinten-unten.',
+    'Die Ellbogen bleiben leicht gebeugt. Die Hände langsam in einem Bogen vor dem Körper zusammenführen, bis sie sich berühren. Eine Sekunde halten, dann langsam zurück, so weit, wie es kontrolliert geht.',
+    ['Hohlkreuz oder Rundrücken: Bauch fest, Rücken gerade.', 'Kinn schiebt nach vorne: Kopf in Linie lassen.', 'Schultern ziehen hoch: Schultern unten lassen.'],
+    ['ace','nasm']],
+  calfraise: [
+    'Aufrecht stehen, Füsse hüftbreit, Zehen nach vorne. Bei Last auf den Schultern: Brust hoch und Schulterblätter zusammen, damit der Rücken gerade bleibt. Knie leicht gebeugt.',
+    'Die Zehen in den Boden drücken und die Fersen heben. Oben kurz halten, die Fersen langsam senken, unten kurz halten. Die Füsse drehen nicht.',
+    ['Füsse drehen nach innen oder aussen: Füsse gerade halten.', 'Schnell und wippend: oben und unten kurz halten.'],
+    ['ace']],
+  slcalf: [
+    'Etwa 15 bis 30 cm vor einer Wand stehen, Handflächen auf Brust- oder Schulterhöhe an der Wand. Ein Knie beugen, sodass dieser Fuss den Boden nicht mehr berührt.',
+    'Ausatmen und die Ferse des Standbeins langsam heben, das Knie bleibt gestreckt und der Fuss dreht nicht. Die Hände stützen nur. Oben kurz halten, einatmen und die Ferse langsam senken. Danach Seite wechseln.',
+    ['Fuss dreht: gerade halten.', 'Hände drücken mit: Hände nur zur Stütze.'],
+    ['ace']],
+  deadbug: [
+    'Rückenlage. Hüfte und Knie je etwa rechtwinklig gebeugt, die Unterschenkel in der Luft. Die Arme senkrecht zur Decke gestreckt.',
+    'Den Bauch anspannen, ohne die Luft anzuhalten. Der untere Rücken bleibt am Boden und die Wirbelsäule neutral. Einen Arm nach hinten über den Kopf führen und gleichzeitig das gegenüberliegende Bein strecken, bis knapp über dem Boden. Kurz halten, zurück und Seite wechseln.',
+    ['Unterer Rücken hebt vom Boden ab: weniger weit strecken.', 'Ruckartig oder zu schnell: langsam strecken und zurück.', 'Arm und Bein bis ganz an den Boden: knapp darüber stoppen.', 'Luft anhalten: normal atmen.', 'Zu schwer: Füsse am Boden lassen und nur die Arme abwechselnd bewegen.'],
+    ['nasm','harvard']],
+  rollout: [
+    'Vor dem Ab-Roller oder einer Langhantel am Boden knien. Die Hände etwa schulterbreit auf die Griffe oder die Stange legen.',
+    'Die Hüfte nach vorne gedrückt und den Rücken gerade halten, dabei den Roller oder die Stange vom Körper wegrollen lassen. Die Rumpfposition bleibt gleich. Mit den Armen nach unten ziehen und zurück in die Ausgangslage rollen.',
+    ['Hüfte knickt ein oder Hohlkreuz: Hüfte nach vorne, Rücken gerade, weniger weit rollen.'],
+    ['ace']],
+  chop: [
+    'Kabelzug ganz oben, Seilgriff. Beide Enden des Seils fassen, die Daumen zeigen zur Decke. Seitlich zum Gerät knien: das Knie auf der Seite weg vom Gerät am Boden, der andere Fuss am Boden.',
+    'Rücken gerade. Das Seil zur Brust ziehen, dann vor der Brust vorbei nach unten zur gegenüberliegenden Hüfte drücken, die Hände drehen dabei auseinander. Der Oberkörper bleibt ruhig. Unten eine Sekunde halten, langsam zurück. Danach Seite wechseln.',
+    ['Oberkörper dreht oder neigt mit: Oberkörper ruhig, Bauch fest.', 'Gewicht schnellt zurück: langsam nachgeben.'],
+    ['ace']]
 };
 const api = {EXPLAIN, SRC};
 if(typeof module !== 'undefined' && module.exports) module.exports = api; else root.COACH_EXPLAIN = api;
