@@ -224,10 +224,18 @@ Aarons Präzisierung: Das Vorgehen wird aus Studien abgeleitet, nicht nachträgl
 ## Übungserklärungen (23.11., P7)
 Aaron, 23.11.: Auch Technikbeschreibungen fallen unter die Evidenz-Pflicht.
 - **Quellen:** NSCA Exercise Technique Manual for Resistance Training (3. Aufl., Auszüge frei als «Kinetic Select»), NASM Exercise Library, ACE Exercise Library. Fachverbände, die Trainer zertifizieren. Wo möglich zusätzlich Technikartikel aus Fachzeitschriften (z. B. Myer 2014 zur Kniebeuge, noch nicht gelesen, PMC gesperrt).
-- **Regel:** Nur was in den gelesenen Quellen steht. Mindestens zwei Quellen oder die NSCA. Aussagen der Seiten über Verletzungsrisiko werden nicht übernommen (ohne Beleg). Quellen pro Übung im vierten Feld, die App zeigt sie an.
+- **Regel:** Nur was in den gelesenen Quellen steht. Zwei Quellen, wo es sie gibt, sonst eine Fachquelle (Fachverband, Fachzeitschrift, Fachbuch). Einquellige Übungen sind unten markiert (Aaron: «wenn möglich aus zwei Quellen»). Aussagen der Seiten über Verletzungsrisiko werden nicht übernommen (ohne Beleg). Quellen pro Übung im vierten Feld, die App zeigt sie an.
 - **Korrekturen gegenüber dem ungeprüften Entwurf:** Schrägbank laut NASM höchstens 45° (Entwurf: 30°). Goblet Squat: Ellbogen nah an den Rippen (ACE), Tiefe bis mindestens waagrecht (NASM).
 - **Stand:** goblet (NASM, ACE), rdl (NSCA, NASM), incline (nur NASM, zweite Quelle offen), bss (NASM, ACE). Die 24 ungeprüften Texte vom Entwurf wurden entfernt, dort zeigt die App den kurzen Hinweis aus `EX`.
 - **Offen:** Die kurzen Hinweise in `EX` (`cue`) sind ebenfalls ungeprüft. Sie werden ersetzt, sobald eine geprüfte Erklärung existiert.
+
+### Stand 23.11. abends (1.5 Test 32): 55 von 111
+- **Neue Quellen:** NSCA Basics of Strength and Conditioning Manual (Sands, Wurth, Hewit 2012, PDF auf nsca.com, ganz gelesen über das Abruf-Werkzeug, Kapitel 4). NSCA Exercise Technique Manual 4. Aufl. (Human-Kinetics-Auszug, Nordic). Lincoln, Ill, Ibrahim 2023 (NSCA Personal Training Quarterly 10.2). Snarr, Esco 2013 (Journal of Australian Strength and Conditioning, Inverted Row). Brown, Lower Body Training (Human-Kinetics-Auszug, Hip Thrust). Kovar (ACE-Fachartikel, Brustwirbelsäule). Harvard Health Publishing 2025 (Dead Bug, physiotherapeutisch geprüft).
+- **Zwei oder mehr Quellen:** goblet, rdl, incline, bss, facepull, pullup, latpd, plank, frontsq, bbbench, dbbench, hipthrust, legpress, birddog, sideplank, bbrow, curl, pushup, seatedpress, legcurl, revlunge, cablefly, deadbug, invrow, pullupA.
+- **Eine Quelle:** latraise, revfly, walklunge, pushdown, nordic (alle NSCA), machpress, dbrow, ballcurl, latlunge, cableadd, slrdl, stepup, calfraise, slcalf, rollout, chop, chinup, straightarm, cablerow, chestpress, dbfly, catcow, hipflexstretch, inchworm, calfstretch (ACE), dbrdl, seatcurl, goodmorning, machrow (NASM), lungerot (ACE-Fachartikel).
+- **Bewusst nicht übernommen:** Enges Bankdrücken (keine Quelle für die Griffbreite gefunden), Übungen, bei denen die Quelle ein anderes Gerät beschreibt (z. B. ACE-Kickback mit Kurzhantel statt Kabel, Wadenheben sitzend), Figur-4-Dehnung (Hinge Health ohne genannte Fachperson).
+- **Abweichungen zur App, Aaron prüfen:** `slcalf` laut ACE an der Wand am Boden, die App sagt «auf einer Stufe». `lungerot` laut ACE dreht der Arm auf der Seite des vorderen Beins auf, die App sagt «innerer Arm». `walklunge` NSCA: vorderes Knie nicht über die Zehen (umstrittene Regel, steht aber so in der Quelle).
+- **Nicht erreichbar:** ACE-Seiten mit Fehlercode (Pull-ups 191, Reverse Lunge 319 über einen anderen Link gelesen, Step-up 28 dito, Trizeps-Pushdown 185), NASM-Seiten ohne «resource-center» im Pfad leiten auf die Startseite um.
 
 ## Noch offen nach dem Audit
 1. Volle Nuzzo-Tabelle (übungsspezifische Kurven) für den Krafttest N5.
