@@ -13,6 +13,7 @@ const SRC = {
   ace: 'ACE (Exercise Library und Fachartikel)',
   hkbrown: 'Brown, Lower Body Training, Human Kinetics (Auszug)',
   harvard: 'Harvard Health Publishing (Solan, 2025, fachlich geprüft durch Physiotherapie)',
+  asca: 'Snarr, Esco (2013): Exercise Technique: Inverted Row. Journal of Australian Strength and Conditioning 21(4)',
   nscaptq: 'Lincoln, Ill, Ibrahim (2023): Progressive Strategies for Teaching Fundamental Resistance Training Movement Patterns. NSCA Personal Training Quarterly 10(2)'
 };
 const EXPLAIN = {
@@ -225,6 +226,36 @@ const EXPLAIN = {
     'Kabelzug ganz oben, Seilgriff. Beide Enden des Seils fassen, die Daumen zeigen zur Decke. Seitlich zum Gerät knien: das Knie auf der Seite weg vom Gerät am Boden, der andere Fuss am Boden.',
     'Rücken gerade. Das Seil zur Brust ziehen, dann vor der Brust vorbei nach unten zur gegenüberliegenden Hüfte drücken, die Hände drehen dabei auseinander. Der Oberkörper bleibt ruhig. Unten eine Sekunde halten, langsam zurück. Danach Seite wechseln.',
     ['Oberkörper dreht oder neigt mit: Oberkörper ruhig, Bauch fest.', 'Gewicht schnellt zurück: langsam nachgeben.'],
+    ['ace']],
+  machrow: [
+    'Sitzen, der Rücken fest an der Lehne bzw. die Brust am Polster. Den Sitz so einstellen, dass die Griffe auf Höhe der mittleren Brust sind. Füsse auf der Plattform. Griffe mit neutralem oder leichtem Obergriff fassen, Bauch fest, Schultern nach hinten-unten.',
+    'Die Griffe zum Oberkörper ziehen: die Schulterblätter zusammenziehen und die Ellbogen nach hinten führen. Kontrolliert zurück und kurz vor dem ganzen Strecken der Arme stoppen.',
+    ['Zu viel Gewicht, ruckartig: weniger Gewicht, gleichmässig.', 'Ziehen nur aus den Armen: mit den Schulterblättern beginnen.', 'Nur halbe Bewegung: ganz nach hinten ziehen.', 'Schultern runden oder starkes Vorlehnen: aufrecht bleiben.', 'Schwung: kontrolliert ziehen und zurück.'],
+    ['nasm']],
+  invrow: [
+    'Eine Stange im Rack oder in der Smith-Maschine etwa auf Hüfthöhe, tiefer ist schwerer. Unter die Stange legen, die Brust direkt darunter. Obergriff etwas breiter als schulterbreit, Daumen um die Stange, Arme gestreckt. Gesäss und Bauch anspannen, der Rumpf ist gerade und fest. Beine gestreckt, Füsse zusammen, Fersen am Boden, Kopf neutral.',
+    'Die Ellbogen beugen und den Körper zur Stange ziehen, bis die Mitte der Brust auf Höhe der Hände ist. Dabei ausatmen, etwa 2 bis 3 Sekunden. Kontrolliert absenken, bis die Arme wieder gestreckt sind, ebenfalls etwa 2 bis 3 Sekunden.',
+    ['Hüfte sackt durch: Gesäss und Bauch anspannen, Körper bleibt ein Brett.', 'Beine bewegen sich oder Fersen heben ab: Fersen am Boden lassen.', 'Kopf fällt nach hinten oder schiebt nach vorne: Kopf neutral halten.'],
+    ['asca','nscaptq']],
+  chinup: [
+    'Auf einer Bank oder Box unter der Stange stehen und die Stange im Untergriff fassen, die Handflächen zeigen zu dir. Wirbelsäule lang, Brust hoch, Bauch fest.',
+    'Den Körper hochziehen, die Ellbogen nach unten an den Rippen vorbei führen, die Brust Richtung Stange. Oben kurz halten, dann langsam absenken statt fallen lassen.',
+    ['Schwung: Bauch fest, Körper steif, Beine zusammen, Knöchel gekreuzt.', 'Zur Stange springen oder nur halb runter: volle Bewegung, kontrolliert.'],
+    ['ace']],
+  pullupA: [
+    'Wie beim Klimmzug: Stange im Obergriff, etwas breiter als schulterbreit, Bauch fest. Die Unterstützung kommt von einer Klimmzugmaschine, einem dicken Band über der Stange (Knie oder Füsse in der Schlaufe) oder einem Partner.',
+    'Schulterblätter nach hinten-unten ziehen, die Ellbogen nach unten führen und den Körper hochziehen, bis das Kinn über der Stange ist. Langsam zurück in den ganzen Hang.',
+    ['Schwung: Körper ruhig halten.', 'Nur halbe Bewegung: oben Kinn über die Stange, unten Arme ganz strecken.'],
+    ['nscaptq','ace','nscab']],
+  straightarm: [
+    'Kabelzug ganz oben, gerade Stange oder Seil. Füsse hüftbreit, Hüfte gestreckt, Rücken aufrecht, Knie leicht gebeugt.',
+    'Die Arme bleiben gestreckt. Die Hände nach unten vor die Taille führen. Langsam zurück in die Ausgangslage.',
+    ['Ellbogen beugen sich, es wird ein Trizepsdrücken: Arme gestreckt lassen.', 'Oberkörper beugt sich mit nach vorne: aufrecht stehen bleiben.'],
+    ['ace']],
+  cablerow: [
+    'Am tiefen Kabelzug mit schmalem Griff sitzen. Füsse auf der Plattform oder am Boden, Knie gebeugt, Rücken gerade.',
+    'Den Griff fassen, die Brust heben und die Ellbogen langsam nach hinten Richtung Rippen ziehen, bis der Griff den Bauch berührt. Etwa eine Sekunde halten, dann die Arme langsam strecken, bis das Gewicht wieder unten ist.',
+    ['Rücken rundet: Brust hoch, Rücken gerade.', 'Ellbogen weit vom Körper: nah an den Rippen nach hinten ziehen.'],
     ['ace']]
 };
 const api = {EXPLAIN, SRC};
