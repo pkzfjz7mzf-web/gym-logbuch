@@ -103,7 +103,11 @@ const ROWS = {
   pecstretch: ['mob_shoulder',1,'','','',0],
   figure4: ['mob_hip',1,'','','',0],
   squathold: ['mob_hip',1,'','deepknee','',0],
-  kneetowall: ['mob_ankle',1,'','','',0]
+  kneetowall: ['mob_ankle',1,'','','',0],
+  backext: ['hinge',1,'','bend','lowback hams',1],
+  pullapart: ['rear',1,'','','shoulder',0],
+  slbridge: ['glute',1,'','','hip',0],
+  cgbench: ['triceps',2,'','','shoulder elbow wrist',0]
 };
 const PATTERNS = ['calf','squat','hinge','single','hpush','vpush','hpull','vpull','glute','kneeflex','kneeext','lateral','abduct','rear','latiso','chestiso','deltiso','biceps','triceps','antiext','antirot','coreflex','mob_tspine','mob_shoulder','mob_neck','mob_hipflex','mob_hip','mob_ankle','mob_chain'];
 const TESTS = ['squat','overhead','toes','hipflex'];

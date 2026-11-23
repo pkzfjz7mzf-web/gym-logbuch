@@ -29,6 +29,9 @@ const SRC = {
   staywell: 'StayWell-Patienteninformation (Northwestern Medicine, OSF HealthCare), medizinisch geprüft',
   webmd: 'WebMD Ignite Patientenbibliothek (ColumbiaDoctors), klinisch geprüft',
   physiopedia: 'Physiopedia, Weight-bearing Lunge Test nach Bennell et al. (1998), Australian Journal of Physiotherapy 44',
+  webmdart: 'WebMD, How to Do Back Extensions (Twu, physiotherapeutisch geprüft 2026)',
+  fukunaga: 'Fukunaga et al. (2022): Band Pull-Apart Exercise. International Journal of Sports Physical Therapy 17(3)',
+  lockie: 'Lockie et al. (2018): Close-Grip Bench Press versus Traditional Bench Press. Sports 6(3)',
   asca: 'Snarr, Esco (2013): Exercise Technique: Inverted Row. Journal of Australian Strength and Conditioning 21(4)',
   nscaptq: 'Lincoln, Ill, Ibrahim (2023): Progressive Strategies for Teaching Fundamental Resistance Training Movement Patterns. NSCA Personal Training Quarterly 10(2)'
 };
@@ -448,7 +451,23 @@ const EXPLAIN = {
   kneetowall: ['Vor einer Wand stehen, der Fuss zeigt gerade nach vorne, die Zehen nahe an der Wand. Das andere Bein kniet oder steht hinten. Mit den Händen an der Wand abstützen.',
     'Das Knie nach vorne zur Wand bringen, die Ferse bleibt immer am Boden. Den Fuss schrittweise weiter von der Wand weg stellen, solange das Knie die Wand mit unten bleibender Ferse noch erreicht. So arbeitet das Sprunggelenk im grössten Beugewinkel. Wiederholen, dann Seite wechseln.',
     ['Ferse hebt ab: Fuss wieder näher an die Wand.', 'Fuss dreht nach aussen: gerade nach vorne.'],
-    ['physiopedia']]
+    ['physiopedia']],
+  backext: ['Bauchlage auf dem Rückenstrecker, die Knöchel unter den Polstern fixiert. Die Polster so einstellen, dass die oberen Oberschenkel flach aufliegen und die Hüfte frei beugen kann. Die Arme vor der Brust kreuzen, der Körper bildet eine gerade Linie.',
+    'Einatmen und langsam aus der Hüfte nach vorne beugen. Ausatmen und den Oberkörper mit unterem Rücken, Gesäss und Hamstrings wieder anheben. Langsam und kontrolliert.',
+    ['Schwung: langsam und kontrolliert, ohne zu schwingen.', 'Zu viel Zusatzgewicht: erst ohne oder mit wenig Gewicht.', 'Zu schnell: hoch und runter langsam.'],
+    ['webmdart']],
+  pullapart: ['Ein Widerstandsband mit beiden Händen fassen, die Arme vor dem Körper etwa auf Schulterhöhe. Die Spannung so wählen, dass es sich mittelschwer anfühlt.',
+    'Das Band mit beiden Armen seitlich auseinanderziehen, die Arme bewegen sich waagrecht nach hinten, dann kontrolliert zurück. Die Handhaltung verändert die Arbeit: Handflächen nach oben aktiviert den unteren Trapez und die hintere Rotatorenmanschette am stärksten, Handflächen nach unten mehr den oberen Trapez und die hintere Schulter. Schräg nach oben ziehen aktiviert die meisten dieser Muskeln am stärksten.',
+    ['Die Quelle nennt keine typischen Fehler. Langsam und kontrolliert arbeiten.'],
+    ['fukunaga']],
+  slbridge: ['Rückenlage, ein Bein gebeugt mit dem Fuss flach am Boden. Das andere Bein gestreckt anheben, bis das Knie auf Höhe des gebeugten Knies ist.',
+    'Den Bauch anspannen und normal weiteratmen. Den Fuss in den Boden drücken, das Gesäss anspannen und die Hüfte heben, bis Schultern, Hüfte und Knie eine gerade Linie bilden, das Becken bleibt waagrecht. Etwa 6 Sekunden halten, langsam absenken. 8 bis 12 Wiederholungen, dann Seite wechseln.',
+    ['Becken kippt zur Seite: Becken waagrecht halten.', 'Luft anhalten: normal atmen.'],
+    ['webmd']],
+  cgbench: ['Rückenlage auf der Flachbank: Kopf, Schultern und Gesäss auf der Bank, beide Füsse am Boden. Langhantel im Obergriff, etwa 95 Prozent der Schulterbreite (Abstand der Schulterhöhen), die Hände liegen also knapp innerhalb der Schultern. Augen unter der Stange, Bauch fest.',
+    'Die Stange kontrolliert zur Brust absenken, bis sie die Brust berührt, die Handgelenke bleiben über den Ellbogen. Dann bis zu gestreckten Armen nach oben drücken.',
+    ['Stange federt von der Brust ab: kontrolliert absenken, kurz berühren.', 'Gesäss oder Kopf heben von der Bank ab: Kontakt halten.'],
+    ['lockie','nscab']]
 };
 const api = {EXPLAIN, SRC};
 if(typeof module !== 'undefined' && module.exports) module.exports = api; else root.COACH_EXPLAIN = api;
