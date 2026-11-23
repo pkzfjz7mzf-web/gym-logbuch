@@ -213,6 +213,14 @@ Aarons Präzisierung: Das Vorgehen wird aus Studien abgeleitet, nicht nachträgl
 | Arme über Kopf an der Wand | Schulterbeugung zuverlässig messbar (Foto), die Wand-Variante nicht validiert. Abgeleitet: prüft genau den Bewegungsumfang der Überkopf-Übungen | bleibt, so beschrieben |
 | Selbsttest statt Prüfer | Alle Zuverlässigkeitsdaten stammen von Prüfern. Allein ist das Ergebnis unsicherer | Hinweis im Screening |
 
+## Check vor der Einheit: Schmerz 0–10 (23.11.)
+| Regel | Ableitung | Im Code |
+|---|---|---|
+| Schmerz pro Region 0–10, ab 5 fallen die Übungen für diese Region heute weg | Schmerz-Monitoring nach Silbernagel 2007 (Grenze 5), gleich wie im Onboarding | `buildSession`, `checkTips` |
+| Unter 5: Übung bleibt, mit Abbruchregel (unter 5, am nächsten Morgen weg, nicht zunehmend) | Silbernagel 2007, Smith 2017. Grenze: Studie an der Achillessehne | Hinweis an der Übung |
+| Kein Krafttest bei Schmerz in der Region, egal wie stark | Vorsicht, ohne eigene Quelle (siehe Krafttest) | `testEligible` |
+| Alte Checks ohne Stärke: wie bisher weglassen | Abwärtskompatibilität | `pl[r]==null` |
+
 ## Noch offen nach dem Audit
 1. Volle Nuzzo-Tabelle (übungsspezifische Kurven) für den Krafttest N5.
 2. Statisches Dehnen direkt vor dem Krafttraining (akute Wirkung auf die Kraft): nicht geprüft. Der Gym-Block bevorzugt dynamische Übungen, diese Wahl ist noch ohne Quelle.

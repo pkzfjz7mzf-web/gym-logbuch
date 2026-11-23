@@ -306,6 +306,8 @@ details.cue p{margin:0 2px 12px;color:var(--muted)}
 .pw-d button{flex:1;min-width:0;height:40px;padding:0;text-align:center;border:0;border-radius:10px;background:var(--raised);box-shadow:inset 0 0 0 1px var(--line);font:600 13px/1 var(--f-body);color:var(--muted);cursor:pointer}
 .pw-d button.taken{color:var(--faint);background:var(--sunken)}
 .pw-d button.on{background:var(--fg);color:var(--bg);box-shadow:none}
+.ck-pl{display:flex;flex-direction:column;gap:2px;margin-top:6px}
+.ck-pl-l{font-size:14px}
 .ti{display:block;width:100%;max-width:260px;height:auto;margin:6px auto 0}
 .ti-b{stroke:var(--muted);stroke-linecap:round}
 .ti-g{stroke:var(--ok);stroke-linecap:round;stroke-dasharray:2 7}
@@ -1406,9 +1408,15 @@ function buildSession(type, opts){
   if(opts.short && !isAux(type)){
     let k=0; blocks.forEach(b=>{ if(b.mob) return; if(k++>2) b.items.forEach(e=>{ e.skipped=true; e.skipWhy='Kurzversion'; }); });
   }
-  const pain=((normCheck(opts.check)||{}).pain)||[];
+  /* Schmerz 0–10 pro Region (Silbernagel 2007, Smith 2017): ab 5 fällt die Übung weg, darunter bleibt sie mit Abbruchregel.
+     Alte Checks ohne Stärke: wie bisher weglassen. */
+  const ck=normCheck(opts.check)||{}, pain=ck.pain||[], pl=ck.painLvl||{};
   if(pain.length){
-    blocks.forEach(b=>b.items.forEach(e=>{ const hit=pain.filter(r=>regionHits(e.ex, r, 0.5)); if(hit.length && !e.skipped){ e.skipped=true; e.skipWhy='Schmerz '+hit.map(regionName).join(', '); } }));
+    blocks.forEach(b=>b.items.forEach(e=>{ if(e.skipped) return;
+      const hit=pain.filter(r=>regionHits(e.ex, r, 0.5)), hi=hit.filter(r=>pl[r]==null || pl[r]>=5), lo=hit.filter(r=>pl[r]!=null && pl[r]<5);
+      if(hi.length){ e.skipped=true; e.skipWhy='Schmerz '+hi.map(r=>regionName(r)+(pl[r]!=null?' '+pl[r]+'/10':'')).join(', '); return; }
+      if(lo.length){ e.target.notes=(e.target.notes||[]).concat('Schmerz '+lo.map(r=>regionName(r)+' '+pl[r]+'/10').join(', ')+': Weiter, solange er unter 5 bleibt und morgen früh wieder weg ist. Sonst aufhören.'); }
+    }));
   }
   return {id, v:1, type, status: opts.backlog ? 'backlog' : 'active', date, startedAt:ts, endedAt:null,
     reentry:re, reentryFirst:firstRe, short:!!opts.short, check:opts.check||null,
@@ -2124,7 +2132,9 @@ function numBox(f, val, sref, bi,ii,si, ph){
 function checkTips(c, type){
   const tips=[];
   c=normCheck(c)||{};
-  if((c.pain||[]).length) tips.push('<b>Schmerz '+c.pain.map(regionName).join(', ')+':</b> Übungen, die diese Stelle belasten, lasse ich heute aus. Du kannst jede einzeln wieder aufnehmen. Hält der Schmerz an oder wird er stärker, lass es abklären.');
+  if((c.pain||[]).length){ const pl=c.painLvl||{}, hi=c.pain.filter(r=>pl[r]==null || pl[r]>=5), lo=c.pain.filter(r=>pl[r]!=null && pl[r]<5);
+    if(hi.length) tips.push('<b>Schmerz '+hi.map(regionName).join(', ')+':</b> Übungen, die diese Stelle belasten, lasse ich heute aus. Du kannst jede einzeln wieder aufnehmen. Hält der Schmerz an oder wird er stärker, lass es abklären.');
+    if(lo.length) tips.push('<b>Schmerz '+lo.map(regionName).join(', ')+' unter 5:</b> Training ist möglich. Bleibt der Schmerz unter 5, ist er morgen früh wieder weg und nimmt von Woche zu Woche nicht zu, schadet es nicht. Sonst aufhören.'); }
   if((c.sore||[]).length) tips.push('<b>Muskelkater '+c.sore.map(regionName).join(', ')+':</b> Übungen dafür mit 1 Wdh. mehr Reserve.');
   if(c.energy===0) tips.push('<b>Wenig Energie:</b> Kurzversion ist völlig ok. Jede Einheit zählt.');
   return tips;
@@ -2355,9 +2365,9 @@ function sheetCheck(){
   let h='<h2 id="sh-t">Kurzer Check</h2><p class="lead">Vor '+typeName(type)+'. Drei Antworten, dann passt die App die Vorgaben an.</p>';
   h+='<div class="q"><div class="q-l">Energie heute</div>'+segRow('ck-energy', ENERGY.map((l,i)=>[i,l]), c.energy)+'</div>';
   const rc=(act,list,pain)=>'<div class="rchips">'+REGIONS.map(([id,l])=>{ const on=list.includes(id); return '<button class="rchip'+(pain?' pain':'')+(on?' on':'')+'" data-a="'+act+'" data-v="'+id+'" aria-pressed="'+on+'">'+l+'</button>'; }).join('')+'</div>';
-  h+='<div class="q"><div class="q-l">Spürst du etwas? Nur antippen, wenn ja.</div><div class="body-q"><div class="bq-l">Muskelkater</div>'+rc('ck-sore', c.sore, false)+'<div class="bq-l">Schmerz</div>'+rc('ck-pain', c.pain, true)+'</div></div>';
+  h+='<div class="q"><div class="q-l">Spürst du etwas? Nur antippen, wenn ja.</div><div class="body-q"><div class="bq-l">Muskelkater</div>'+rc('ck-sore', c.sore, false)+'<div class="bq-l">Schmerz</div>'+rc('ck-pain', c.pain, true)+c.pain.map(r=>{ const v=(c.painLvl||{})[r]; return '<div class="ck-pl"><span class="ck-pl-l">'+regionName(r)+': <b id="ck-plv-'+r+'">'+(v==null?'Stärke wählen':v+' von 10')+'</b></span><input type="range" class="ob-range" min="0" max="10" step="1" value="'+(v==null?0:v)+'" data-pl="'+r+'" aria-label="Schmerz '+regionName(r)+' 0 bis 10"></div>'; }).join('')+(c.pain.length?'<span class="ob-sub">Bei Belastung, 0 = kein Schmerz, 10 = stärkster vorstellbarer. Ab 5 lasse ich die Übungen für diese Stelle heute weg.</span>':'')+'</div></div>';
   if(!isAux(type)) h+='<div class="srow" style="padding:0;border:0"><div class="tx"><b>Kurzversion, ca. 35 min</b><small>Die ersten drei Blöcke: Grundübungen und erster Supersatz</small></div><label class="tgl"><input type="checkbox" id="ck-short" data-f="ck-short"'+(c.short?' checked':'')+'><span></span></label></div>';
-  const tips=checkTips({energy:c.energy, sore:c.sore, pain:c.pain, intense:!!c.intense}, type);
+  const tips=checkTips({energy:c.energy, sore:c.sore, pain:c.pain, painLvl:c.painLvl||{}, intense:!!c.intense}, type);
   if(tips.length) h+='<div class="callout">'+I.warn+'<div>'+tips.map(t=>'<div>'+t+'</div>').join('')+'</div></div>';
   if(!isAux(type)){
     const nf=findActive(buildSession(type,{preview:true}));
@@ -3254,9 +3264,9 @@ function onClick(ev){
       openSheet('check'); break;
     }
     case 'ck-energy': { const c=state.check; c.energy=+d.v; if(!c.shortTouched && !isAux(c.type)) c.short = c.energy===0; renderSheet(); break; }
-    case 'ck-sore': case 'ck-pain': { const key=a==='ck-sore'?'sore':'pain', other=a==='ck-sore'?'pain':'sore', c=state.check; const i=c[key].indexOf(d.v); if(i>-1) c[key].splice(i,1); else { c[key].push(d.v); const j=c[other].indexOf(d.v); if(j>-1) c[other].splice(j,1); } renderSheet(); break; }
+    case 'ck-sore': case 'ck-pain': { const key=a==='ck-sore'?'sore':'pain', other=a==='ck-sore'?'pain':'sore', c=state.check; c.painLvl=c.painLvl||{}; const i=c[key].indexOf(d.v); if(i>-1){ c[key].splice(i,1); if(key==='pain') delete c.painLvl[d.v]; } else { c[key].push(d.v); if(key==='sore') delete c.painLvl[d.v]; const j=c[other].indexOf(d.v); if(j>-1) c[other].splice(j,1); } renderSheet(); break; }
     case 'ck-intense': state.check.intense=d.v==='1'; renderSheet(); break;
-    case 'ck-go': { const c=state.check; const chk={energy:c.energy==null?1:c.energy, sore:c.sore.slice(), pain:c.pain.slice(), intense:!!c.intense}; startSession(c.type, chk, c.short); break; }
+    case 'ck-go': { const c=state.check, pl=c.painLvl||{}; if(c.pain.some(r=>pl[r]==null)){ toast('Bitte für jede Schmerzstelle die Stärke wählen.'); break; } const chk={energy:c.energy==null?1:c.energy, sore:c.sore.slice(), pain:c.pain.filter(r=>pl[r]>0), painLvl:Object.assign({}, pl), intense:!!c.intense}; startSession(c.type, chk, c.short); break; }
     case 'ck-skip': startSession(state.check.type, null, false); break;
 
     case 'resume': state.editId=null; state.view='session'; keepAwake(true); render(); window.scrollTo(0,0); scrollToBlock(curBlock(activeSession())); break;
@@ -3472,6 +3482,7 @@ async function exportCsv(){
 
 function onInput(ev){
   const el=ev.target, f=el.dataset.f;
+  if(el.dataset && el.dataset.pl!=null && state.check){ const r=el.dataset.pl, n=+el.value; state.check.painLvl=state.check.painLvl||{}; state.check.painLvl[r]=n; const l=document.getElementById('ck-plv-'+r); if(l) l.textContent=n+' von 10'; return; }
   if(el.id==='ob-pain'){ const o=state.ob; if(!o) return; const is=o.p.issues[+el.dataset.i], n=+el.value; if(!is) return; is.pain=n; is.status=n>=5?'acute':'sensitive'; o.plan=null; const l=document.getElementById('ob-pain-l'), t=document.getElementById('ob-pain-t'), nx=document.getElementById('ob-nx'); if(l) l.textContent=n+' von 10'; if(t) t.textContent=OB_PAIN_TXT(n); const z=document.getElementById('ob-pain-0'); if(z) z.remove(); if(nx) nx.disabled=false; return; }
   if(el.id==='ob-years'){ const o=state.ob; if(!o) return; const y=OB_YEARS[+el.value]; o.p.years=y[0]; o.plan=null; const l=document.getElementById('ob-years-l'), nx=document.getElementById('ob-nx'); if(l) l.textContent=y[1]; if(nx) nx.disabled=false; return; }
   if(f==='w' || f==='r'){
@@ -3496,6 +3507,7 @@ function onInput(ev){
 }
 
 function onChange(ev){
+  if(ev.target.dataset && ev.target.dataset.pl!=null && state.check){ const sh=document.querySelector('#sheet .sheet'), y=sh?sh.scrollTop:0; renderSheet(); const sh2=document.querySelector('#sheet .sheet'); if(sh2) sh2.scrollTop=y; return; }
   const el=ev.target, f=el.dataset.f;
   if(f==='w'){
     const s=curSession(); if(!s) return;
