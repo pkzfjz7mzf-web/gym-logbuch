@@ -859,11 +859,13 @@ const state = {
 const APP_VERSION = '1.5';
 const CHANGELOG = [
   {v:'1.5', date:null, items:[
-    'Coach: Unter Einstellungen → «Neuen Plan erstellen» fragt der Coach Ziel, Erfahrung, Zeit, Sport, Beschwerden, Beweglichkeit und Alltag ab und erstellt daraus deinen Trainingsplan mit Begründung.',
+    'Coach: Unter Einstellungen → «Neuen Plan erstellen» fragt dich der Coach Schritt für Schritt nach Zielen, Technik, Sport, Beschwerden (auf einer Körperfigur), Beweglichkeit und Zeit. Er reagiert auf deine Antworten und erstellt daraus deinen Plan mit Begründung und Quellen.',
+    'Wochenplanung: Jede Einheit bekommt einen Wochentag. Verschieben mit Erholungscheck, und liegt eine Einheit offen, fragt die App nach, was passieren soll.',
+    'Krafttest beim ersten Mal: Ein Testsatz bestimmt dein Arbeitsgewicht. Wo das nicht sinnvoll ist, tastet sich die App wie bisher heran.',
     'Jede Einheit im Coach-Plan beginnt mit einem Mobility-Block. Dazu gibt es eine kurze Mobility-Routine für freie Tage. 21 neue Mobility-Übungen.',
-    '«Etwas ist dazwischengekommen» auf der Startseite: verpasst, verschieben, wenig Zeit, Ferien oder Reise (mit Reise-Einheit fürs Hotel-Gym), krank. Der Coach sagt, was zu tun ist und warum. Nach 2–4 Wochen Pause startet die erste Einheit automatisch mit mehr Reserve.',
-    'Dein bisheriges A/B bleibt der aktive Plan, bis du einen neuen übernimmst. Zurückwechseln geht jederzeit.',
-    'Gewichtsschritte pro Übung: Unter «Schritte» legst du fest, in welchen Schritten und in welchem Bereich das Gewicht an diesem Gerät wählbar ist, z. B. 0.75 kg von 2 bis 80 kg. Vorschläge, Gewicht finden und die Plus/Minus-Tasten halten sich daran.']},
+    'Alle Regeln der App sind gegen Studien geprüft. Unter «So rechnet die App» stehen die Quellen.',
+    '«Etwas ist dazwischengekommen» auf der Startseite: verpasst, verschieben, wenig Zeit, Ferien oder Reise (mit Reise-Einheit fürs Hotel-Gym), krank.',
+    'Gewichtsschritte pro Übung: Unter «Schritte» legst du fest, in welchen Schritten und in welchem Bereich das Gewicht an diesem Gerät wählbar ist, z. B. 0.75 kg von 2 bis 80 kg.']},
   {v:'1.4', date:'2026-11-10', items:[
     'Übung tauschen: deutlich mehr Auswahl. Oben stehen Varianten der gleichen Bewegung, darunter Übungen mit anderer Mechanik für dieselben Muskeln, z. B. Beinbeuger statt RDL oder Seitheben statt Schulterdrücken.',
     '37 neue Übungen, u. a. Beinstrecker, Hackenschmidt, Good Mornings, Langhantelrudern, Chin-ups, Bankdrücken, Dips, Fliegende, Seitheben und Copenhagen Adduktion.',
@@ -1281,10 +1283,11 @@ function findPlan(exId, ctx){
   const s0 = FIND_START[exId]!=null ? FIND_START[exId] : findMinW(def);
   return {start: def.equip==='bb' ? Math.max(findMinW(def), s0) : s0, why:'Noch kein Gewicht bekannt, darum ein vorsichtiger Start.'};
 }
-function findBegin(e, ctxReentry, start, why, manual){
+function findBegin(e, ctxReentry, start, why, manual, test){
   const def=EX[e.ex];
   start=snapW(start, def);
-  e.find={status:'active', tr:(e.target.rir||[1,2]).slice(), start, w:start, r:e.target.reps[0], steps:[], why, manual:!!manual};
+  e.find={status:'active', tr:(e.target.rir||[1,2]).slice(), start, w:start, r:e.target.reps[0], steps:[], why:why+(test && test.why?' '+test.why:''), manual:!!manual};
+  if(test && test.ok){ e.find.mode='test'; e.find.phase='approach'; e.find.r=5; }
   e.target.action='find'; e.target.reason=why; e.target.w=null;
   e.sets.forEach(x=>{ if(!x.done) x.w=null; });
 }
@@ -1371,7 +1374,7 @@ function makeEntry(exId, it, ctx){
   const e = {ex:exId, key:it.key||null, group:it.group||null, plan:{sets:it.sets, reps:reps.slice()}, target:t,
     sets:Array.from({length:t.sets}, (_,i)=>({w:t.w, r:t.perSet[i]!=null?t.perSet[i]:t.reps[0], rir:null, done:false})), skipped:false};
   const fp = findPlan(exId, ctx);
-  if(fp) findBegin(e, ctx.reentry, fp.start, fp.why, false);
+  if(fp) findBegin(e, ctx.reentry, fp.start, fp.why, false, testEligible(exId, ctx));
   return e;
 }
 
@@ -1753,7 +1756,7 @@ function viewHome(){
     const alts = planIds().filter(x=>x!==nt);
     h+='<section class="hero"><div class="hero-top"><div class="plate '+plateCls(nt)+'">'+plateTxt(nt)+'</div><div><h2>'+typeName(nt)+'</h2><div class="hero-sub">'+when+' · ca. '+estimateMin(pv)+' min</div></div></div>';
     const nf=findActive(pv);
-    if(pv.reentry || nf) h+='<div class="chips">'+(pv.reentry?'<span class="chip warn">Wiedereinstieg · 2 Sätze · RIR '+({all:'3–4',none:'2–3',mixed:'2–3, Neues 3–4'}[freshKind(pv)])+'</span>':'')+(nf?'<span class="chip acc">Gewicht finden bei '+nf+' '+(nf===1?'Übung':'Übungen')+'</span>':'')+'</div>';
+    if(pv.reentry || nf) h+='<div class="chips">'+(pv.reentry?'<span class="chip warn">Wiedereinstieg · 2 Sätze · RIR '+({all:'3–4',none:'2–3',mixed:'2–3, Neues 3–4'}[freshKind(pv)])+'</span>':'')+(nf?(()=>{ let tn=0; pv.blocks.forEach(b=>b.items.forEach(x=>{ if(!x.skipped && x.find && x.find.status==='active' && x.find.mode==='test') tn++; })); const fn=nf-tn; return (tn?'<span class="chip acc">Krafttest bei '+tn+' '+(tn===1?'Übung':'Übungen')+'</span>':'')+(fn?'<span class="chip acc">Gewicht finden bei '+fn+' '+(fn===1?'Übung':'Übungen')+'</span>':''); })():'')+'</div>';
     h+=planList(pv);
     h+='<button class="btn pri block" data-a="start" data-t="'+nt+'">'+typeName(nt)+' starten</button><div class="alt">'+alts.map(x=>'<button class="link" data-a="start" data-t="'+x+'">Stattdessen '+esc(typeName(x))+'</button>').join('')+(PLANS.M?'<button class="link" data-a="start" data-t="M">Mobility für freie Tage</button>':'')+'<button class="link" data-a="start" data-t="H">Heimroutine, 10 min</button><button class="link" data-a="life-open">Etwas ist dazwischengekommen</button></div></section>';
   }
@@ -1892,10 +1895,10 @@ function entryCard(s,bi,ii){
   const tags=[]; if(s.blocks[bi].opt==='nordicA') tags.push('Vorschlag · optional'); if(e.swapFrom && EX[e.swapFrom]) tags.push('Heute statt '+EX[e.swapFrom].name); if(e.swappedTo && EX[e.swappedTo]) tags.push('Gewechselt zu '+EX[e.swappedTo].name);
   let h='<article class="ex'+(ro?' ro':'')+'" id="ex-'+bi+'-'+ii+'"><div class="ex-head"><div class="tx">'+(tags.length?'<span class="ex-tag">'+esc(tags.join(' · '))+'</span>':'')+'<h3>'+esc(def.name)+'</h3><div class="ex-meta">'+meta.join(' · ')+'</div></div>'+(canSwap?'<button class="swap-btn" data-a="swap-open" '+ref+' aria-label="'+esc(def.name)+' tauschen">'+I.swap+'Tauschen</button>':'')+'</div>';
   const f=e.find;
-  if(f && f.status==='active' && !state.editId){ h+=findPanel(s,bi,ii)+'<div class="ex-foot"><button class="ghost-btn" data-a="fd-skip" '+ref+'>Ich kenne mein Gewicht</button><span class="sp"></span>'+(EQUIP[def.equip].inc?'<button class="ghost-btn" data-a="steps-open" '+ref+'>Schritte</button>':'')+'<button class="ghost-btn" data-a="skip" '+ref+'>'+I.skip+'Auslassen</button></div>'; h+='<details class="cue"><summary>'+I.info+'<span class="when-closed">Technik-Tipp anzeigen</span><span class="when-open">Technik-Tipp</span>'+I.chevD+'</summary><p>'+esc(def.cue)+'</p></details>'; return h+'</article>'; }
+  if(f && f.status==='active' && !state.editId){ h+=(f.mode==='test'?testPanel(s,bi,ii):findPanel(s,bi,ii))+'<div class="ex-foot"><button class="ghost-btn" data-a="fd-skip" '+ref+'>Ich kenne mein Gewicht</button><span class="sp"></span>'+(EQUIP[def.equip].inc?'<button class="ghost-btn" data-a="steps-open" '+ref+'>Schritte</button>':'')+'<button class="ghost-btn" data-a="skip" '+ref+'>'+I.skip+'Auslassen</button></div>'; h+='<details class="cue"><summary>'+I.info+'<span class="when-closed">Technik-Tipp anzeigen</span><span class="when-open">Technik-Tipp</span>'+I.chevD+'</summary><p>'+esc(def.cue)+'</p></details>'; return h+'</article>'; }
   const tagTxt={up:'↑ Mehr',hold:'= Halten',down:'↓ Leichter',new:'Neu',start:'Start',found:'Gefunden',reps:'Mehr Wdh.'}[t.action]||'';
   let extra='';
-  if(f && f.status==='done') extra='<span class="note" style="color:var(--muted)">'+esc(f.steps.map(st=>findStepText(st,def)).join(' · '))+'</span>'+(findCanUndo(e)&&!state.editId?'<button class="act" data-a="fd-undo" '+ref+'>Letzten Probesatz zurücknehmen</button>':'');
+  if(f && f.status==='done') extra='<span class="note" style="color:var(--muted)">'+esc(f.steps.map(st=>f.mode==='test'?testStepText(st,def):findStepText(st,def)).join(' · '))+'</span>'+(findCanUndo(e)&&!state.editId?'<button class="act" data-a="fd-undo" '+ref+'>Letzten '+(f.mode==='test'?'Satz':'Probesatz')+' zurücknehmen</button>':'');
   else if(canFind(def, e.ex) && !e.sets.some(x=>x.done) && !state.editId && !isAux(s.type)) extra='<button class="act" data-a="fd-start" '+ref+'>Gewicht neu finden</button>';
   h+='<div class="sugg"><span class="tag '+t.action+'">'+tagTxt+'</span><span>'+esc(t.reason)+(t.notes&&t.notes.length?t.notes.map(n=>'<span class="note">'+esc(n)+'</span>').join(''):'')+(extra?'<br>'+extra:'')+'</span></div>';
   if(f && f.suggestAssist && !state.editId) h+='<div class="callout">'+I.warn+'<div><b>'+(f.steps.length && f.steps[f.steps.length-1].r<t.reps[0] ? 'Weniger als '+t.reps[0]+' saubere Wdh.' : 'Zu wenig Reserve.')+'</b> Mit Unterstützung kommst du in den Zielbereich.<div><button class="link" data-a="fd-assist" '+ref+'>Heute Klimmzüge assistiert</button></div></div></div>';
@@ -1983,6 +1986,117 @@ function findRate(s, bi, ii, rating){
   if(counted && !state.editId) afterSetDone(s,bi,ii,0);
   else Timer.start(FIND_REST, name+' · Satz 1 · '+L(result));
   return counted ? 'found' : 'done';
+}
+
+/* =========================================================
+   Krafttest beim ersten Mal (docs/coach/evidenz.md, N5)
+   Ein Testsatz mit 3–10 Wdh. bis höchstens 1 in Reserve: Reserve nahe am Limit und unter 12 Wdh. schätzt man
+   am genauesten (Halperin 2022), das Maximum lässt sich aus wenigen Wdh. am genauesten ableiten (Reynolds 2006,
+   Mayhew 2008). Ein einzelner harter Satz hat wenige exzentrische Wiederholungen und bleibt eine kleine erste
+   Belastung (Nosaka 2001, Boyd 2023). Daraus Arbeitsgewicht über repF (Nuzzo 2024).
+   ========================================================= */
+const TEST_AIM = 6, TEST_REPS = [3,10];
+const TEST_FAM = {squat:'squat', single:'squat', kneeext:'squat', hinge:'hinge', kneeflex:'hinge', glute:'hinge', hpush:'push', vpush:'push', chestiso:'push', deltiso:'push', triceps:'push', hpull:'pull', vpull:'pull', rear:'pull', latiso:'pull', biceps:'pull'};
+const TEST_RIR = {t0:0, t1:1, t2:2, t3:3.5};
+const TEST_LABEL = {t0:'0 in Reserve', t1:'1 in Reserve', t2:'2 in Reserve', t3:'3 oder mehr in Reserve', tech:'Technik wackelte'};
+function restMain(){ return +((state.settings.rest||{}).main)||90; }
+function testEligible(exId, ctx){
+  const def=EX[exId], c=(COACH_CAT||{})[exId]||{}, pr=ctx.settings.profile||{};
+  if(['bw','assist','none'].includes(def.equip) || def.noRir || def.mob || def.hold || exId==='nordic') return {ok:false};
+  const fam=TEST_FAM[c.pattern];
+  if(fam && (pr.skill||{})[fam]===0) return {ok:false, why:'Kein Test bis ans Limit, solange die Technik neu ist.'};
+  if((pr.issues||[]).some(x=>(c.regions||[]).includes(x.region))) return {ok:false, why:'Kein Test bis ans Limit, weil du in dieser Region Beschwerden angegeben hast.'};
+  const chk=normCheck(ctx.check)||{};
+  if((chk.pain||[]).some(r=>regionHits(exId,r,1))) return {ok:false, why:'Kein Test bis ans Limit, weil du heute Schmerzen angegeben hast.'};
+  if((chk.sore||[]).some(r=>regionHits(exId,r,1))) return {ok:false, why:'Kein Test bis ans Limit: Mit Muskelkater ist die Kraft ein paar Tage tiefer, der Test würde dich unterschätzen.'};
+  return {ok:true};
+}
+function testStepText(st, def){
+  const head=fmtLoad(st.w,def)+' × '+st.r;
+  if(st.phase==='approach') return 'Anlauf: '+head+' · '+FIND_LABEL[st.v];
+  return 'Test: '+head+' · '+TEST_LABEL[st.v];
+}
+function testPanel(s,bi,ii){
+  const e=s.blocks[bi].items[ii], def=EX[e.ex], f=e.find, eq=EQUIP[def.equip], ap=f.phase==='approach';
+  const ref='data-b="'+bi+'" data-i="'+ii+'"', sref=ref+' data-s="0"';
+  const na=f.steps.filter(x=>x.phase==='approach').length, nt=f.steps.filter(x=>x.phase==='test').length, ps=def.side?' pro Seite':'';
+  let h='<div class="find" id="find-'+bi+'-'+ii+'"><div class="find-h"><span class="tag find">Krafttest</span><span>'+(ap?'Anlauf '+(na+1):'Testsatz'+(nt?' '+(nt+1):''))+'</span></div>';
+  h+='<p class="find-t">'+(ap ? (na===0 ? 'Erstes Mal: Ein Testsatz bestimmt dein Arbeitsgewicht. '+esc(f.why)+' Zuerst ein lockerer Anlauf mit '+f.r+' sauberen Wdh.'+ps+', dann sag, wie viele noch drin gewesen wären.' : 'Noch ein lockerer Anlauf mit '+f.r+' Wdh.'+ps+'.')
+    : 'Jetzt zählt es: so viele saubere Wdh.'+ps+', bis höchstens noch 1 ginge. Gut sind '+TEST_REPS[0]+'–'+TEST_REPS[1]+' Wdh. Trag ein, wie viele es waren, und tipp die Reserve an.')+'</p>';
+  if(f.steps.length) h+='<ol class="find-steps">'+f.steps.map(st=>'<li>'+esc(testStepText(st,def))+'</li>').join('')+'</ol>';
+  h+='<div class="find-in"><div><div class="lab">'+(eq.col==='+kg'?'Zusatz kg':(def.pair?'kg pro Hand':'kg'))+'</div>'+numBox('fw', f.w, sref, bi,ii,0, 'kg')+'</div><div><div class="lab">'+(def.side?'Wdh/Seite':'Wdh')+'</div>'+numBox('fr', f.r, sref, bi,ii,0, 'Wdh')+'</div></div>';
+  const pl=plateHtml(f.w, def); if(pl) h+='<div class="aux"><div class="aux-row" id="pl-'+bi+'-'+ii+'">'+pl+'</div></div>';
+  if(ap){
+    h+='<div class="find-q">Wie viele Wdh. wären noch drin gewesen?</div>';
+    h+='<div class="find-r" role="group" aria-label="Wiederholungen in Reserve">'+FIND_RATINGS.map(([v,l])=>'<button class="fr-b" data-a="ft-rate" '+ref+' data-v="'+v+'" aria-label="'+FIND_LABEL[v]+'">'+l+'</button>').join('')+'</div>';
+  } else {
+    h+='<div class="find-q">Wie viele wären noch gegangen?<span>Ziel 0–1</span></div>';
+    h+='<div class="find-r" role="group" aria-label="Wiederholungen in Reserve">'+[['t0','0'],['t1','1'],['t2','2'],['t3','3+']].map(([v,l])=>'<button class="fr-b'+(v==='t0'||v==='t1'?' tgt':'')+'" data-a="ft-rate" '+ref+' data-v="'+v+'" aria-label="'+TEST_LABEL[v]+'">'+l+'</button>').join('')+'</div>';
+  }
+  h+='<button class="ghost-btn" data-a="ft-rate" '+ref+' data-v="tech">Technik wackelte</button>';
+  if(f.steps.length) h+='<div class="find-foot"><button class="link" data-a="fd-undo" '+ref+'>Letzten Satz zurücknehmen</button></div>';
+  return h+'</div>';
+}
+function testRate(s, bi, ii, v){
+  const e=s.blocks[bi].items[ii], def=EX[e.ex], f=e.find, L=x=>fmtLoad(x,def), inc=incFor(def, state.settings);
+  if(f.w==null && !def.zero){ toast('Bitte zuerst das Gewicht eintragen.'); return null; }
+  const w=f.w||0, r=f.r!=null?+f.r:(f.phase==='approach'?5:TEST_AIM), step={phase:f.phase, w, r, v, t:Date.now()};
+  const down=x=>snapW(Math.max(findMinW(def), roundTo(x, inc, 'down')), def), up1=x=>snapW(rnd(x+inc), def);
+  const next=(phase, nw, reps, label, secs)=>{ f.phase=phase; f.w=nw; f.r=reps; persist(s); Timer.start(secs, label+' · '+L(nw)); return 'next'; };
+  f.steps.push(step);
+  if(f.phase==='approach'){
+    const na=f.steps.filter(x=>x.phase==='approach').length;
+    if(v==='tech') return next('approach', findLighter(w,def), 5, 'Anlauf '+(na+1), FIND_REST);
+    if(v==='r0' || v==='r12'){
+      /* Der Anlauf war schon nahe am Limit: Er ist der Testsatz, wenn die Wdh. im guten Bereich liegen. */
+      if(r>=TEST_REPS[0] && r<=TEST_REPS[1]){ step.asTest=true; return testFinish(s, bi, ii, w, r, v==='r0'?0:1.5, []); }
+      return next('approach', findLighter(w,def), 5, 'Anlauf '+(na+1), FIND_REST);
+    }
+    const est=w*repF(r+FIND_MID[v]);
+    if(v==='r8' && na<2) return next('approach', Math.max(up1(w), down(est/repF(TEST_AIM+1)*0.9)), 5, 'Anlauf '+(na+1), FIND_REST);
+    let tw=down(est/repF(TEST_AIM+1)); if(tw<=w && v!=='r34') tw=up1(w);
+    return next('test', tw, TEST_AIM, 'Testsatz', restMain());
+  }
+  const nt=f.steps.filter(x=>x.phase==='test').length;
+  if(v==='tech'){
+    if(nt<2) return next('test', findLighter(w,def), TEST_AIM, 'Testsatz 2', restMain());
+    return testFinish(s, bi, ii, findLighter(w,def), null, null, ['Technik wackelte zweimal: Arbeitsgewicht etwas leichter, die nächsten Einheiten passen es an.']);
+  }
+  if(v==='t3' && nt<2) return next('test', Math.max(up1(w), down(w*repF(r+3.5)/repF(TEST_AIM+1))), TEST_AIM, 'Testsatz 2', restMain());
+  const notes=[];
+  if(v==='t3') notes.push('Noch 3 oder mehr in Reserve: Die Schätzung ist ungenauer.');
+  if(r>TEST_REPS[1]) notes.push('Mehr als '+TEST_REPS[1]+' Wdh.: Die Schätzung ist ungenauer.');
+  return testFinish(s, bi, ii, w, r, TEST_RIR[v], notes);
+}
+/* Abschluss: Testsatz zählt als Satz 1 (r != null), daraus Maximum und Arbeitsgewicht für die restlichen Sätze. */
+function testFinish(s, bi, ii, w, r, rir, notes){
+  const e=s.blocks[bi].items[ii], def=EX[e.ex], f=e.find, L=x=>fmtLoad(x,def), tr=findTr(f), lo=e.target.reps[0], last=f.steps[f.steps.length-1];
+  let wk=w, why;
+  if(r!=null){
+    const e1=w*repF(r+rir);
+    wk=snapW(Math.max(findMinW(def), roundTo(e1/repF(lo+(tr[0]+tr[1])/2), incFor(def, state.settings), 'down')), def);
+    f.e1rm=Math.round(e1*10)/10;
+    why='Geschätztes Maximum rund '+L(Math.round(e1*2)/2)+'. Arbeitsgewicht '+L(wk)+' für '+lo+' Wdh. mit '+rirTxt(tr)+' in Reserve. Der Testsatz zählt als Satz 1.';
+  } else why='Arbeitsgewicht '+L(wk)+'.';
+  if(notes.length) why+=' '+notes.join(' ');
+  last.kind='found';
+  f.status='done'; f.result=wk; f.counted=r!=null; delete f.reps;
+  const n=e.target.sets, sets=[];
+  if(r!=null) sets.push({w, r, rir:Math.round(rir), done:true, t:Date.now(), probe:true});
+  while(sets.length<n) sets.push({w:wk, r:e.target.perSet[sets.length]!=null?e.target.perSet[sets.length]:lo, rir:null, done:false});
+  e.sets=sets; e.target.w=wk; e.target.action='found'; e.target.reason=why;
+  persist(s);
+  if(r!=null && !state.editId) afterSetDone(s,bi,ii,0);
+  else Timer.start(FIND_REST, (def.short||def.name)+' · Satz 1 · '+L(wk));
+  return 'found';
+}
+function testUndo(s, bi, ii){
+  const e=s.blocks[bi].items[ii], f=e.find; if(!findCanUndo(e)) return;
+  const last=f.steps.pop();
+  f.status='active'; f.phase=last.phase; f.w=last.w; f.r=last.r; delete f.result; delete f.counted; delete f.e1rm;
+  e.target.action='find'; e.target.reason=f.why; e.target.w=null;
+  e.sets=Array.from({length:e.target.sets}, (_,i)=>({w:null, r:e.target.perSet[i]!=null?e.target.perSet[i]:e.target.reps[0], rir:null, done:false}));
+  persist(s);
 }
 
 function findUndo(s, bi, ii){
@@ -2159,7 +2273,7 @@ function viewSettings(){
 
   h+='<section class="sec"><h2 class="eyebrow">Wiedereinstieg</h2><div class="sgroup">';
   h+='<div class="srow"><div class="tx"><b>Wiedereinstieg aktiv</b><small>Beim ersten Mal pro Übung: 2 Sätze und RIR 3–4. Ab dem zweiten Mal normal.</small></div>'+tgl('reentry')+'</div>';
-  h+='<div class="srow"><div class="tx"><b>Gewicht finden vorschlagen</b><small>Bei neuen Übungen und nach 4 Wochen Pause, mit bis zu 3 Probesätzen</small></div>'+tgl('autoFind')+'</div>';
+  h+='<div class="srow"><div class="tx"><b>Krafttest und Gewicht finden</b><small>Bei neuen Übungen und nach 4 Wochen Pause: Testsatz oder bis zu 3 Probesätze</small></div>'+tgl('autoFind')+'</div>';
   h+='<div class="srow"><div class="tx"><b>Start</b><small>'+(st.reentryStart?'Läuft bis '+fmtDate(addDays(st.reentryStart,(st.reentryDays||14)-1)):'Startet mit deiner ersten Einheit')+'</small></div><input type="date" class="sinput date" id="st-reentryStart" data-s="reentryStart" data-t="date" value="'+(st.reentryStart||'')+'"></div></div></section>';
 
   h+='<section class="sec"><h2 class="eyebrow">Frühere Gewichte · optional</h2><div class="sgroup"><div class="srow"><div class="tx"><small>Nur für den allerersten Vorschlag pro Übung: Die App startet mit 65 % davon. Danach rechnet sie mit deinen echten Sätzen.</small></div></div>';
@@ -2238,7 +2352,7 @@ function sheetCheck(){
   if(tips.length) h+='<div class="callout">'+I.warn+'<div>'+tips.map(t=>'<div>'+t+'</div>').join('')+'</div></div>';
   if(!isAux(type)){
     const nf=findActive(buildSession(type,{preview:true}));
-    if(nf){ const min=Math.max(5, Math.round(nf*2/5)*5); h+='<div class="callout info">'+I.info+'<div><b>Gewicht finden:</b> Bei '+nf+' '+(nf===1?'Übung':'Übungen')+' findest du heute das Gewicht mit Probesätzen neu. Plane ca. '+min+' Minuten mehr ein.</div></div>'; }
+    if(nf){ const min=Math.max(5, Math.round(nf*2/5)*5); h+='<div class="callout info">'+I.info+'<div><b>Gewicht finden:</b> Bei '+nf+' '+(nf===1?'Übung':'Übungen')+' bestimmst du heute das Arbeitsgewicht neu, wo möglich mit einem Krafttest. Plane ca. '+min+' Minuten mehr ein.</div></div>'; }
   }
   h+='<button class="btn pri block" data-a="ck-go">'+typeName(type)+' starten</button><button class="link" style="align-self:center" data-a="ck-skip">Ohne Check starten</button>';
   return h;
@@ -2728,7 +2842,7 @@ function moveAction(a, d){
   if(a==='mv-skip'){ const it=agendaItems(); it.splice(it.indexOf(x),1); agendaExtend(state.settings.agenda); done('Ausgelassen. Es wird nichts nachgeholt.'); return; }
 }
 /* Nur für tools/test_app.py (lokaler Testserver): Zugriff auf Zustand und Agenda-Funktionen. */
-if(location.hostname==='127.0.0.1') window.__gl={get state(){ return state; }, render, todayStr, addDays, parseYmd, dayDiff, officialDays, agendaExtend, planIds, blocksMuscles, PLANS};
+if(location.hostname==='127.0.0.1') window.__gl={get state(){ return state; }, render, renderMain, persist, repF, testEligible, todayStr, addDays, parseYmd, dayDiff, officialDays, agendaExtend, planIds, blocksMuscles, PLANS};
 /* Proaktiv: liegen gebliebene Einheit auf der Startseite klären. */
 function agendaPrompt(){
   const x=agendaOverdue(); if(!x) return '';
@@ -2903,7 +3017,8 @@ function sheetInfo(){
   +'<div><h3>Supersätze</h3><p>Zwei Übungen für verschiedene Muskeln im Wechsel verkürzen die Einheit bei gleichem Kraft- und Muskelzuwachs. Sie fühlen sich anstrengender an. Zwei Übungen für denselben Muskel hintereinander senken dagegen die Leistung, darum paart die App nur verschiedene Muskeln.</p><cite>Zhang et al. 2025, Sports Med (Meta-Analyse) · Mang et al. 2025, J Strength Cond Res (Review)</cite></div>'
   +'<div><h3>Wochenvolumen</h3><p>Mehr harte Sätze pro Muskel und Woche bringen mehr Muskelaufbau, mit abnehmendem Ertrag: empfohlen sind mindestens 10, ab rund 18–20 flacht es ab. Indirekte Beanspruchung zählt halb. Wie oft pro Woche ein Muskel drankommt, spielt bei gleichem Umfang keine Rolle.</p><cite>ACSM Position Stand 2026 · Pelland et al. 2024 (Preprint)</cite></div>'
   +'<div><h3>Nordics</h3><p>Programme mit Nordics halbieren das Risiko für Hamstring-Verletzungen (15 Studien, 8459 Sportler). Kleine Umfänge wirken dabei gleich gut wie grosse. Darum steigert die App in kleinen Stufen von 2 × 3 bis 3 × 6 und geht nach über 3 Wochen Pause eine Stufe zurück, weil der Schutz vor Muskelkater dann nachlässt.</p><cite>van Dyk et al. 2019, BJSM · Cuthbert et al. 2020, Sports Med · Bridgeman et al. 2015</cite></div>'
-  +'<div><h3>Gewicht finden</h3><p>Bei neuen Übungen und nach mehr als 4 Wochen Pause tastet sich die App mit bis zu 3 Probesätzen an dein Arbeitsgewicht heran. Die Kraft nimmt ab, je länger die Pause dauert, eine feste Grenze nennt die Forschung nicht. Die 4 Wochen leiten sich aus dem Schutz vor Muskelkater ab, der rund 2–8 Wochen hält. Nach jedem Probesatz gibst du die Reserve an: zu leicht bedeutet +10, +25 oder +50 %, zu schwer −10 %, danach folgt der nächste Probesatz. Erst wenn die Reserve im Ziel liegt, ist das Gewicht gefunden, und dieser Probesatz zählt als erster Arbeitssatz.</p><cite>Bosquet et al. 2013, Scand J Med Sci Sports · Boyd et al. 2023, Sports Med</cite></div>'
+  +'<div><h3>Krafttest</h3><p>Beim ersten Mal mit einer Übung (oder nach mehr als 4 Wochen Pause) bestimmt ein Testsatz dein Arbeitsgewicht: ein bis zwei lockere Anläufe, dann ein Satz mit 3–10 Wiederholungen, bis höchstens noch eine ginge. Nahe am Limit und unter 12 Wiederholungen schätzt man die Reserve am genauesten, und aus wenigen Wiederholungen lässt sich das Maximum am genauesten ableiten. Ein einzelner harter Satz hat nur wenige exzentrische Wiederholungen. Zusammen mit einem zweiten, leichten Satz bleibt die erste Einheit eine kleine Belastung, die vor Muskelkater in den nächsten Einheiten schützt. Aus dem Testsatz rechnet die App das Arbeitsgewicht für die restlichen Sätze. Kein Test bei neuer Technik, bei Beschwerden in der Region, bei Muskelkater am selben Tag und bei Übungen ohne Zusatzgewicht: Dort tastet sich die App vorsichtig heran.</p><cite>Halperin et al. 2022, Sports Med · Reynolds et al. 2006, J Strength Cond Res · Mayhew et al. 2008 · Nosaka et al. 2001, Eur J Appl Physiol · Boyd et al. 2023 · Nuzzo et al. 2024</cite></div>'
+  +'<div><h3>Gewicht finden</h3><p>Wo kein Krafttest sinnvoll ist, tastet sich die App mit bis zu 3 Probesätzen an dein Arbeitsgewicht heran. Die Kraft nimmt ab, je länger die Pause dauert, eine feste Grenze nennt die Forschung nicht. Die 4 Wochen leiten sich aus dem Schutz vor Muskelkater ab, der rund 2–8 Wochen hält. Nach jedem Probesatz gibst du die Reserve an: zu leicht bedeutet +10, +25 oder +50 %, zu schwer −10 %, danach folgt der nächste Probesatz. Erst wenn die Reserve im Ziel liegt, ist das Gewicht gefunden, und dieser Probesatz zählt als erster Arbeitssatz.</p><cite>Bosquet et al. 2013, Scand J Med Sci Sports · Boyd et al. 2023, Sports Med</cite></div>'
   +'<div><h3>Aufwärmsätze</h3><p>Vor schweren Grundübungen schlägt die App 2–3 leichtere Sätze vor. Sie sind freiwillig: Die Studienlage zum Nutzen ist uneinheitlich, am ehesten helfen Sätze nahe am Arbeitsgewicht. Sie zählen nicht als Arbeitssätze.</p><cite>Ribeiro et al. 2021, Motricidade (Review)</cite></div>'
   +'<div><h3>Muskelkater</h3><p>Nach ungewohnter Belastung ist die Kraft 1–4 Tage lang messbar tiefer. Meldest du Muskelkater in einer Region, plant die App dort 1 Wiederholung mehr Reserve.</p><cite>Boyd et al. 2023, Sports Med</cite></div>'
   +'<div><h3>Beweglichkeit</h3><p>Dehnen verbessert die Beweglichkeit bis etwa 4 Minuten pro Einheit und 10 Minuten pro Woche und Muskelgruppe, darüber bringt es nicht mehr. Wie oft und wie stark du dehnst, spielt keine Rolle, Schmerz ist unnötig. Krafttraining über den vollen Bewegungsweg verbessert die Beweglichkeit gleich gut wie Dehnen.</p><cite>Ingram et al. 2024, Sports Med · Afonso et al. 2021, Healthcare</cite></div>'
@@ -3155,7 +3270,14 @@ function onClick(ev){
       const card=document.getElementById(res==='next'?'find-'+bi+'-'+ii:'ex-'+bi+'-'+ii); if(card && res==='next') card.scrollIntoView({block:'nearest'});
       break;
     }
-    case 'fd-undo': { findUndo(s, bi, ii); Timer.stop(); renderMain(); renderTop(); renderDock(); break; }
+    case 'ft-rate': {
+      const e=s.blocks[bi].items[ii], def=EX[e.ex], res=testRate(s, bi, ii, d.v); if(!res) break;
+      if(res==='found') toast('Arbeitsgewicht: '+fmtLoad(e.find.result, def));
+      renderMain(); renderTop(); renderDock();
+      const card=document.getElementById('find-'+bi+'-'+ii); if(card && res==='next') card.scrollIntoView({block:'nearest'});
+      break;
+    }
+    case 'fd-undo': { const fe=s.blocks[bi].items[ii]; if(fe.find && fe.find.mode==='test') testUndo(s, bi, ii); else findUndo(s, bi, ii); Timer.stop(); renderMain(); renderTop(); renderDock(); break; }
     case 'fd-skip': { const e=s.blocks[bi].items[ii]; e.find.status='skipped'; e.target.action='new'; e.target.reason='Arbeitsgewicht selbst eintragen.'; persist(s); renderMain(); break; }
     case 'fd-start': { const e=s.blocks[bi].items[ii], def=EX[e.ex]; const w0=e.sets.find(x=>x.w!=null); const start = w0 ? w0.w : (e.target.w!=null ? e.target.w : (FIND_START[e.ex]!=null?FIND_START[e.ex]:findMinW(def))); findBegin(e, s.reentry, start, 'Von dir gestartet.', true); persist(s); renderMain(); renderTop(); break; }
     case 'fd-assist': { swapEntry(s, bi, ii, 'pullupA', 'once'); persist(s); render(); toast('Heute Klimmzüge assistiert'); break; }

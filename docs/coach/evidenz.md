@@ -158,6 +158,26 @@ Aarons Präzisierung: Das Vorgehen wird aus Studien abgeleitet, nicht nachträgl
 | Direkt trainiert = Übungsanteil 1 | Indirekte Beanspruchung zählt halb (Pelland 2024), für die Erholung nicht untersucht. Vorsichtig nur direkte Muskeln | `blocksMuscles` |
 | Auslassen als Option | Projekt-Regel «Verpasstes wird nicht nachgeholt» (Aarons Vorliebe, keine Sportaussage) | `mv-skip`, `ag-skip` |
 
+## Krafttest beim ersten Mal (23.11., N5)
+### Quellen
+- **Halperin 2022** (Preprint-Abstract erneut gelesen): Unterschätzung um 0.95 Wdh. Genauer unter 12 Wdh. (β 0.06 gegen 0.47 darüber), leicht genauer näher am Versagen, Trainingsstand ohne Einfluss.
+- **Reynolds 2006:** Reynolds JM, Gordon TJ, Robergs RA. J Strength Cond Res. 2006;20(3):584–592. 70 Personen, Bankdrücken und Beinpresse: Vorhersage des Maximums aus 5RM am genauesten, dann 10RM, dann 20RM. Empfehlung: höchstens 10 Wdh. für lineare Formeln. Volltext.
+- **Nosaka 2001:** Nosaka K, et al. The repeated bout effect of reduced-load eccentric exercise on elbow flexor muscle damage. Eur J Appl Physiol. 2001;85:34–40. doi:10.1007/s004210100430. 2 oder 6 maximale exzentrische Wiederholungen machten weniger Schaden als 24, 6 schützten deutlich vor einer späteren vollen Belastung. Abstract, Armbeuger, 34 Studenten.
+- **Chen 2012:** Chen HL, Nosaka K, Chen TC. Eur J Appl Physiol. 2012;112(2):555–565. doi:10.1007/s00421-011-1999-8. Leichte exzentrische Belastung ohne messbaren Schaden schützt rund 1–2 Wochen. Abstract.
+
+### Ableitung
+| Regel | Ableitung | Im Code |
+|---|---|---|
+| Testsatz mit 3–10 Wdh., Ziel 6, bis höchstens 1 in Reserve | Genauigkeit der Reserve unter 12 Wdh. und nahe am Versagen am besten (Halperin 2022). Maximum aus wenigen Wdh. am genauesten, höchstens 10 (Reynolds 2006, Mayhew 2008). Ziel 6 liegt nahe an 5RM, mit 1 Reserve kein Versagen (Versagen verlängert die Erholung, Morán-Navarro 2017) | `TEST_AIM`, `TEST_REPS` |
+| Maximum und Arbeitsgewicht | 1RM = Gewicht × repF(Wdh + Reserve), Arbeitsgewicht für untere Wdh.-Grenze plus Ziel-Reserve (Nuzzo 2024). Reserve wird so verwendet, wie angegeben. Weil Menschen um rund 1 Wdh. unterschätzen, fällt die Schätzung eher vorsichtig aus | `testFinish` |
+| Ein harter Satz in der ersten Einheit | Widerspricht scheinbar «erste Einheit leichter». Wenige exzentrische Wiederholungen machen wenig Schaden und schützen trotzdem (Nosaka 2001, Chen 2012, Boyd 2023). Der Testsatz zählt als Satz 1, der zweite Satz bleibt bei RIR 3–4: insgesamt 2 Sätze wie bisher | Testsatz = Satz 1 |
+| 1–2 Anläufe, nicht gezählt | Dienen nur der Lastwahl, keine Wirkungsaussage. Reserve weit weg vom Limit ist ungenau (Halperin), darum zweiter Anlauf bei 8+ | `testRate` |
+| Testsatz mit 3+ in Reserve oder Technik wackelt: einmal wiederholen, dann mit Hinweis übernehmen | Genauigkeit nahe am Versagen (Halperin). Begrenzung auf 2 Testsätze, damit die erste Belastung klein bleibt (Nosaka 2001) | `testRate` |
+| Kein Test bei Muskelkater | Kraft 1–4 Tage reduziert (Boyd 2023): Test würde unterschätzen | `testEligible` |
+| Kein Test bei neuer Technik (Stufe 0), Beschwerden in der Region, Schmerz heute | Vorsicht, keine Studie zum Testen in diesen Fällen gelesen. Dort bleibt das Herantasten | `testEligible` |
+| Pause vor dem Testsatz = eingestellte Pause für Grundübungen | Pausenlänge ohne sicheren Einfluss über 90 s (Singer 2024). Testprotokolle mit längeren Pausen nicht gelesen | `restMain` |
+| Nicht bei Körpergewicht und Hilfsmaschine | Ohne Körpergewicht lässt sich kein Maximum rechnen | `testEligible` |
+
 ## Noch offen nach dem Audit
 1. Volle Nuzzo-Tabelle (übungsspezifische Kurven) für den Krafttest N5.
 2. Statisches Dehnen direkt vor dem Krafttraining (akute Wirkung auf die Kraft): nicht geprüft. Der Gym-Block bevorzugt dynamische Übungen, diese Wahl ist noch ohne Quelle.
