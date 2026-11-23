@@ -6,7 +6,7 @@ Aarons persönliche Trainings-Web-App (Einheit A/B, Progressionsvorschläge, RIR
 - **Live:** https://pkzfjz7mzf-web.github.io/gym-logbuch/ (GitHub Pages aus `main`, Root). Aaron nutzt sie als Home-Bildschirm-App auf dem iPhone.
 - **App:** alles in `index.html`. `sw.js` (Offline-Start), `manifest.webmanifest`, `config.js` (Supabase-URL und Publishable key, öffentlich gedacht).
 - **Daten:** Supabase-Projekt `acrascmdypdhriuoqobr`. Tabellen `sessions` und `settings` speichern JSON-Dokumente in derselben Form wie die App. Auswertungen: Views `v_einheiten`, `v_saetze`, Tabelle `exercises`. Schema in `supabase-setup.sql` (mehrfach ausführbar). Zugriff nur fürs eigene Konto (RLS).
-- **Datenstruktur nur abwärtskompatibel ändern.** Neue Übungen in der App auch in `exercises` nachtragen: SQL an Aaron geben, er führt es im SQL Editor aus.
+- **Datenstruktur nur abwärtskompatibel ändern.** Neue Übungen brauchen ab 1.5 kein SQL mehr: Die App speichert Name und Muster in jeder Einheit mit (`n`, `mu`), `v_saetze` nimmt sie, wenn die Übung in `exercises` fehlt. SQL nur noch bei Schemaänderungen, gesammelt in einem Skript pro Release (Aaron will so wenig manuelles SQL wie möglich).
 
 ## Ablauf für Änderungen (so von Aaron gewünscht)
 1. Änderung in `index.html` machen.

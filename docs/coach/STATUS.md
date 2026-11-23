@@ -6,10 +6,10 @@ Letzte Aktualisierung: 23.11.2026
 
 ## Release 1.5: Schritte beim Live-Gang
 - **Standardplan A/B entfernen** (Aaron, 23.11.): Ohne Coach-Plan startet das Onboarding. Verlauf mit Einheiten A/B bleibt lesbar (Namen aus `STD_PLANS` für die Anzeige behalten), nur nicht mehr wählbar.
-- SQL aus `docs/sql/uebungen-1.5.sql` an Aaron geben (28 Übungen).
+- SQL `docs/sql/release-1.5.sql` an Aaron geben, einmal ausführen (Ansicht v_saetze + 28 Übungen). Danach brauchen neue Übungen kein SQL mehr (Aaron will so wenig manuelles SQL wie möglich).
 
 ## Fertig
-- Katalog K1 (1.5 Test 27, 23.11.): `arms` aufgeteilt in `biceps`/`triceps` (Rudern neu biceps .5), neuer Muskel `calves` und Muster `calf` (Wadenheben stehend, sitzend, einbeinig), Körpergewicht: Pike-Liegestütze, Glute Bridge, Unterarmstütz, Seitstütz. Fokus «Arme» gilt für beide. SQL für alle 28 neuen Übungen seit 1.4 in `docs/sql/uebungen-1.5.sql` (Release-Schritt).
+- Katalog K1 (1.5 Test 27, 23.11.): `arms` aufgeteilt in `biceps`/`triceps` (Rudern neu biceps .5), neuer Muskel `calves` und Muster `calf` (Wadenheben stehend, sitzend, einbeinig), Körpergewicht: Pike-Liegestütze, Glute Bridge, Unterarmstütz, Seitstütz. Fokus «Arme» gilt für beide. SQL in `docs/sql/release-1.5.sql`. Die App speichert Name und Muster pro Übung mit (`stampNames` in `persist`, Felder `n`, `mu`), v_saetze nimmt sie als Ersatz.
 - Check vor der Einheit mit Schmerz 0–10 (1.5 Test 26, 23.11.): `painLvl` im Check, Regler pro Schmerzstelle, Start erst mit Stärke, ab 5 weglassen, darunter Hinweis an der Übung. `test_app.py` 60 OK.
 - N6 Screening (1.5 Test 25, 23.11.): `sheetScreen`, `screenAction`, `screenOpen`, Bilder `testImg`. Einstieg in den Einstellungen («Plan verbessern») und als Karte auf der Startseite, solange nie getestet (`scrHide`). Auswertung zeigt Änderungen pro Einheit (`screenPlanDiff`), «Plan aktualisieren» behält Wochentage und Agenda. Wand-Engel entfernt, Hüftbeuger = Thomas-Test. `test_app.py` 57 OK.
 - Ferien und Krankheit geprüft (1.5 Test 24, 23.11.): Texte nach Spiering 2021, Ogasawara 2013, Chen 2012, Schwellnus 2022 (IOC), Weidner 1998. Leichte Erkältung ohne +1 RIR, Warnzeichen ergänzt. Ableitungen in evidenz.md.

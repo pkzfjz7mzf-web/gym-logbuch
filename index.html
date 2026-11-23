@@ -3165,7 +3165,16 @@ function toast(msg){ const el=$('#toast'); el.textContent=msg; el.classList.add(
 
 function go(view){ state.view=view; state.delArm=false; if(view!=='session') keepAwake(false); render(); window.scrollTo(0,0); }
 
-function persist(s){ Store.saveSession(s); }
+/* Name und Muster jeder Übung mitspeichern (n, mu). Die Auswertung v_saetze nimmt sie, wenn die Übung in der Tabelle exercises fehlt.
+   So brauchen neue Übungen kein SQL mehr. */
+function exMuster(id){
+  for(const g in GROUPS) if(GROUPS[g].ex.includes(id)) return GROUPS[g].label;
+  const c=(COACH_CAT||{})[id], E=window.COACH_ENGINE||{};
+  if(c && /^mob_/.test(c.pattern)) return 'Mobility '+((E.MOB_LABEL||{})[c.pattern]||'');
+  return c ? ((E.LABEL||{})[c.pattern]||c.pattern) : '';
+}
+function stampNames(s){ (s.blocks||[]).forEach(b=>(b.items||[]).forEach(e=>{ const d=EX[e.ex]; if(d){ e.n=d.name; const mu=exMuster(e.ex); if(mu) e.mu=mu; } })); }
+function persist(s){ stampNames(s); Store.saveSession(s); }
 
 function scrollToBlock(i){
   requestAnimationFrame(()=>{ const el=document.getElementById('blk-'+i); if(el){ const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches; el.scrollIntoView({behavior:reduce?'auto':'smooth', block:'start'}); } });
