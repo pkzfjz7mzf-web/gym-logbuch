@@ -14,6 +14,10 @@ const SRC = {
   hkbrown: 'Brown, Lower Body Training, Human Kinetics (Auszug)',
   harvard: 'Harvard Health Publishing (Solan, 2025, fachlich geprüft durch Physiotherapie)',
   acekovar: 'Kovar, Top Exercises to Gain Thoracic Mobility, ACE Fachartikel',
+  shred: 'University of Calgary, Sport Injury Prevention Research Centre (SHRED Injuries)',
+  haroy: 'Harøy et al. (2017): Copenhagen Adduction Exercise im FIFA 11+, randomisierte Studie. American Journal of Sports Medicine 45',
+  hkbaechle: 'Baechle, Earle, Weight Training, 5. Aufl., Human Kinetics (Auszug)',
+  hkboyle: 'Boyle, New Functional Training for Sports, Human Kinetics (Auszug Overhead Pressing)',
   asca: 'Snarr, Esco (2013): Exercise Technique: Inverted Row. Journal of Australian Strength and Conditioning 21(4)',
   nscaptq: 'Lincoln, Ill, Ibrahim (2023): Progressive Strategies for Teaching Fundamental Resistance Training Movement Patterns. NSCA Personal Training Quarterly 10(2)'
 };
@@ -292,7 +296,37 @@ const EXPLAIN = {
     'Tiefer Ausfallschritt: ein Bein weit nach hinten, der vordere Knöchel unter dem Knie, je eine Hand links und rechts neben dem vorderen Fuss. Einfacher: das hintere Knie am Boden absetzen.',
     'Den Arm auf der Seite des vorderen Beins zur Decke strecken und den Oberkörper zur Innenseite des vorderen Oberschenkels drehen. Zurück zur Mitte, die Wiederholungen machen, dann Seite wechseln.',
     ['Vorderes Knie schiebt vor den Knöchel: Knöchel unter dem Knie.'],
-    ['acekovar']]
+    ['acekovar']],
+  copenhagen: [
+    'Seitstütz auf dem Unterarm, der Ellbogen direkt unter der Schulter, der Körper von Kopf bis Knöchel in einer geraden Linie. Der Fuss des oberen Beins liegt auf einer Bank. Ohne Bank hält ein Partner das obere Bein auf etwa Hüfthöhe am Knöchel.',
+    'Die Hüfte bleibt die ganze Zeit vom Boden weg. Den unteren Fuss kontrolliert hochführen, bis er den oberen Fuss berührt, und kurz halten, der Körper bleibt gerade. Dann den Körper etwa halb zum Boden absenken, der untere Fuss tippt den Boden nur an. Danach Seite wechseln.',
+    ['Unteres Bein schnell hochziehen: langsam und kontrolliert, notfalls weniger Wiederholungen.', 'Hüfte sackt ab: Hüfte leicht Richtung Decke.', 'Hüfte dreht nach innen: Hüfte offen und gerade.', 'Obere Schulter dreht nach vorne: Brust raus, Schulterblätter zur Wirbelsäule.', 'Kopf hängt: Nacken lang.'],
+    ['shred','haroy']],
+  ohp: [
+    'Langhantel im Ständer etwa auf Schulterhöhe. Griff etwas breiter als schulterbreit. Unter die Stange gehen und sie aus dem Ständer heben, sodass sie vorne auf den Schultern liegt, die Ellbogen zeigen nach vorne, die Unterarme senkrecht. Zurücktreten, Rücken gerade und aufrecht.',
+    'Die Stange senkrecht nach oben drücken, den Kopf dabei kurz nach hinten nehmen, damit die Stange gerade nach oben kann. Langsam zurück auf die Schultern.',
+    ['Stange läuft im Bogen um den Kopf: Kopf nach hinten nehmen, Stange senkrecht führen.', 'Spannung fehlt im Oberkörper: gedanklich die Stange auseinanderbiegen.'],
+    ['ace','nscaptq']],
+  preacher: [
+    'In die Maschine setzen und die Oberarme über das schräge Polster legen. Sitz so einstellen, dass die Ellbogen auf Höhe der Drehachse sind. Griffe fest mit dem Daumen umfassen, Handgelenke gerade, Ellbogen gestreckt, aber nicht durchgedrückt. Bauch fest, Schulterblätter nach hinten-unten.',
+    'Ausatmen und die Griffe langsam Richtung Brust beugen, Handgelenke gerade, Oberkörper ruhig. So weit beugen, wie es geht, kurz halten. Langsam zurück, bis die Arme gestreckt, aber nicht durchgedrückt sind und die Unterarme hinten leicht das Polster berühren.',
+    ['Oberkörper schwingt nach hinten: ruhig sitzen bleiben, weniger Gewicht.', 'Handgelenke knicken: gerade halten.'],
+    ['ace']],
+  landmine: [
+    'Im halben Kniestand: das hintere Knie auf einem Polster, das vordere Knie rechtwinklig, der Fuss flach am Boden. Ein Ende der Langhantel ist am Boden verankert, das freie Ende mit der Hand fassen und auf Schulterhöhe bringen. Gedrückt wird mit dem Arm auf der Seite des hinteren Knies.',
+    'Die Stange liegt vor dem Unterarm. Leicht nach vorne lehnen und die Stange nach oben drücken, bis der Ellbogen gestreckt ist. Oben bilden hinteres Knie, Hüfte, Schulter, Kopf und Hand eine gerade schräge Linie. Beim Drücken ausatmen, beim langsamen Absenken auf Schulterhöhe einatmen. Nach dem Satz Stellung und Arm wechseln.',
+    ['Hüfte knickt ein oder Hohlkreuz: Linie Knie–Hüfte–Schulter halten.', 'Stange fällt nach unten: langsam absenken.'],
+    ['hkbaechle']],
+  kneelpress: [
+    'Im halben Kniestand. Die Hantel auf Schulterhöhe, der Daumen nahe an der vorderen Schulter, der Ellbogen etwa 45° vom Oberkörper.',
+    'Die Hantel über den Kopf drücken und dabei den Arm leicht nach innen drehen, sodass der Daumen Richtung Gesicht zeigt. Auf demselben Weg zurück auf Schulterhöhe.',
+    ['Nach hinten lehnen oder Hohlkreuz, es wird ein Schrägdrücken: Oberkörper aufrecht, Bauch fest.'],
+    ['hkboyle']],
+  hammercurl: [
+    'In jeder Hand eine Kurzhantel im neutralen Griff, Daumen nach vorne, Arme gestreckt seitlich. Schrittstellung, Bauch fest, Schultern nach hinten-unten, Kopf in Linie mit der Wirbelsäule.',
+    'Ausatmen und einen oder beide Ellbogen beugen, die Hanteln Richtung vordere Schulter führen. Oberkörper aufrecht, die Ellbogen wandern nicht nach vorne, Handgelenke gerade, Schultern nicht hochziehen. Einatmen und langsam absenken, bis die Arme gestreckt sind.',
+    ['Ellbogen wandern nach vorne: seitlich am Körper lassen.', 'Schultern ziehen hoch: unten lassen.', 'Handgelenke knicken: gerade halten.'],
+    ['ace']]
 };
 const api = {EXPLAIN, SRC};
 if(typeof module !== 'undefined' && module.exports) module.exports = api; else root.COACH_EXPLAIN = api;
