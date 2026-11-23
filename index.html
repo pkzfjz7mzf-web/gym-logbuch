@@ -517,7 +517,7 @@ const PHASES = [
   {n:3, name:'10k-Spezifik & Taper', from:'2027-03-15', to:'2027-04-11'}
 ];
 
-const MUSCLES = {quads:'Beine vorne', glutes:'Gesäss', hams:'Hamstrings', upback:'Oberer Rücken', lats:'Latissimus', chest:'Brust', shoulders:'Schultern', core:'Rumpf', adductors:'Adduktoren', arms:'Arme'};
+const MUSCLES = {quads:'Beine vorne', glutes:'Gesäss', hams:'Hamstrings', upback:'Oberer Rücken', lats:'Latissimus', chest:'Brust', shoulders:'Schultern', core:'Rumpf', adductors:'Adduktoren', biceps:'Bizeps', triceps:'Trizeps', calves:'Waden', arms:'Arme'};
 
 const EQUIP = {
   bb:{hint:'Gesamtgewicht inkl. Stange', inc:'incBB', col:'kg'},
@@ -532,36 +532,43 @@ const EQUIP = {
 const EQUIP_LABEL = {bb:'Langhantel', db:'Kurzhanteln', cable:'Kabelzug', lm:'Landmine', bw:'Körpergewicht', assist:'Klimmzug-Maschine', machine:'Maschine', none:'ohne Gerät'};
 
 const EX = {
+  calfraise:{name:'Wadenheben stehend', short:'Wadenheben', equip:'machine', gear:'Wadenmaschine oder Smith-Maschine', m:{calves:1}, cue:'Fussballen auf der Kante. Unten ganz absinken lassen und kurz halten, oben auf die Zehenspitzen. Langsam, ohne Wippen.'},
+  seatedcalf:{name:'Wadenheben sitzend', equip:'machine', gear:'Wadenmaschine sitzend', m:{calves:1}, cue:'Knie unter dem Polster, Fussballen auf der Kante. Unten ganz dehnen, oben kurz halten.'},
+  slcalf:   {name:'Wadenheben einbeinig', equip:'bw', bwLoad:true, side:true, m:{calves:1}, cue:'Auf einer Stufe, mit einer Hand festhalten. Ferse ganz absinken lassen, dann auf die Zehenspitzen. Zusatzgewicht mit einer Kurzhantel in der freien Hand.'},
+  pikepush: {name:'Pike-Liegestütze', equip:'bw', m:{shoulders:1, triceps:.5}, cue:'Hüfte hoch, Körper wie ein umgekehrtes V. Kopf zwischen die Hände Richtung Boden senken, Ellbogen leicht nach hinten.'},
+  glutebridge:{name:'Glute Bridge', equip:'bw', m:{glutes:1, hams:.5}, cue:'Rückenlage, Füsse hüftbreit nahe am Gesäss. Becken hochdrücken, bis Knie, Hüfte und Schulter eine Linie bilden. Oben Gesäss anspannen, Rippen unten.'},
+  plank:    {name:'Unterarmstütz', short:'Plank', equip:'none', noRir:true, hold:true, reps:[30,45], m:{core:1}, cue:'Ellbogen unter den Schultern, Körper ein Brett. Gesäss und Bauch fest, nicht ins Hohlkreuz.'},
+  sideplank:{name:'Seitstütz', equip:'none', noRir:true, hold:true, side:true, reps:[20,30], m:{core:1}, cue:'Ellbogen unter der Schulter, Hüfte hoch, Körper in einer Linie. Pro Seite halten.'},
   goblet:   {name:'Goblet Squat', equip:'db', gear:'eine Kurzhantel', main:true, legs:true, m:{quads:1, glutes:.5, adductors:.5}, cue:'Hantel vor der Brust, Ellbogen zwischen die Knie. Brust hoch, Fersen bleiben am Boden.'},
   frontsq:  {name:'Front Squat', equip:'bb', main:true, legs:true, m:{quads:1, glutes:.5, adductors:.5}, cue:'Ellbogen hoch, Oberkörper aufrecht. Kontrolliert so tief, wie der Rücken neutral bleibt.'},
   rdl:      {name:'Rumänisches Kreuzheben', short:'RDL', equip:'bb', main:true, legs:true, ham:true, m:{hams:1, glutes:1}, cue:'Hüfte nach hinten schieben, Stange nah am Bein, Rücken neutral. Nur so tief, bis die Hamstrings deutlich ziehen.'},
-  csrow:    {name:'Brustgestütztes KH-Rudern', equip:'db', pair:true, m:{upback:1, lats:.5}, cue:'Brust bleibt auf der Bank. Zuerst die Schulterblätter nach hinten-unten, dann die Ellbogen ziehen.'},
-  incline:  {name:'Schrägbankdrücken KH', equip:'db', pair:true, m:{chest:1, shoulders:.5, arms:.5}, cue:'Bank ca. 30°. Schulterblätter zusammen, Hanteln kontrolliert bis Brusthöhe absenken.'},
+  csrow:    {name:'Brustgestütztes KH-Rudern', equip:'db', pair:true, m:{upback:1, lats:.5, biceps:.5}, cue:'Brust bleibt auf der Bank. Zuerst die Schulterblätter nach hinten-unten, dann die Ellbogen ziehen.'},
+  incline:  {name:'Schrägbankdrücken KH', equip:'db', pair:true, m:{chest:1, shoulders:.5, triceps:.5}, cue:'Bank ca. 30°. Schulterblätter zusammen, Hanteln kontrolliert bis Brusthöhe absenken.'},
   bss:      {name:'Bulgarian Split Squat', equip:'db', pair:true, side:true, legs:true, m:{quads:1, glutes:1}, cue:'Vorderer Fuss weit genug vorne. Oberkörper leicht nach vorne, Knie folgt den Zehen.'},
   facepull: {name:'Face Pulls', equip:'cable', m:{upback:1, shoulders:.5}, cue:'Seil auf Augenhöhe zur Stirn ziehen, am Ende Daumen nach hinten drehen. Rippen unten.'},
   deadbug:  {name:'Dead Bug', equip:'none', load:'reps', side:true, noRir:true, m:{core:1}, cue:'Unterer Rücken bleibt am Boden. Beim Strecken lang ausatmen. Langsamer ist schwerer.'},
   hipthrust:{name:'Hip Thrust', equip:'bb', main:true, legs:true, m:{glutes:1, hams:.5}, cue:'Kinn Richtung Brust, Rippen unten. Oben 1 s Gesäss anspannen, nicht ins Hohlkreuz drücken.'},
-  pullup:   {name:'Klimmzüge', equip:'bw', bwLoad:true, main:true, m:{lats:1, upback:.5, arms:.5}, cue:'Aus dem Hang zuerst Schulterblätter nach unten ziehen, dann Brust zur Stange.'},
-  pullupA:  {name:'Klimmzüge assistiert', equip:'assist', main:true, m:{lats:1, upback:.5, arms:.5}, cue:'Volle Bewegung, oben Brust zur Stange. Ziel: Assistenz Schritt für Schritt abbauen.'},
-  latpd:    {name:'Latzug', equip:'cable', main:true, m:{lats:1, upback:.5, arms:.5}, cue:'Zur oberen Brust ziehen, Oberkörper ruhig. Nicht nach hinten lehnen.'},
-  landmine: {name:'Landmine Press kniend', equip:'lm', side:true, m:{shoulders:1, chest:.5, arms:.5}, cue:'Halbkniend, Gesäss des hinteren Beins anspannen, Rippen unten. Kein Ausweichen ins Hohlkreuz.'},
+  pullup:   {name:'Klimmzüge', equip:'bw', bwLoad:true, main:true, m:{lats:1, upback:.5, biceps:.5}, cue:'Aus dem Hang zuerst Schulterblätter nach unten ziehen, dann Brust zur Stange.'},
+  pullupA:  {name:'Klimmzüge assistiert', equip:'assist', main:true, m:{lats:1, upback:.5, biceps:.5}, cue:'Volle Bewegung, oben Brust zur Stange. Ziel: Assistenz Schritt für Schritt abbauen.'},
+  latpd:    {name:'Latzug', equip:'cable', main:true, m:{lats:1, upback:.5, biceps:.5}, cue:'Zur oberen Brust ziehen, Oberkörper ruhig. Nicht nach hinten lehnen.'},
+  landmine: {name:'Landmine Press kniend', equip:'lm', side:true, m:{shoulders:1, chest:.5, triceps:.5}, cue:'Halbkniend, Gesäss des hinteren Beins anspannen, Rippen unten. Kein Ausweichen ins Hohlkreuz.'},
   nordic:   {name:'Nordic Hamstring Curls', short:'Nordics', equip:'none', gear:'Partner oder fixierte Füsse', load:'reps', noRir:true, ham:true, legs:true, m:{hams:1}, cue:'Hüfte gestreckt, so langsam wie möglich absenken. Mit den Händen abfangen und mit den Armen zurückdrücken.'},
-  dbrow:    {name:'Einarmiges KH-Rudern', equip:'db', side:true, m:{lats:1, upback:.5}, cue:'Rücken flach, Ellbogen Richtung Hüfte ziehen, Oberkörper dreht nicht auf.'},
+  dbrow:    {name:'Einarmiges KH-Rudern', equip:'db', side:true, m:{lats:1, upback:.5, biceps:.5}, cue:'Rücken flach, Ellbogen Richtung Hüfte ziehen, Oberkörper dreht nicht auf.'},
   latlunge: {name:'Seitliche Ausfallschritte', equip:'db', gear:'Kurzhanteln, optional', side:true, zero:true, legs:true, m:{adductors:1, glutes:.5, quads:.5}, cue:'Hüfte nach hinten, Knie über dem Fuss, anderes Bein gestreckt. Kräftig zurückdrücken.'},
   pallof:   {name:'Pallof Press', equip:'cable', side:true, rir:[2,3], m:{core:1}, cue:'Seitlich zum Kabel, Becken ruhig. Arme gerade wegdrücken und 2 s halten.'},
-  curl:     {name:'Bizeps-Curls', equip:'db', pair:true, m:{arms:1}, cue:'Ellbogen am Körper, kontrolliert ablassen.'},
-  pushdown: {name:'Trizeps-Pushdowns', equip:'cable', m:{arms:1}, cue:'Ellbogen fix am Körper, unten ganz strecken.'},
+  curl:     {name:'Bizeps-Curls', equip:'db', pair:true, m:{biceps:1}, cue:'Ellbogen am Körper, kontrolliert ablassen.'},
+  pushdown: {name:'Trizeps-Pushdowns', equip:'cable', m:{triceps:1}, cue:'Ellbogen fix am Körper, unten ganz strecken.'},
   slbridge: {name:'Einbeinige Glute Bridge', equip:'none', load:'reps', side:true, noRir:true, m:{glutes:1, hams:.5}, cue:'Becken bleibt gerade. Oben 1 s halten.'},
   hamslide: {name:'Hamstring Slides', equip:'none', gear:'Socken oder Handtuch', load:'reps', noRir:true, ham:true, reps:[6,10], m:{hams:1}, cue:'Socken oder Handtuch auf glattem Boden. Hüfte oben halten, Fersen langsam wegschieben, aktiv zurückziehen.'},
   /* Alternativen */
   legpress: {name:'Beinpresse', equip:'machine', main:true, legs:true, m:{quads:1, glutes:.5}, cue:'Füsse schulterbreit auf der Platte, unterer Rücken bleibt an der Lehne. Nur so tief, wie das Becken nicht abkippt.'},
   dbrdl:    {name:'Rumänisches Kreuzheben KH', short:'KH-RDL', equip:'db', pair:true, main:true, legs:true, ham:true, m:{hams:1, glutes:1}, cue:'Hanteln nah an den Beinen, Hüfte nach hinten, Rücken neutral. Absenken, bis die Hamstrings deutlich ziehen.'},
   slrdl:    {name:'Einbeiniges RDL', equip:'db', side:true, legs:true, ham:true, m:{hams:1, glutes:1}, cue:'Hantel in der Hand gegenüber dem Standbein, Becken bleibt gerade. Langsam, Balance vor Gewicht.'},
-  cablerow: {name:'Kabelrudern sitzend', equip:'cable', m:{upback:1, lats:.5}, cue:'Brust hoch, Schultern weg von den Ohren. Griff Richtung Bauchnabel, am Ende Schulterblätter zusammen.'},
-  machrow:  {name:'Rudermaschine', equip:'machine', m:{upback:1, lats:.5}, cue:'Brust am Polster. Zuerst die Schulterblätter nach hinten-unten, dann die Ellbogen ziehen.'},
-  dbbench:  {name:'Flachbankdrücken KH', equip:'db', pair:true, m:{chest:1, shoulders:.5, arms:.5}, cue:'Schulterblätter zusammen, Füsse fest am Boden. Hanteln kontrolliert bis Brusthöhe absenken.'},
-  chestpress:{name:'Brustpresse', equip:'machine', m:{chest:1, shoulders:.5, arms:.5}, cue:'Griffe auf Brusthöhe einstellen, Schulterblätter bleiben an der Lehne.'},
-  pushup:   {name:'Liegestütze', equip:'bw', m:{chest:1, shoulders:.5, arms:.5, core:.5}, cue:'Körper bleibt ein Brett, Gesäss angespannt. Brust bis knapp über den Boden. Zusatzgewicht z.B. mit Gewichtsweste.'},
+  cablerow: {name:'Kabelrudern sitzend', equip:'cable', m:{upback:1, lats:.5, biceps:.5}, cue:'Brust hoch, Schultern weg von den Ohren. Griff Richtung Bauchnabel, am Ende Schulterblätter zusammen.'},
+  machrow:  {name:'Rudermaschine', equip:'machine', m:{upback:1, lats:.5, biceps:.5}, cue:'Brust am Polster. Zuerst die Schulterblätter nach hinten-unten, dann die Ellbogen ziehen.'},
+  dbbench:  {name:'Flachbankdrücken KH', equip:'db', pair:true, m:{chest:1, shoulders:.5, triceps:.5}, cue:'Schulterblätter zusammen, Füsse fest am Boden. Hanteln kontrolliert bis Brusthöhe absenken.'},
+  chestpress:{name:'Brustpresse', equip:'machine', m:{chest:1, shoulders:.5, triceps:.5}, cue:'Griffe auf Brusthöhe einstellen, Schulterblätter bleiben an der Lehne.'},
+  pushup:   {name:'Liegestütze', equip:'bw', m:{chest:1, shoulders:.5, triceps:.5, core:.5}, cue:'Körper bleibt ein Brett, Gesäss angespannt. Brust bis knapp über den Boden. Zusatzgewicht z.B. mit Gewichtsweste.'},
   revlunge: {name:'Ausfallschritte rückwärts', equip:'db', pair:true, side:true, legs:true, m:{quads:1, glutes:1}, cue:'Grosser Schritt nach hinten, Oberkörper aufrecht. Vorderes Knie bleibt stabil über dem Fuss.'},
   stepup:   {name:'Step-ups', equip:'db', pair:true, side:true, legs:true, m:{quads:1, glutes:1}, cue:'Box etwa kniehoch. Mit dem oberen Bein hochdrücken, nicht mit dem unteren abstossen.'},
   revfly:   {name:'Reverse Flys KH', equip:'db', pair:true, m:{upback:1, shoulders:.5}, cue:'Oberkörper vorgeneigt oder bäuchlings auf der Schrägbank. Arme leicht gebeugt, Schulterblätter zusammenführen.'},
@@ -570,15 +577,15 @@ const EX = {
   rollout:  {name:'Ab Rollout', equip:'none', gear:'Ab-Roller oder Langhantel', load:'reps', noRir:true, reps:[6,10], m:{core:1}, cue:'Aus dem Knien nur so weit rollen, wie der untere Rücken nicht durchhängt. Gesäss fest, Rippen unten.'},
   bbbridge: {name:'Glute Bridge Langhantel', equip:'bb', main:true, legs:true, m:{glutes:1, hams:.5}, cue:'Rücken am Boden, Fersen nah am Gesäss. Oben 1 s halten, nicht ins Hohlkreuz drücken.'},
   slhipthrust:{name:'Einbeiniger Hip Thrust', equip:'bw', side:true, legs:true, m:{glutes:1, hams:.5}, cue:'Schultern auf der Bank, Becken bleibt gerade. Oben 1 s halten. Zusatzgewicht als Hantel auf der Hüfte.'},
-  kneelpress:{name:'KH-Drücken halbkniend', equip:'db', side:true, m:{shoulders:1, arms:.5, core:.5}, cue:'Halbkniend, Gesäss des hinteren Beins anspannen. Hantel über Kopf drücken, ohne ins Hohlkreuz auszuweichen.'},
-  seatedpress:{name:'Schulterdrücken sitzend KH', equip:'db', pair:true, m:{shoulders:1, arms:.5}, cue:'Lehne fast senkrecht, Rücken bleibt an der Lehne. Hanteln bis etwa Ohrhöhe absenken.'},
+  kneelpress:{name:'KH-Drücken halbkniend', equip:'db', side:true, m:{shoulders:1, triceps:.5, core:.5}, cue:'Halbkniend, Gesäss des hinteren Beins anspannen. Hantel über Kopf drücken, ohne ins Hohlkreuz auszuweichen.'},
+  seatedpress:{name:'Schulterdrücken sitzend KH', equip:'db', pair:true, m:{shoulders:1, triceps:.5}, cue:'Lehne fast senkrecht, Rücken bleibt an der Lehne. Hanteln bis etwa Ohrhöhe absenken.'},
   legcurl:  {name:'Beinbeuger liegend', equip:'machine', ham:true, legs:true, reps:[8,12], m:{hams:1}, cue:'Hüfte bleibt am Polster. Zügig beugen, 3 s langsam ablassen. Das betont die exzentrische Phase.'},
   cossack:  {name:'Cossack Squat', equip:'bw', side:true, legs:true, m:{adductors:1, glutes:.5, quads:.5}, cue:'Breiter Stand, auf ein Bein absenken, das andere bleibt gestreckt mit Zehen oben. Nur so tief, wie es sauber geht.'},
   adductor: {name:'Adduktoren-Maschine', equip:'machine', m:{adductors:1}, cue:'Kontrolliert schliessen, 1 s halten, langsam öffnen.'},
   chop:     {name:'Holzhacker am Kabel', equip:'cable', side:true, rir:[2,3], m:{core:1}, cue:'Bewegung kommt aus Hüfte und Rumpf, Arme bleiben lang. Kontrolliert zurück, Becken stabil.'},
-  hammercurl:{name:'Hammer-Curls', equip:'db', pair:true, m:{arms:1}, cue:'Daumen zeigen nach oben, Ellbogen bleiben am Körper.'},
-  cablecurl:{name:'Bizeps-Curls am Kabel', equip:'cable', m:{arms:1}, cue:'Ellbogen fix, oben kurz anspannen, langsam ablassen.'},
-  ohext:    {name:'Trizepsstrecken über Kopf', equip:'cable', m:{arms:1}, cue:'Ellbogen zeigen nach vorne, Rippen unten. Unten volle Dehnung.'},
+  hammercurl:{name:'Hammer-Curls', equip:'db', pair:true, m:{biceps:1}, cue:'Daumen zeigen nach oben, Ellbogen bleiben am Körper.'},
+  cablecurl:{name:'Bizeps-Curls am Kabel', equip:'cable', m:{biceps:1}, cue:'Ellbogen fix, oben kurz anspannen, langsam ablassen.'},
+  ohext:    {name:'Trizepsstrecken über Kopf', equip:'cable', m:{triceps:1}, cue:'Ellbogen zeigen nach vorne, Rippen unten. Unten volle Dehnung.'},
   /* Weitere Alternativen: gleiche Bewegung in anderer Ausführung oder gleiche Muskeln mit anderer Mechanik */
   hacksquat:{name:'Hackenschmidt-Kniebeuge', short:'Hackenschmidt', equip:'machine', main:true, legs:true, m:{quads:1, glutes:.5}, cue:'Rücken ganz an der Lehne, Füsse schulterbreit mittig auf der Platte. Kontrolliert tief, ohne dass das Becken abkippt.'},
   legext:   {name:'Beinstrecker', equip:'machine', legs:true, reps:[10,15], m:{quads:1}, cue:'Knie auf Höhe der Drehachse. Oben 1 s halten, langsam ablassen, Gesäss bleibt im Sitz.'},
@@ -591,20 +598,20 @@ const EX = {
   pullthrough:{name:'Cable Pull-Through', equip:'cable', legs:true, reps:[10,12], m:{glutes:1, hams:.5}, cue:'Rücken zum Kabel, Seil zwischen den Beinen. Hüfte nach hinten schieben, dann über das Gesäss nach vorne strecken.'},
   cablekick:{name:'Kickbacks am Kabel', equip:'cable', side:true, reps:[10,15], m:{glutes:1}, cue:'Leicht vorgeneigt, Bein nach hinten-oben strecken, ohne ins Hohlkreuz auszuweichen. Oben kurz halten.'},
   abduction:{name:'Abduktoren-Maschine', equip:'machine', reps:[12,15], m:{glutes:1}, cue:'Oberkörper leicht nach vorne, Beine kontrolliert öffnen, 1 s halten, langsam schliessen.'},
-  bbrow:    {name:'Langhantelrudern vorgebeugt', short:'LH-Rudern', equip:'bb', main:true, m:{upback:1, lats:.5}, cue:'Oberkörper etwa 45° vorgeneigt, Rücken neutral. Stange zum unteren Brustbein ziehen, ohne Schwung.'},
-  invrow:   {name:'Inverted Rows', equip:'bw', gear:'Stange im Rack oder Schlingentrainer', m:{upback:1, lats:.5, arms:.5}, cue:'Körper bleibt ein Brett. Brust zur Stange ziehen, Schulterblätter zusammen. Je flacher, desto schwerer.'},
+  bbrow:    {name:'Langhantelrudern vorgebeugt', short:'LH-Rudern', equip:'bb', main:true, m:{upback:1, lats:.5, biceps:.5}, cue:'Oberkörper etwa 45° vorgeneigt, Rücken neutral. Stange zum unteren Brustbein ziehen, ohne Schwung.'},
+  invrow:   {name:'Inverted Rows', equip:'bw', gear:'Stange im Rack oder Schlingentrainer', m:{upback:1, lats:.5, biceps:.5}, cue:'Körper bleibt ein Brett. Brust zur Stange ziehen, Schulterblätter zusammen. Je flacher, desto schwerer.'},
   revpec:   {name:'Reverse Butterfly Maschine', short:'Reverse Butterfly', equip:'machine', reps:[12,15], m:{upback:1, shoulders:.5}, cue:'Brust am Polster, Arme leicht gebeugt. Weit nach hinten führen, Schultern bleiben tief.'},
-  chinup:   {name:'Klimmzüge Untergriff', short:'Chin-ups', equip:'bw', bwLoad:true, main:true, m:{lats:1, arms:.5, upback:.5}, cue:'Schulterbreiter Untergriff. Schulterblätter zuerst nach unten, dann Brust zur Stange.'},
-  latpdn:   {name:'Latzug enger Griff', equip:'cable', main:true, m:{lats:1, upback:.5, arms:.5}, cue:'Neutralgriff, zur oberen Brust ziehen. Ellbogen Richtung Hüfte, Oberkörper ruhig.'},
+  chinup:   {name:'Klimmzüge Untergriff', short:'Chin-ups', equip:'bw', bwLoad:true, main:true, m:{lats:1, biceps:.5, upback:.5}, cue:'Schulterbreiter Untergriff. Schulterblätter zuerst nach unten, dann Brust zur Stange.'},
+  latpdn:   {name:'Latzug enger Griff', equip:'cable', main:true, m:{lats:1, upback:.5, biceps:.5}, cue:'Neutralgriff, zur oberen Brust ziehen. Ellbogen Richtung Hüfte, Oberkörper ruhig.'},
   straightarm:{name:'Lat-Überzüge am Kabel', equip:'cable', reps:[10,15], m:{lats:1}, cue:'Arme fast gestreckt, leicht vorgeneigt. Stange oder Seil im Bogen bis zu den Oberschenkeln ziehen, Rippen unten.'},
   dbpullover:{name:'Überzüge KH', equip:'db', gear:'eine Kurzhantel', reps:[10,12], m:{lats:1, chest:.5}, cue:'Rücken auf der Bank, Hantel mit beiden Händen. Arme leicht gebeugt im Bogen hinter den Kopf, nur so weit, wie die Rippen unten bleiben.'},
-  bbbench:  {name:'Bankdrücken Langhantel', short:'Bankdrücken', equip:'bb', main:true, m:{chest:1, shoulders:.5, arms:.5}, cue:'Schulterblätter zusammen und unten, Füsse fest. Stange kontrolliert zur unteren Brust, Ellbogen etwa 45°.'},
-  dips:     {name:'Dips', equip:'bw', bwLoad:true, m:{chest:1, arms:.5, shoulders:.5}, cue:'Leicht vorgeneigt, Schultern tief. Nur so tief, wie es in der Schulter angenehm bleibt.'},
+  bbbench:  {name:'Bankdrücken Langhantel', short:'Bankdrücken', equip:'bb', main:true, m:{chest:1, shoulders:.5, triceps:.5}, cue:'Schulterblätter zusammen und unten, Füsse fest. Stange kontrolliert zur unteren Brust, Ellbogen etwa 45°.'},
+  dips:     {name:'Dips', equip:'bw', bwLoad:true, m:{chest:1, triceps:.5, shoulders:.5}, cue:'Leicht vorgeneigt, Schultern tief. Nur so tief, wie es in der Schulter angenehm bleibt.'},
   cablefly: {name:'Fliegende am Kabel', equip:'cable', reps:[10,15], m:{chest:1, shoulders:.5}, cue:'Leicht vorgeneigt, Arme leicht gebeugt und fixiert. Im Bogen vor der Brust zusammenführen, langsam öffnen.'},
   pecdeck:  {name:'Butterfly Maschine', short:'Butterfly', equip:'machine', reps:[10,15], m:{chest:1}, cue:'Griffe auf Brusthöhe, Schulterblätter an der Lehne. Arme im Bogen zusammenführen, langsam zurück in die Dehnung.'},
   dbfly:    {name:'Fliegende KH', equip:'db', pair:true, reps:[10,15], m:{chest:1, shoulders:.5}, cue:'Flach- oder Schrägbank, Arme leicht gebeugt. Nur so tief, wie es in der Schulter angenehm ist.'},
-  ohp:      {name:'Schulterdrücken stehend LH', short:'Overhead Press', equip:'bb', main:true, m:{shoulders:1, arms:.5, core:.5}, cue:'Gesäss und Bauch fest, Rippen unten. Stange nah am Gesicht vorbei nach oben, Kopf am Ende durchschieben.'},
-  machpress:{name:'Schulterpresse Maschine', short:'Schulterpresse', equip:'machine', m:{shoulders:1, arms:.5}, cue:'Sitz so einstellen, dass die Griffe auf Schulterhöhe starten. Rücken bleibt an der Lehne.'},
+  ohp:      {name:'Schulterdrücken stehend LH', short:'Overhead Press', equip:'bb', main:true, m:{shoulders:1, triceps:.5, core:.5}, cue:'Gesäss und Bauch fest, Rippen unten. Stange nah am Gesicht vorbei nach oben, Kopf am Ende durchschieben.'},
+  machpress:{name:'Schulterpresse Maschine', short:'Schulterpresse', equip:'machine', m:{shoulders:1, triceps:.5}, cue:'Sitz so einstellen, dass die Griffe auf Schulterhöhe starten. Rücken bleibt an der Lehne.'},
   latraise: {name:'Seitheben KH', equip:'db', pair:true, reps:[12,15], m:{shoulders:1}, cue:'Arme leicht gebeugt, seitlich bis Schulterhöhe heben. Kontrolliert ablassen, ohne Schwung.'},
   cablelat: {name:'Seitheben am Kabel', equip:'cable', side:true, reps:[12,15], m:{shoulders:1}, cue:'Kabel von unten, vor dem Körper. Arm seitlich bis Schulterhöhe, Oberkörper ruhig.'},
   kneeraise:{name:'Knieheben hängend', equip:'none', gear:'Klimmzugstange', load:'reps', noRir:true, reps:[8,12], m:{core:1}, cue:'Aus dem ruhigen Hang Knie zur Brust, Becken einrollen. Langsam absenken, kein Schwung.'},
@@ -612,11 +619,11 @@ const EX = {
   copenhagen:{name:'Copenhagen Adduktion', short:'Copenhagen', equip:'none', gear:'Bank', load:'reps', side:true, noRir:true, reps:[6,10], m:{adductors:1, core:.5}, cue:'Seitstütz, oberes Bein auf der Bank. Unteres Bein zur Bank heben und langsam senken. Leichter mit dem Knie statt dem Fuss auf der Bank.'},
   cableadd: {name:'Adduktion am Kabel', equip:'cable', side:true, reps:[10,15], m:{adductors:1}, cue:'Fussschlaufe am inneren Bein, seitlich zum Kabel. Bein vor dem Standbein vorbeiziehen, langsam zurück.'},
   sumosq:   {name:'Sumo Goblet Squat', equip:'db', gear:'eine Kurzhantel', legs:true, m:{adductors:1, quads:.5, glutes:.5}, cue:'Breiter Stand, Fussspitzen nach aussen. Knie folgen den Zehen, Oberkörper aufrecht.'},
-  inclinecurl:{name:'Schrägbank-Curls', equip:'db', pair:true, m:{arms:1}, cue:'Bank etwa 45°, Arme hängen hinter dem Körper. Ellbogen bleiben hinten, unten ganz strecken.'},
-  preacher: {name:'Scott-Curls', equip:'machine', gear:'Scott-Maschine', m:{arms:1}, cue:'Oberarme ganz auf dem Polster. Unten fast strecken, oben ohne Schwung.'},
-  skull:    {name:'French Press KH', equip:'db', pair:true, m:{arms:1}, cue:'Rückenlage, Oberarme senkrecht. Hanteln neben den Kopf absenken, nur die Ellbogen bewegen sich.'},
-  kickback: {name:'Trizeps-Kickbacks am Kabel', equip:'cable', side:true, m:{arms:1}, cue:'Vorgeneigt, Oberarm parallel zum Boden. Unterarm nach hinten strecken, kurz halten.'},
-  cgbench:  {name:'Enges Bankdrücken', equip:'bb', reps:[8,10], m:{arms:1, chest:.5, shoulders:.5}, cue:'Griff etwas enger als schulterbreit, Ellbogen nah am Körper. Stange zur unteren Brust.'},
+  inclinecurl:{name:'Schrägbank-Curls', equip:'db', pair:true, m:{biceps:1}, cue:'Bank etwa 45°, Arme hängen hinter dem Körper. Ellbogen bleiben hinten, unten ganz strecken.'},
+  preacher: {name:'Scott-Curls', equip:'machine', gear:'Scott-Maschine', m:{biceps:1}, cue:'Oberarme ganz auf dem Polster. Unten fast strecken, oben ohne Schwung.'},
+  skull:    {name:'French Press KH', equip:'db', pair:true, m:{triceps:1}, cue:'Rückenlage, Oberarme senkrecht. Hanteln neben den Kopf absenken, nur die Ellbogen bewegen sich.'},
+  kickback: {name:'Trizeps-Kickbacks am Kabel', equip:'cable', side:true, m:{triceps:1}, cue:'Vorgeneigt, Oberarm parallel zum Boden. Unterarm nach hinten strecken, kurz halten.'},
+  cgbench:  {name:'Enges Bankdrücken', equip:'bb', reps:[8,10], m:{triceps:1, chest:.5, shoulders:.5}, cue:'Griff etwas enger als schulterbreit, Ellbogen nah am Körper. Stange zur unteren Brust.'},
   /* Mobility und Korrektur (mob:true): ohne Gewicht, ohne RIR. hold:true = Wiederholungen sind Sekunden. */
   tspineroll: {name:'BWS-Streckung über Foam Roller', equip:'none', gear:'Foam Roller', load:'reps', noRir:true, mob:true, reps:[8,10], m:{}, cue:'Rolle quer unter den oberen Rücken, Hände stützen den Kopf, Gesäss bleibt am Boden. Über die Rolle nach hinten strecken und ausatmen, Rippen nicht aufspreizen. Rolle nach 3–4 Wdh. ein Stück versetzen.'},
   openbook:   {name:'Open Books', equip:'none', load:'reps', noRir:true, mob:true, side:true, reps:[8,8], m:{}, cue:'Seitlage, Knie auf Hüfthöhe angewinkelt und am Boden. Oberen Arm im Bogen nach hinten öffnen, Blick folgt der Hand. Die Knie bleiben aufeinander, die Drehung kommt aus der Brustwirbelsäule.'},
@@ -649,15 +656,16 @@ const GROUPS = {
   incline: {label:'Drücken, Brust', mus:['chest'], ex:['incline','dbbench','chestpress','pushup','bbbench','dips']},
   single:  {label:'Einbeinig', mus:['quads'], ex:['bss','revlunge','stepup','splitsq','walklunge']},
   rear:    {label:'Hintere Schulter', mus:['upback'], ex:['facepull','revfly','pullapart','revpec']},
-  antiext: {label:'Rumpf gegen Hohlkreuz', mus:['core'], ex:['deadbug','birddog','rollout']},
-  glute:   {label:'Gesäss', mus:['glutes'], ex:['hipthrust','bbbridge','slhipthrust']},
+  antiext: {label:'Rumpf gegen Hohlkreuz', mus:['core'], ex:['deadbug','birddog','rollout','plank']},
+  glute:   {label:'Gesäss', mus:['glutes'], ex:['hipthrust','bbbridge','slhipthrust','glutebridge']},
   vpull:   {label:'Vertikales Ziehen', mus:['lats'], ex:['pullup','pullupA','latpd','chinup','latpdn']},
-  press:   {label:'Drücken, Schulter', mus:['shoulders'], ex:['landmine','kneelpress','seatedpress','ohp','machpress']},
+  press:   {label:'Drücken, Schulter', mus:['shoulders'], ex:['landmine','kneelpress','seatedpress','ohp','machpress','pikepush']},
   eccHam:  {label:'Exzentrisch Hamstrings', mus:['hams'], ex:['nordic','legcurl','seatcurl','hamslide','ballcurl'], note:'Nordics haben die beste Evidenz gegen Hamstring-Verletzungen. Die Alternativen sind ein Kompromiss für Tage, an denen Nordics nicht gehen.'},
   lateral: {label:'Seitlich, Adduktoren', mus:['adductors'], ex:['latlunge','cossack','adductor']},
-  antirot: {label:'Rumpf, Stabilität', mus:['core'], ex:['pallof','chop','birddog']},
+  antirot: {label:'Rumpf, Stabilität', mus:['core'], ex:['pallof','chop','birddog','sideplank']},
   curl:    {label:'Bizeps', mus:['biceps'], ex:['curl','hammercurl','cablecurl','inclinecurl','preacher']},
-  tri:     {label:'Trizeps', mus:['triceps'], ex:['pushdown','ohext','skull','kickback']}
+  tri:     {label:'Trizeps', mus:['triceps'], ex:['pushdown','ohext','skull','kickback']},
+  calf:    {label:'Waden', mus:['calves'], ex:['calfraise','seatedcalf','slcalf']}
 };
 /* Gleiche Muskeln, andere Mechanik: pro Zielmuskel die Übungen, die ihn hauptsächlich trainieren. */
 const FAMILIES = {
@@ -669,6 +677,7 @@ const FAMILIES = {
   chest:    {label:'Brust', ex:['incline','dbbench','bbbench','chestpress','pushup','dips','cablefly','pecdeck','dbfly']},
   shoulders:{label:'Schultern', ex:['landmine','kneelpress','seatedpress','ohp','machpress','latraise','cablelat']},
   core:     {label:'Rumpf', ex:['deadbug','birddog','rollout','pallof','chop','kneeraise','cablecrunch']},
+  calves:   {label:'Waden', ex:['calfraise','seatedcalf','slcalf']},
   adductors:{label:'Adduktoren', ex:['latlunge','cossack','adductor','sumosq','copenhagen','cableadd']},
   biceps:   {label:'Bizeps', ex:['curl','hammercurl','cablecurl','inclinecurl','preacher','chinup']},
   triceps:  {label:'Trizeps', ex:['pushdown','ohext','skull','kickback','cgbench','dips']}
@@ -767,7 +776,7 @@ const DEFAULTS = {v:1, swaps:{}, nordicA:true, arms:false, autoFind:true,
 const ENERGY = ['Tief','Mittel','Gut'];
 const HAMS = ['Unauffällig','Muskelkater','Ziehen/Schmerz']; // nur für alte Einheiten
 const REGIONS = [['shoulders','Schultern'],['upback','Oberer Rücken'],['lowback','Unterer Rücken'],['arms','Arme'],['hips','Gesäss/Hüfte'],['front','Beine vorne'],['back','Beine hinten'],['core','Bauch']];
-const REGION_MUSCLES = {shoulders:['shoulders','chest'], upback:['upback','lats'], arms:['arms'], hips:['glutes','adductors'], front:['quads'], back:['hams'], core:['core']};
+const REGION_MUSCLES = {shoulders:['shoulders','chest'], upback:['upback','lats'], arms:['biceps','triceps'], hips:['glutes','adductors'], front:['quads'], back:['hams'], core:['core']};
 const LOWBACK = ['rdl','dbrdl','slrdl','frontsq','goblet','dbrow','rollout','legpress','goodmorning','backext','bbrow','sumosq','ohp'];
 function regionHits(exId, region, minW){ if(region==='lowback') return LOWBACK.includes(exId); const m=(EX[exId]||{}).m||{}; return (REGION_MUSCLES[region]||[]).some(k=>(m[k]||0)>=minW); }
 function regionName(id){ const r=REGIONS.find(x=>x[0]===id); return r ? r[1] : id; }
@@ -873,6 +882,7 @@ const CHANGELOG = [
     'Jede Einheit im Coach-Plan beginnt mit einem Mobility-Block. Dazu gibt es eine kurze Mobility-Routine für freie Tage. 21 neue Mobility-Übungen.',
     'Alle Regeln der App sind gegen Studien geprüft. Unter «So rechnet die App» stehen die Quellen.',
     '«Etwas ist dazwischengekommen» auf der Startseite: verpasst, verschieben, wenig Zeit, Ferien oder Reise (mit Reise-Einheit fürs Hotel-Gym), krank.',
+    'Bizeps und Trizeps zählen getrennt, Waden sind neu dabei. Neue Übungen: Wadenheben stehend, sitzend und einbeinig, Pike-Liegestütze, Glute Bridge, Unterarmstütz und Seitstütz.',
     'Gewichtsschritte pro Übung: Unter «Schritte» legst du fest, in welchen Schritten und in welchem Bereich das Gewicht an diesem Gerät wählbar ist, z. B. 0.75 kg von 2 bis 80 kg.']},
   {v:'1.4', date:'2026-11-10', items:[
     'Übung tauschen: deutlich mehr Auswahl. Oben stehen Varianten der gleichen Bewegung, darunter Übungen mit anderer Mechanik für dieselben Muskeln, z. B. Beinbeuger statt RDL oder Seitheben statt Schulterdrücken.',

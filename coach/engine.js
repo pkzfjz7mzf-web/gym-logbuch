@@ -26,14 +26,14 @@ const SPLIT_WHY = {1:'1 Tag pro Woche: eine Ganzkörper-Einheit mit allen Grundm
   3:'3 Tage pro Woche: Ganzkörper mit wechselnden Schwerpunkten.', 4:'4 Tage pro Woche: je 2× Oberkörper und Unterkörper.',
   5:'5 Tage pro Woche: Oberkörper, Unterkörper, dann Drücken, Ziehen und Beine.', 6:'6 Tage pro Woche: 2× Drücken, Ziehen, Beine.'};
 /* Ergänzungsmuster, mit denen ein Muskel unter Ziel aufgefüllt wird. */
-const FILL = {chest:['chestiso','hpush'], shoulders:['deltiso','vpush'], lats:['latiso','vpull'], upback:['rear','hpull'], quads:['kneeext','single'], hams:['kneeflex'], glutes:['glute','abduct'], arms:['biceps','triceps']};
+const FILL = {biceps:['biceps'], triceps:['triceps'], calves:['calf'], chest:['chestiso','hpush'], shoulders:['deltiso','vpush'], lats:['latiso','vpull'], upback:['rear','hpull'], quads:['kneeext','single'], hams:['kneeflex'], glutes:['glute','abduct'], arms:['biceps','triceps']};
 const LEG = ['squat','hinge','single','glute','kneeflex','kneeext','lateral','abduct'];
 const UPPER_OK = {rear:['fb','upper','pull'], deltiso:['fb','upper','push'], chestiso:['fb','upper','push'], latiso:['fb','upper','pull'], biceps:['fb','upper','pull'], triceps:['fb','upper','push']};
 const CORE = ['antiext','antirot','coreflex'];
-const ISO = ['rear','deltiso','chestiso','latiso','biceps','triceps','kneeext','abduct'];
+const ISO = ['rear','deltiso','chestiso','latiso','biceps','triceps','kneeext','abduct','calf'];
 /* Muster -> Tauschgruppe der App (GROUPS in index.html). Fehlende Gruppen ergänzt P5. */
-const GROUP = {squat:'squat', hinge:'hinge', hpull:'hrow', hpush:'incline', single:'single', rear:'rear', antiext:'antiext', glute:'glute', vpull:'vpull', vpush:'press', kneeflex:'eccHam', lateral:'lateral', antirot:'antirot', biceps:'curl', triceps:'tri'};
-const LABEL = {squat:'Kniebeuge', hinge:'Hüftbeuge', single:'Einbeinig', hpush:'Drücken horizontal', vpush:'Drücken nach oben', hpull:'Rudern', vpull:'Ziehen von oben', glute:'Gesäss', kneeflex:'Beinbeuger', kneeext:'Beinstrecker', lateral:'Seitlich, Adduktoren', abduct:'Abduktoren', rear:'Hintere Schulter', latiso:'Latissimus', chestiso:'Brust isoliert', deltiso:'Schulter seitlich', biceps:'Bizeps', triceps:'Trizeps', antiext:'Rumpf gegen Hohlkreuz', antirot:'Rumpf gegen Drehung', coreflex:'Bauch'};
+const GROUP = {squat:'squat', hinge:'hinge', hpull:'hrow', hpush:'incline', single:'single', rear:'rear', antiext:'antiext', glute:'glute', vpull:'vpull', vpush:'press', kneeflex:'eccHam', lateral:'lateral', antirot:'antirot', biceps:'curl', triceps:'tri', calf:'calf'};
+const LABEL = {squat:'Kniebeuge', hinge:'Hüftbeuge', single:'Einbeinig', hpush:'Drücken horizontal', vpush:'Drücken nach oben', hpull:'Rudern', vpull:'Ziehen von oben', glute:'Gesäss', kneeflex:'Beinbeuger', kneeext:'Beinstrecker', lateral:'Seitlich, Adduktoren', abduct:'Abduktoren', rear:'Hintere Schulter', latiso:'Latissimus', chestiso:'Brust isoliert', deltiso:'Schulter seitlich', biceps:'Bizeps', triceps:'Trizeps', calf:'Waden', antiext:'Rumpf gegen Hohlkreuz', antirot:'Rumpf gegen Drehung', coreflex:'Bauch'};
 
 /* Grundwert pro Übung: wie gut sie sich als Standardwahl eignet (3 = erste Wahl). Nicht genannte = 1. */
 const BASE = {goblet:3, frontsq:2, rdl:3, dbrdl:2, csrow:3, dbrow:2, cablerow:2, incline:3, dbbench:2, bbbench:2, bss:3, revlunge:2, splitsq:2,
@@ -179,7 +179,7 @@ function weeklyVolume(days, EX){
 function targetFor(muscle, p, level, legMin){
   const LEGM = ['quads','glutes','hams','adductors'];
   /* Rumpf und Adduktoren: kein Aufbauziel, darum Mindestumfang. Schwerpunkt: obere Hälfte des belegten Bereichs (15–20). */
-  if((p.focus||[]).includes(muscle)) return [15,20];
+  if((p.focus||[]).includes(muscle) || (['biceps','triceps'].includes(muscle) && (p.focus||[]).includes('arms'))) return [15,20];
   const base = (gw(p,'muscle') && !(legMin && LEGM.includes(muscle)) && !['core','adductors'].includes(muscle)) ? [10,20] : [4,10];
   let f = 1;
   if((p.focus||[]).includes(muscle)) f *= 1.3;
@@ -292,7 +292,7 @@ function buildPlan(profile, EX, CAT){
   if(trimmed) why.push({topic:'zeit', text:'Zeitbudget '+minutes+' Minuten: Ergänzungen wurden gekürzt, die Grundmuster bleiben.'});
 
   // 5) Volumen auffüllen, wo Zeit bleibt und ein Muskel unter dem Ziel liegt
-  const muscles = ['quads','glutes','hams','upback','lats','chest','shoulders','core','adductors','arms'];
+  const muscles = ['quads','glutes','hams','calves','upback','lats','chest','shoulders','biceps','triceps','core','adductors'];
   for(let guard=0; guard<80; guard++){
     const v = weeklyVolume(days, EX);
     const lack = muscles.map(m => ({m, d:targetFor(m,p,level,legFactor)[0]-(v[m]||0)})).filter(x => x.d>0).sort((a,b) => b.d-a.d);
@@ -324,7 +324,7 @@ function buildPlan(profile, EX, CAT){
   }
   const vol = weeklyVolume(days, EX), volume = {};
   muscles.forEach(m => { const t = targetFor(m,p,level,legFactor); volume[m] = {sets:vol[m]||0, target:t}; });
-  const low = muscles.filter(m => Math.round(volume[m].sets) < volume[m].target[0] && !['core','adductors','arms'].includes(m));
+  const low = muscles.filter(m => Math.round(volume[m].sets) < volume[m].target[0] && !['core','adductors'].includes(m));
   if(low.length) why.push({topic:'volumen', text:'Mit '+nDays+' × '+minutes+' Minuten liegen einige Muskeln unter dem empfohlenen Wochenumfang (ACSM 2026). Mehr Tage oder längere Einheiten würden das ändern.', muscles:low});
 
   // 6) Ausdauer

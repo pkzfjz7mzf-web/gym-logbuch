@@ -4,7 +4,7 @@
 
    Zeile: id: [Muster, Niveau, Beweglichkeit, Auslöser, Regionen, Dehnung]
    - Muster: squat, hinge, single, hpush, vpush, hpull, vpull, glute, kneeflex, kneeext, lateral, abduct,
-     rear, latiso, chestiso, deltiso, biceps, triceps, antiext, antirot, coreflex,
+     rear, latiso, chestiso, deltiso, biceps, triceps, calf, antiext, antirot, coreflex,
      Mobility: mob_tspine, mob_shoulder, mob_neck, mob_hipflex, mob_hip, mob_ankle, mob_chain
    - Niveau: 1 leicht lernbar und stabil · 2 mittlere Technik · 3 anspruchsvoll (Technik, Kraft oder Balance)
    - Beweglichkeit: verlangter Selbsttest und Mindestresultat (1 = «knapp» reicht, 2 = muss «gehen»).
@@ -97,6 +97,13 @@ const ROWS = {
   rollout:    ['antiext',3,'overhead1','kneel overhead','lowback shoulder',1],
   pallof:     ['antirot',1,'','','',0],
   chop:       ['antirot',2,'','rotation','lowback',0],
+  calfraise:  ['calf',1,'','','',1],
+  seatedcalf: ['calf',1,'','','',1],
+  slcalf:     ['calf',2,'','','',1],
+  pikepush:   ['vpush',2,'overhead2','overhead wrist','shoulder wrist',0],
+  glutebridge:['glute',1,'','','',0],
+  plank:      ['antiext',1,'','wrist','',0],
+  sideplank:  ['antirot',1,'','','shoulder',0],
   kneeraise:  ['coreflex',2,'overhead1','pull','shoulder hip',0],
   cablecrunch:['coreflex',1,'','kneel','lowback',0],
   /* Mobility und Korrektur */
@@ -122,7 +129,7 @@ const ROWS = {
   hamfloss:   ['mob_chain',1,'','','',0],
   inchworm:   ['mob_chain',1,'','wrist bend','',0]
 };
-const PATTERNS = ['squat','hinge','single','hpush','vpush','hpull','vpull','glute','kneeflex','kneeext','lateral','abduct','rear','latiso','chestiso','deltiso','biceps','triceps','antiext','antirot','coreflex','mob_tspine','mob_shoulder','mob_neck','mob_hipflex','mob_hip','mob_ankle','mob_chain'];
+const PATTERNS = ['calf','squat','hinge','single','hpush','vpush','hpull','vpull','glute','kneeflex','kneeext','lateral','abduct','rear','latiso','chestiso','deltiso','biceps','triceps','antiext','antirot','coreflex','mob_tspine','mob_shoulder','mob_neck','mob_hipflex','mob_hip','mob_ankle','mob_chain'];
 const TESTS = ['squat','overhead','toes','hipflex'];
 const TRIGGERS = ['deepknee','overhead','rotation','bend','axial','pull','pushdeep','kneel','wrist'];
 const REGIONS = ['knee','hip','lowback','shoulder','elbow','wrist','hams','adductors'];

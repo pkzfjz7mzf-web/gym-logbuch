@@ -6,9 +6,10 @@ Letzte Aktualisierung: 23.11.2026
 
 ## Release 1.5: Schritte beim Live-Gang
 - **Standardplan A/B entfernen** (Aaron, 23.11.): Ohne Coach-Plan startet das Onboarding. Verlauf mit Einheiten A/B bleibt lesbar (Namen aus `STD_PLANS` für die Anzeige behalten), nur nicht mehr wählbar.
-- SQL für die 21 Mobility-Übungen an Aaron geben.
+- SQL aus `docs/sql/uebungen-1.5.sql` an Aaron geben (28 Übungen).
 
 ## Fertig
+- Katalog K1 (1.5 Test 27, 23.11.): `arms` aufgeteilt in `biceps`/`triceps` (Rudern neu biceps .5), neuer Muskel `calves` und Muster `calf` (Wadenheben stehend, sitzend, einbeinig), Körpergewicht: Pike-Liegestütze, Glute Bridge, Unterarmstütz, Seitstütz. Fokus «Arme» gilt für beide. SQL für alle 28 neuen Übungen seit 1.4 in `docs/sql/uebungen-1.5.sql` (Release-Schritt).
 - Check vor der Einheit mit Schmerz 0–10 (1.5 Test 26, 23.11.): `painLvl` im Check, Regler pro Schmerzstelle, Start erst mit Stärke, ab 5 weglassen, darunter Hinweis an der Übung. `test_app.py` 60 OK.
 - N6 Screening (1.5 Test 25, 23.11.): `sheetScreen`, `screenAction`, `screenOpen`, Bilder `testImg`. Einstieg in den Einstellungen («Plan verbessern») und als Karte auf der Startseite, solange nie getestet (`scrHide`). Auswertung zeigt Änderungen pro Einheit (`screenPlanDiff`), «Plan aktualisieren» behält Wochentage und Agenda. Wand-Engel entfernt, Hüftbeuger = Thomas-Test. `test_app.py` 57 OK.
 - Ferien und Krankheit geprüft (1.5 Test 24, 23.11.): Texte nach Spiering 2021, Ogasawara 2013, Chen 2012, Schwellnus 2022 (IOC), Weidner 1998. Leichte Erkältung ohne +1 RIR, Warnzeichen ergänzt. Ableitungen in evidenz.md.
@@ -37,7 +38,7 @@ Letzte Aktualisierung: 23.11.2026
 
 ## Als Nächstes
 **Neu priorisiert am 11.11. abends, siehe konzept.md Abschnitt 12.** Aaron ist mit dem Onboarding unzufrieden («Ein Coach würde nicht vorschlagen, sondern die Bedürfnisse abfragen») und hat eine Referenz-App aufgenommen. Aaron hat am 12.11. mit «weiter» freigegeben. N1 und N2 sind fertig, weiter mit N3.
-0. **Pakete N1–N6 fertig. Offen: Katalog erweitern (Waden, Körpergewicht, Arme getrennt), Erklärungen in drei Teilen, Animation. Vor Release: Aarons Freigabe, Release-Schritte oben.**
+0. **Pakete N1–N6 fertig. Offen: Erklärungen in drei Teilen, Animation. Vor Release: Aarons Freigabe, Release-Schritte oben.**
 1. P5b Rest: Gewicht finden mit Schätzung aus verwandten Übungen (konzept.md Abschnitt 9). Heute startet eine neue Übung mit festem `FIND_START` oder 50 % des früheren Gewichts. Neu: Startwert aus dem e1RM einer Übung desselben Musters mal Verhältnis, minus 10–15 %. Dafür Verhältnis-Tabelle pro Muster in `coach/engine.js` und Aufruf in `findPlan()`.
 2. P6 Katalog erweitern: Waden, Körpergewichtsübungen (Kniebeuge, Liegestütz-Varianten, Ziehen ohne Stange), Bizeps und Trizeps als eigene Muskeln statt `arms`. Danach Reise-Modus «ohne Geräte» ergänzen (heute nur Hotel-Gym und Pause).
 3. P7 Erklärungen pro Übung in drei Teilen (Aufbau, Ausführung, häufige Fehler) statt einem `cue`. P8 Animation Prototyp mit 2–3 Übungen, Aaron entscheidet über Qualität.

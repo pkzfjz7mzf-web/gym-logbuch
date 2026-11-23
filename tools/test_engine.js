@@ -65,7 +65,7 @@ for(const name in P){
   const r = E.buildPlan(P.runner, EX, CATALOG), a = E.buildPlan(Object.assign({}, P.runner, {sports:[], priority:'both'}), EX, CATALOG);
   ok('Läufer mit Vorrang Ausdauer: weniger Beinvolumen', r.volume.quads.sets < a.volume.quads.sets && r.why.some(w => w.topic==='ausdauer'), r.volume.quads.sets+' vs '+a.volume.quads.sets);
   const m = E.buildPlan(P.muscle4, EX, CATALOG), base = E.buildPlan(Object.assign({}, P.muscle4, {focus:[]}), EX, CATALOG);
-  ok('Schwerpunkt Brust und Arme: mehr Volumen dort', m.volume.chest.sets > base.volume.chest.sets && m.volume.arms.sets > base.volume.arms.sets, JSON.stringify([m.volume.chest.sets, base.volume.chest.sets, m.volume.arms.sets, base.volume.arms.sets]));
+  ok('Schwerpunkt Brust und Arme: mehr Volumen dort', m.volume.chest.sets > base.volume.chest.sets && m.volume.biceps.sets > base.volume.biceps.sets, JSON.stringify([m.volume.chest.sets, base.volume.chest.sets, m.volume.biceps.sets, base.volume.biceps.sets]));
   const sh = E.buildPlan(P.short, EX, CATALOG);
   ok('30 Minuten: Grundübungen bleiben, Hinweis auf Zeit', sh.days.every(d => d.blocks.some(b => b.items.some(i => i.main))) && sh.why.some(w => w.topic==='zeit')); }
 
