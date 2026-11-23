@@ -35,6 +35,9 @@ const SRC = {
   maeo: 'Maeo et al. (2023): Triceps hypertrophy is substantially greater after elbow extension training in the overhead versus neutral arm position. European Journal of Sport Science',
   kinoshita: 'Kinoshita et al. (2023): Triceps surae muscle hypertrophy is greater after standing versus seated calf-raise training. Frontiers in Physiology 14',
   buonsenso: 'Buonsenso et al. (2025): Electromyographic Analysis of Back Muscle Activation During Lat Pulldown Exercise. Journal of Functional Morphology and Kinesiology 10(3)',
+  acechest: 'ACE-Sponsored Research: Top 3 Most Effective Chest Exercises, ACE Certified News 2012 (Kelly)',
+  clevelandsq: 'Cleveland Clinic Health Essentials, Squat Variations (Sportmediziner Matthew Kampert, DO)',
+  hardwick: 'Hardwick et al. (2006): Serratus anterior activation during a wall slide exercise. Journal of Orthopaedic and Sports Physical Therapy 36(12)',
   asca: 'Snarr, Esco (2013): Exercise Technique: Inverted Row. Journal of Australian Strength and Conditioning 21(4)',
   nscaptq: 'Lincoln, Ill, Ibrahim (2023): Progressive Strategies for Teaching Fundamental Resistance Training Movement Patterns. NSCA Personal Training Quarterly 10(2)'
 };
@@ -482,7 +485,23 @@ const EXPLAIN = {
   latpdn: ['Oberschenkelpolster so einstellen, dass es die Beine fest am Sitz hält. Den engen Griff mit neutraler Handhaltung fassen, die Hände etwa schulterbreit. Aufrecht sitzen, Brust hoch, Rücken flach, Bauch fest.',
     'Zuerst die Schulterblätter nach unten-hinten ziehen, dann die Ellbogen gerade nach unten führen und den Griff zur Brust ziehen, etwa 2 Sekunden. Kontrolliert nachgeben, ebenfalls etwa 2 Sekunden, bis die Arme gestreckt sind. Der Latissimus arbeitet mit diesem Griff etwa gleich stark wie mit dem breiten Griff.',
     ['Mit Zurücklehnen starten oder schwingen: Oberkörper ruhig und aufrecht.', 'Ziehen nur aus den Armen: zuerst die Schulterblätter nach unten.', 'Nur halbe Bewegung: oben die Arme ganz strecken.'],
-    ['buonsenso','nscab']]
+    ['buonsenso','nscab']],
+  pecdeck: ['Sitzen, die Füsse flach am Boden, etwa schulterbreit oder breiter, der Rücken liegt an der Lehne. Die Ellbogen sind auf Schulterhöhe etwa 75 bis 90° gebeugt, die Unterarme liegen an den Polstern der beweglichen Arme.',
+    'Die Arme langsam zur Mitte führen, bis sie sich fast treffen. Dann langsam zurück in die Ausgangslage.',
+    ['Zu viel Gewicht, die Bewegung wird kürzer: weniger Gewicht, volle Bewegung.', 'Oberer Rücken löst sich von der Lehne: Rücken an der Lehne lassen, weniger Gewicht.'],
+    ['acechest']],
+  sumosq: ['Breiter Stand, die Fussspitzen zeigen nach aussen. Eine Kurzhantel nah vor der Brust halten, wie beim Goblet Squat.',
+    'In die Hocke gehen, der Oberkörper bleibt aufrecht, die Hantel bleibt an der Brust. Der breite Stand erlaubt eine tiefe Hocke, ohne dass sich der Oberkörper stark nach vorne neigt, und belastet die Innenseite der Oberschenkel mehr als die normale Kniebeuge. Über die ganzen Füsse wieder aufrichten.',
+    ['Oberkörper kippt nach vorne: Brust hoch, Hantel an der Brust.', 'Zu tief für die Beweglichkeit: der breite Stand braucht bewegliche Hüften und Sprunggelenke, nur so tief wie es sauber geht.'],
+    ['clevelandsq','ace']],
+  wallslidef: ['Vor einer glatten Wand stehen, ein Fuss vorne an der Wand, der andere schulterbreit dahinter. Die Unterarme liegen mit der Kleinfingerseite an der Wand, Schultern und Ellbogen sind je etwa 90° gebeugt.',
+    'Die Unterarme an der Wand nach oben gleiten lassen und dabei in die Wand lehnen, das Gewicht geht vom hinteren auf den vorderen Fuss. Dabei die Schulterblätter nach aussen und um den Brustkorb herum führen. So hoch, wie die Schultern gehen, dann zurück.',
+    ['Schulterblätter bleiben hinten: beim Hochgleiten nach aussen-vorne führen.'],
+    ['hardwick']],
+  thomasstr: ['Am Ende einer Bank sitzen, die Oberschenkel liegen bis zur Mitte auf. Aufrecht sitzen, Bauch fest, Schultern nach hinten-unten, ohne ins Hohlkreuz zu gehen.',
+    'Leicht zurücklehnen, ein Knie zur Brust ziehen und den Oberschenkel festhalten. Den Rücken langsam Wirbel für Wirbel auf die Bank ablegen. Das andere Bein senken, sodass der Unterschenkel über die Kante hängt, das dehnt den Hüftbeuger dieses Beins. 15 bis 30 Sekunden halten, 2 bis 4 Wiederholungen, dann Seite wechseln. Kontrolliert hinein und hinaus.',
+    ['Hohlkreuz: das Knie fest zur Brust ziehen.', 'Ruckartig: langsam in die Position und wieder hinaus.'],
+    ['ace']]
 };
 const api = {EXPLAIN, SRC};
 if(typeof module !== 'undefined' && module.exports) module.exports = api; else root.COACH_EXPLAIN = api;

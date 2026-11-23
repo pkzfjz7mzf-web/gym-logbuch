@@ -42,11 +42,11 @@ const BASE = {goblet:3, frontsq:2, rdl:3, dbrdl:2, csrow:3, dbrow:2, cablerow:2,
   cablefly:2, pecdeck:2, straightarm:2, legext:2, legpress:2, hacksquat:2, cablecrunch:2, kneeraise:2, abduction:2,
   tspineroll:4, openbook:3, threadneedle:2, wallslide:3, pecstretch:2, latstretch:2, chintuck:3, hipflexstretch:3, couchstretch:2, hip9090:2, lungerot:3,
   squathold:3, adductorrock:2, figure4:2, kneetowall:3, calfstretch:2, legswing:3, hamfloss:2, inchworm:2,
-  heeltouch:2, chestopen:3, neckflex:3, hamwall:2, hip9090h:2};
+  heeltouch:2, chestopen:3, neckflex:3, hamwall:2, hip9090h:2, wallslidef:2, thomasstr:2};
 /* Zusätzliches Material neben dem Gerätetyp. gym hat alles. */
 const NEEDS = {pullup:['bar'], chinup:['bar'], kneeraise:['bar'], invrow:['bar'], dips:['gym'], incline:['bench'], dbbench:['bench'], csrow:['bench'], bbbench:['bench'],
   skull:['bench'], inclinecurl:['bench'], dbfly:['bench'], dbpullover:['bench'], hipthrust:['bench'], seatedpress:['bench'], slhipthrust:['bench'], bss:['bench'], stepup:['bench'],
-  backext:['gym'], rollout:['gym'], ballcurl:['gym'], tspineroll:['gym'], latstretch:['bench'], pullapart:['bands'], landmine:['gym'], frontsq:['rack'], goodmorning:['rack'], ohp:['rack']};
+  backext:['gym'], rollout:['gym'], ballcurl:['gym'], tspineroll:['gym'], latstretch:['bench'], thomasstr:['bench'], pullapart:['bands'], landmine:['gym'], frontsq:['rack'], goodmorning:['rack'], ohp:['rack']};
 const REPS = {nordic:[3,5], deadbug:[8,8], birddog:[8,8], pallof:[10,10], copenhagen:[6,10], hamslide:[6,10], rollout:[6,10], latlunge:[8,8], cossack:[6,8]};
 const TEST_NAME = {squat:'tiefe Hocke', overhead:'Arme über Kopf', toes:'Finger zum Boden', hipflex:'Hüftbeuger'};
 const TRIG_NAME = {deepknee:'tiefes Kniebeugen', overhead:'Überkopf-Bewegungen', rotation:'Drehung', bend:'Vorbeugen unter Last', axial:'Last auf der Wirbelsäule', pull:'Hängen und Zug', pushdeep:'tiefe Schulterstreckung', kneel:'Knien', wrist:'Stütz auf dem Handgelenk'};
