@@ -248,6 +248,14 @@ Aaron, 23.11.: Auch Technikbeschreibungen fallen unter die Evidenz-Pflicht.
 - **Kein Ersatz gefunden:** Beinstrecker (Muster kneeext) und Abduktoren-Maschine (Muster abduct). Die Muster fallen weg. In der Vorlage L2 steht statt Beinstrecker eine einbeinige Übung, Schwerpunkt «Beine vorne» füllt mit einbeinigen Übungen auf.
 - **Folgen:** Katalog 72 Übungen, alle mit Erklärung und Quelle. Trizeps hat nur noch Pushdowns, Lat-Isolation nur Lat-Überzüge, Schulter-, Nacken-, Hüftbeuger- und Sprunggelenk-Mobility je eine Übung. Im Standardplan A/B (wird beim Release gelöscht) stehen noch brustgestütztes Rudern und Pallof Press.
 
+### Nachsuche 23.11. (Aaron: «Beinstrecker und Abduktoren sind Basics»), 1.5 Test 35
+- Aaron hatte recht, die erste Suche war zu eng (nur Fachverbände). Mit Kliniken, Lehrbüchern und Studien gefunden:
+- **Beinstrecker** `legext`: Mayo Clinic, Video mit Dr. Laskowski (Sitz, Polster an den Knöcheln, etwa 90°, bis fast gestreckt, nicht durchdrücken, ganz zurück) und Stephen, Fraser, Dalton 2025 (offenes Lehrbuch eCampusOntario: Rücken an der Lehne, Knie auf Drehachse). Die Aussagen der Mayo-Seite zur Kniebelastung sind nicht übernommen.
+- **Abduktoren-Maschine** `abduction`: Western University Campus Recreation (Einstellung und Bewegung, ohne genannte Fachperson, schwächste Quelle im Register) und de Farias et al. 2026, Scientific Reports, n = 12 (aufrecht vs. vorgeneigt: vorgeneigt deutlich weniger Tensor fasciae latae, Gluteus medius nicht stärker). Der alte Hinweis «Oberkörper leicht nach vorne» ist damit nicht als Standard belegt, die App sagt jetzt «aufrecht» und nennt die Variante.
+- **Dabei auch gefunden und zurück im Katalog:** Pallof Press (ACE 332 «Standing Anti-rotation Press»), Lat-Dehnung an der Bank (ACE 141, Arme gestreckt auf der Bank statt Ellbogen, Hinweis angepasst).
+- Muster kneeext und abduct wieder aktiv, L2 hat wieder den Beinstrecker-Platz. Katalog 76, ausgemustert 40.
+- **Lehre:** Die übrigen 40 mit derselben breiteren Suche nochmals prüfen (ACE-Verzeichnis per RSS, Mayo-Clinic-Videos, offene Lehrbücher, Studienprotokolle).
+
 ## Noch offen nach dem Audit
 1. Volle Nuzzo-Tabelle (übungsspezifische Kurven) für den Krafttest N5.
 2. Statisches Dehnen direkt vor dem Krafttraining (akute Wirkung auf die Kraft): nicht geprüft. Der Gym-Block bevorzugt dynamische Übungen, diese Wahl ist noch ohne Quelle.

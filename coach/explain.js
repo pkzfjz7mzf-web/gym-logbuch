@@ -22,6 +22,10 @@ const SRC = {
   acetabor: 'Tabor, Thoracic Mobility Exercises to Address Shoulder Pain, ACE Fachartikel',
   nscalp: 'NSCA Lifting Proficiencies for Various Strength Movements (Lehrunterlage, Western Illinois University)',
   cleveland: 'Cleveland Clinic Health Essentials, Anleitung von Physiotherapeutin Dawn Lorring',
+  mayo: 'Mayo Clinic, Video «Knee extension with weight machine» (Dr. Laskowski)',
+  stephen: 'Stephen, Fraser, Dalton (2025): The Foundations of Human Movement and Physical Fitness, eCampusOntario (offenes Lehrbuch)',
+  westernrec: 'Western University (London, Kanada), Campus Recreation, Geräteanleitung Hüfte und Gesäss',
+  defarias: 'de Farias et al. (2026): Higher hip flexion decreases tensor fascia latae activation … during seated abduction machine. Scientific Reports',
   asca: 'Snarr, Esco (2013): Exercise Technique: Inverted Row. Journal of Australian Strength and Conditioning 21(4)',
   nscaptq: 'Lincoln, Ill, Ibrahim (2023): Progressive Strategies for Teaching Fundamental Resistance Training Movement Patterns. NSCA Personal Training Quarterly 10(2)'
 };
@@ -385,7 +389,27 @@ const EXPLAIN = {
     'Auf dem Boden sitzen. Das vordere Bein liegt mit der Aussenseite des Oberschenkels am Boden, das Knie 90° gebeugt, der Unterschenkel parallel zum Oberkörper. Das hintere Bein liegt seitlich mit der Innenseite am Boden, das Knie 90° gebeugt, der Unterschenkel zeigt nach hinten. Füsse locker. Kommt das vordere Knie nicht zum Boden, ein Kissen darunter oder auf einen Block sitzen.',
     'Oberkörper aufrecht, Schultern gerade, der Körper bildet ein aufrechtes Rechteck. 20 bis 60 Sekunden halten, dann die Beine wechseln. Bei Schmerz oder Einklemmen aufhören.',
     ['Oberkörper fällt zur Seite oder rundet: aufrecht sitzen, notfalls erhöht sitzen.'],
-    ['cleveland']]
+    ['cleveland']],
+  legext: [
+    'In die Maschine setzen, der Rücken an der Lehne. Sitz so einstellen, dass die Knie auf Höhe der Drehachse der Maschine sind. Das Polster liegt vorne an den Knöcheln bzw. unten am Schienbein, Oberschenkel und Unterschenkel bilden etwa einen rechten Winkel. Zehen neutral oder leicht angezogen.',
+    'Mit den Oberschenkeln die Knie langsam strecken, bis sie fast gestreckt sind. Kurz halten, dann langsam ganz zurück in die Ausgangslage. Gleichmässig und kontrolliert in beide Richtungen.',
+    ['Knie oben durchgedrückt: kurz vor dem ganzen Strecken stoppen.', 'Nur halbe Bewegung: jedes Mal ganz zurück in die Ausgangslage.', 'Ruckartig: langsam hoch und runter.'],
+    ['mayo','stephen']],
+  abduction: [
+    'In die Maschine setzen, die Knie zusammen. Die Polster so einstellen, dass sie leicht aussen an den Oberschenkeln anliegen. Aufrecht sitzen, der Rücken an der Lehne.',
+    'Die Knie gegen die Polster nach aussen drücken, dann kontrolliert zurück in die Ausgangslage. Variante: mit nach vorne geneigtem Oberkörper. Dabei arbeitet der vordere Hüftmuskel (Tensor fasciae latae) deutlich weniger mit, der mittlere Gesässmuskel aber nicht stärker als aufrecht.',
+    ['Polster schlagen zurück: kontrolliert schliessen.'],
+    ['westernrec','defarias']],
+  pallof: [
+    'Kabelzug etwa auf Brusthöhe, seitlich zum Gerät stehen. Füsse hüftbreit, Hüfte gestreckt, Knie leicht gebeugt. Den Griff mit beiden Händen fassen, Finger ineinander, die Ellbogen am Körper.',
+    'Rücken gerade und aufrecht. Den Griff gerade nach vorne drücken, bis die Arme vor der Brust gestreckt sind. 2 bis 3 Sekunden halten, dann die Ellbogen langsam zurück an den Körper. Danach Seite wechseln.',
+    ['Oberkörper dreht zum Kabel: Rücken gerade, Bauch fest, gegen den Zug halten.', 'Ellbogen schnellen zurück: langsam zurückführen.'],
+    ['ace']],
+  latstretch: [
+    'Vor einer Bank knien, Knie und Füsse hüftbreit, Zehen gestreckt. Bauch anspannen, Wirbelsäule und Becken stabil. Aus der Hüfte nach vorne neigen und die Hände mit gestreckten Armen auf die Bank legen, Schultern, Ellbogen und Handgelenke in einer Linie.',
+    'Die Knie bleiben unter der Hüfte. Die Hüfte nach hinten schieben, um die Dehnung im oberen Rücken zu verstärken. Bauch fest, Becken gerade, Kinn leicht eingezogen. 30 bis 45 Sekunden halten und dabei die Daumen langsam zur Decke drehen.',
+    ['Hohlkreuz oder Becken kippt: Bauch fest, Becken gerade.', 'Kopf hängt oder geht in den Nacken: Kinn leicht einziehen.'],
+    ['ace']]
 };
 const api = {EXPLAIN, SRC};
 if(typeof module !== 'undefined' && module.exports) module.exports = api; else root.COACH_EXPLAIN = api;

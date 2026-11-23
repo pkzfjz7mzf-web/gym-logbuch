@@ -3,7 +3,6 @@
    was der Coach zusätzlich wissen muss. Prüfen: node tools/check_catalog.js
 
    Übungen ohne gefundene Fachquelle sind in EX als retired markiert und stehen nicht im Katalog (Aaron, 23.11.).
-   Damit fallen die Muster kneeext und abduct vorerst weg.
 
    Zeile: id: [Muster, Niveau, Beweglichkeit, Auslöser, Regionen, Dehnung]
    - Muster: squat, hinge, single, hpush, vpush, hpull, vpull, glute, kneeflex, kneeext, lateral, abduct,
@@ -55,9 +54,11 @@ const ROWS = {
   legcurl:    ['kneeflex',1,'','','hams knee',0],
   seatcurl:   ['kneeflex',1,'','','hams knee',1],
   ballcurl:   ['kneeflex',2,'','','hams knee',0],
+  legext:     ['kneeext',1,'','','knee',0],
   latlunge:   ['lateral',2,'squat1','deepknee','knee hip adductors',1],
   copenhagen: ['lateral',3,'','','adductors knee shoulder',0],
   cableadd:   ['lateral',1,'','','adductors hip',0],
+  abduction:  ['abduct',1,'','','hip',0],
   facepull:   ['rear',1,'','','shoulder',0],
   revfly:     ['rear',1,'','','shoulder',0],
   straightarm:['latiso',1,'overhead1','overhead','shoulder',1],
@@ -72,6 +73,7 @@ const ROWS = {
   deadbug:    ['antiext',1,'','','',0],
   birddog:    ['antiext',1,'','kneel wrist','wrist',0],
   rollout:    ['antiext',3,'overhead1','kneel overhead','lowback shoulder',1],
+  pallof:     ['antirot',1,'','','',0],
   chop:       ['antirot',2,'','rotation','lowback',0],
   calfraise:  ['calf',1,'','','',1],
   slcalf:     ['calf',2,'','','',1],
@@ -89,11 +91,12 @@ const ROWS = {
   calfstretch:['mob_ankle',1,'','','',0],
   inchworm:   ['mob_chain',1,'','wrist bend','',0],
   chestopen:  ['mob_shoulder',1,'','','',0],
+  latstretch: ['mob_shoulder',1,'','kneel overhead','',0],
   neckflex:   ['mob_neck',1,'','','',0],
   hamwall:    ['mob_chain',1,'','','',0],
   hip9090h:   ['mob_hip',1,'','rotation','',0]
 };
-const PATTERNS = ['calf','squat','hinge','single','hpush','vpush','hpull','vpull','glute','kneeflex','lateral','rear','latiso','chestiso','deltiso','biceps','triceps','antiext','antirot','coreflex','mob_tspine','mob_shoulder','mob_neck','mob_hipflex','mob_hip','mob_ankle','mob_chain'];
+const PATTERNS = ['calf','squat','hinge','single','hpush','vpush','hpull','vpull','glute','kneeflex','kneeext','lateral','abduct','rear','latiso','chestiso','deltiso','biceps','triceps','antiext','antirot','coreflex','mob_tspine','mob_shoulder','mob_neck','mob_hipflex','mob_hip','mob_ankle','mob_chain'];
 const TESTS = ['squat','overhead','toes','hipflex'];
 const TRIGGERS = ['deepknee','overhead','rotation','bend','axial','pull','pushdeep','kneel','wrist'];
 const REGIONS = ['knee','hip','lowback','shoulder','elbow','wrist','hams','adductors'];
