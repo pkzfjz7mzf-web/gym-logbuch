@@ -886,7 +886,7 @@ const CHANGELOG = [
     'Jede Einheit im Coach-Plan beginnt mit einem Mobility-Block. Dazu gibt es eine kurze Mobility-Routine für freie Tage. 21 neue Mobility-Übungen.',
     'Alle Regeln der App sind gegen Studien geprüft. Unter «So rechnet die App» stehen die Quellen.',
     '«Etwas ist dazwischengekommen» auf der Startseite: verpasst, verschieben, wenig Zeit, Ferien oder Reise (mit Reise-Einheit fürs Hotel-Gym), krank.',
-    'Technik in drei Teilen: Aufbau, Ausführung und häufige Fehler, zuerst für die Übungen aus A/B und ihre Alternativen.',
+    'Technik in drei Teilen: Aufbau, Ausführung und häufige Fehler, mit Quellen (NSCA, NASM, ACE). Zuerst für die wichtigsten Grundübungen, der Rest folgt.',
     'Bizeps und Trizeps zählen getrennt, Waden sind neu dabei. Neue Übungen: Wadenheben stehend, sitzend und einbeinig, Pike-Liegestütze, Glute Bridge, Unterarmstütz und Seitstütz.',
     'Gewichtsschritte pro Übung: Unter «Schritte» legst du fest, in welchen Schritten und in welchem Bereich das Gewicht an diesem Gerät wählbar ist, z. B. 0.75 kg von 2 bis 80 kg.']},
   {v:'1.4', date:'2026-11-10', items:[
@@ -3174,7 +3174,8 @@ function go(view){ state.view=view; state.delArm=false; if(view!=='session') kee
 function cueHtml(id){
   const x=((window.COACH_EXPLAIN||{}).EXPLAIN||{})[id];
   if(!x) return '<p>'+esc(EX[id].cue||'')+'</p>';
-  return '<div class="cue-x"><h4>Aufbau</h4><p>'+esc(x[0])+'</p><h4>Ausführung</h4><p>'+esc(x[1])+'</p><h4>Häufige Fehler</h4><ul>'+x[2].map(f=>'<li>'+esc(f)+'</li>').join('')+'</ul></div>';
+  const S=(window.COACH_EXPLAIN||{}).SRC||{};
+  return '<div class="cue-x"><h4>Aufbau</h4><p>'+esc(x[0])+'</p><h4>Ausführung</h4><p>'+esc(x[1])+'</p><h4>Häufige Fehler</h4><ul>'+x[2].map(f=>'<li>'+esc(f)+'</li>').join('')+'</ul><p class="ob-src">Quellen: '+(x[3]||[]).map(k=>esc(S[k]||k)).join(' · ')+'</p></div>';
 }
 function persist(s){ Store.saveSession(s); }
 

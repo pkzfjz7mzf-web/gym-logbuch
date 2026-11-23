@@ -222,9 +222,12 @@ Aarons Präzisierung: Das Vorgehen wird aus Studien abgeleitet, nicht nachträgl
 | Alte Checks ohne Stärke: wie bisher weglassen | Abwärtskompatibilität | `pl[r]==null` |
 
 ## Übungserklärungen (23.11., P7)
-- `coach/explain.js`: Aufbau, Ausführung, häufige Fehler pro Übung. Reine Beschreibung der Ausführung, keine Aussage über Wirkung, Verletzungsschutz oder «gefährlich». Fehler stehen als Abweichung mit Korrektur.
-- Quelle: Standardtechnik der Übungen. Ein Technik-Handbuch habe ich nicht gelesen (z. B. NSCA Exercise Technique Manual, nicht frei zugänglich). Status: **offen**, Aaron entscheidet, ob Technikbeschreibungen unter die Evidenz-Pflicht fallen.
-- Stand: 28 von 111 Übungen (A/B-Plan und direkte Alternativen). Übrige zeigen den kurzen Hinweis aus `EX`.
+Aaron, 23.11.: Auch Technikbeschreibungen fallen unter die Evidenz-Pflicht.
+- **Quellen:** NSCA Exercise Technique Manual for Resistance Training (3. Aufl., Auszüge frei als «Kinetic Select»), NASM Exercise Library, ACE Exercise Library. Fachverbände, die Trainer zertifizieren. Wo möglich zusätzlich Technikartikel aus Fachzeitschriften (z. B. Myer 2014 zur Kniebeuge, noch nicht gelesen, PMC gesperrt).
+- **Regel:** Nur was in den gelesenen Quellen steht. Mindestens zwei Quellen oder die NSCA. Aussagen der Seiten über Verletzungsrisiko werden nicht übernommen (ohne Beleg). Quellen pro Übung im vierten Feld, die App zeigt sie an.
+- **Korrekturen gegenüber dem ungeprüften Entwurf:** Schrägbank laut NASM höchstens 45° (Entwurf: 30°). Goblet Squat: Ellbogen nah an den Rippen (ACE), Tiefe bis mindestens waagrecht (NASM).
+- **Stand:** goblet (NASM, ACE), rdl (NSCA, NASM), incline (nur NASM, zweite Quelle offen), bss (NASM, ACE). Die 24 ungeprüften Texte vom Entwurf wurden entfernt, dort zeigt die App den kurzen Hinweis aus `EX`.
+- **Offen:** Die kurzen Hinweise in `EX` (`cue`) sind ebenfalls ungeprüft. Sie werden ersetzt, sobald eine geprüfte Erklärung existiert.
 
 ## Noch offen nach dem Audit
 1. Volle Nuzzo-Tabelle (übungsspezifische Kurven) für den Krafttest N5.

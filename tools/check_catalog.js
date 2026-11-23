@@ -12,10 +12,10 @@ for(const id in CATALOG){
   c.triggers.forEach(t => { if(!TRIGGERS.includes(t)) err.push(id+': Auslöser '+t); });
   c.regions.forEach(t => { if(!REGIONS.includes(t)) err.push(id+': Region '+t); });
 }
-const {EXPLAIN} = require('../coach/explain.js');
+const {EXPLAIN, SRC} = require('../coach/explain.js');
 for(const id in EXPLAIN){ const x = EXPLAIN[id];
   if(!EX[id]) err.push('Erklärung ohne Übung: '+id);
-  if(!Array.isArray(x) || x.length!==3 || typeof x[0]!=='string' || typeof x[1]!=='string' || !Array.isArray(x[2]) || !x[2].length) err.push('Erklärung unvollständig: '+id);
+  if(!Array.isArray(x) || x.length!==4 || !Array.isArray(x[3]) || !x[3].length || x[3].some(k=>!SRC[k]) || typeof x[0]!=='string' || typeof x[1]!=='string' || !Array.isArray(x[2]) || !x[2].length) err.push('Erklärung unvollständig: '+id);
   if(/ß/.test(JSON.stringify(x))) err.push('Erklärung mit ß: '+id); }
 const per = {}; for(const id in CATALOG){ per[CATALOG[id].pattern] = (per[CATALOG[id].pattern]||0)+1; }
 PATTERNS.forEach(p => { if(!per[p]) err.push('kein Eintrag für Muster '+p); });
