@@ -263,6 +263,11 @@ Aaron, 23.11.: Auch Technikbeschreibungen fallen unter die Evidenz-Pflicht.
 - **Weiter ohne Quelle (21):** dips, bbbridge, slhipthrust, pullthrough, cablekick, hamslide, cossack, adductor, revpec, inclinecurl, pikepush, kneeraise, cablecrunch, hacksquat, wallslide, shouldercar, couchstretch, hip9090, adductorrock, legswing, hamfloss. Für wallslide, couchstretch, hip9090 und hamfloss gibt es belegten Ersatz. Gefunden, aber zu dünn: Dips (McKenzie 2022 ohne Technikvorgaben), Pull-Through (IJES 2023 nur Name), Schrägbank-Curls (Studie mit Teilbewegung).
 - Werkzeug: `tools/unretire.py` holt eine Übung mit Erklärung zurück (Spezifikation als JSON).
 
+### Gewicht finden aus verwandten Übungen (23.11. abends): nicht umgesetzt
+- Gesucht: Studien zu 1RM-Verhältnissen zwischen Übungen im Katalog. Gefunden nur Saeterbakken, van den Tillaar, Fimland 2011 (Journal of Sports Sciences, n = 12 trainierte Männer): Kurzhanteln 17 % weniger als Langhantel beim Bankdrücken. Gelesen nur das Abstract, unklar ob pro Hantel oder Summe. Patterson 2015 (PeerJ) vergleicht nur Kurzhantel-Varianten. Front vs. Back Squat: Back Squat ist nicht im Katalog, PubMed-Seite nicht lesbar (Captcha).
+- Für die übrigen Paare (Goblet ↔ Front Squat, Maschinen untereinander, einbeinig ↔ beidbeinig) keine Quelle. Maschinenwerte hängen zudem vom Gerät ab.
+- Entscheid nach Evidenz-Pflicht: nicht eingebaut. Der Krafttest (ein leichter Anlaufsatz, dann Testsatz) bleibt der Weg zum Startgewicht. Aaron informiert.
+
 ## Noch offen nach dem Audit
 1. Volle Nuzzo-Tabelle (übungsspezifische Kurven) für den Krafttest N5.
 2. Statisches Dehnen direkt vor dem Krafttraining (akute Wirkung auf die Kraft): nicht geprüft. Der Gym-Block bevorzugt dynamische Übungen, diese Wahl ist noch ohne Quelle.
