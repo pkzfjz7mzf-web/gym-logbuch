@@ -178,6 +178,24 @@ Aarons Präzisierung: Das Vorgehen wird aus Studien abgeleitet, nicht nachträgl
 | Pause vor dem Testsatz = eingestellte Pause für Grundübungen | Pausenlänge ohne sicheren Einfluss über 90 s (Singer 2024). Testprotokolle mit längeren Pausen nicht gelesen | `restMain` |
 | Nicht bei Körpergewicht und Hilfsmaschine | Ohne Körpergewicht lässt sich kein Maximum rechnen | `testEligible` |
 
+## Ferien, Pausen und Krankheit (23.11., Life-Modul)
+### Quellen
+- **Ogasawara 2013:** Ogasawara R, Yasuda T, Ishii N, Abe T. Eur J Appl Physiol. 2013;113:975–985. doi:10.1007/s00421-012-2511-9. 14 junge Männer, Bankdrücken: drei Zyklen aus 6 Wochen Training und 3 Wochen Pause gegen 24 Wochen durchgehend: am Ende gleiche Zunahme von Kraft und Muskelquerschnitt. In der Pause blieb die Kraft, der Querschnitt nahm ab und kam zurück (Kongress-Zusammenfassung 2010). Abstract.
+- **Schwellnus 2022:** IOC consensus statement on acute respiratory illness in athletes part 1. Br J Sports Med. 2022;56:1066–1088. doi:10.1136/bjsports-2022-105759. Schwere Infekte (Fieber über 38 °C, Schüttelfrost, starke Müdigkeit, Gliederschmerzen): Ruhe bis die Symptome weg sind. Leichte Infekte: Alltag und Training mit täglicher Checkliste. Rückkehr: schrittweise, abhängig von der Reaktion; Belastungstest mit 60–70 % der normalen Belastung. Warnzeichen: übermässige Müdigkeit, Atemnot, Brustschmerz, Schwindel, Herzrasen. «Hals-Regel» = Expertenmeinung, Evidenz insgesamt tief. Volltext teilweise gelesen.
+- **Weidner 1998:** Med Sci Sports Exerc. 1998;30(11):1578–1583. RCT, 50 junge Erwachsene mit Rhinovirus: 40 min Training bei 70 % der Herzfrequenzreserve jeden zweiten Tag veränderte Stärke und Dauer der Erkältung nicht. Abstract.
+
+### Ergebnis
+| Punkt | Ergebnis | Im Code |
+|---|---|---|
+| «Mit rund einem Drittel des Umfangs bleibt Kraft erhalten» | Nicht gelesen (Bickel 2011). Ersetzt durch Spiering 2021: 1 Einheit, 1 Satz pro Übung, gleiche Last | Text Ferien |
+| «Kraft bleibt etwa 4 Wochen erhalten (Bosquet)» | Bosquet nennt keine Grenze. Ersetzt: 3 Wochen Pause ohne Nachteil über Monate (Ogasawara 2013, Einzelstudie, Bankdrücken) | Text Ferien |
+| 14–27 Tage Pause: +1 Wdh. Reserve | Abgeleitet: Kraft weitgehend erhalten (Ogasawara), aber Schutz vor Muskelkater nach leichter Belastung nach 1–2 Wochen abgeschwächt (Chen 2012). Höhe +1 nicht belegt, gleich wie bei Muskelkater | bleibt (`comeback` soft bei Lücke) |
+| Ab 28 Tagen Krafttest | siehe Krafttest und Boyd 2023 | bleibt |
+| Krank mit Fieber oder Ganzkörper-Symptomen: Pause | Belegt als Konsens (Schwellnus 2022), Evidenz tief | Text, Kriterien aus dem Konsens |
+| Leichte Erkältung: mehr Reserve | Nicht belegt. Moderates Training veränderte die Erkältung nicht (Weidner 1998), leichte Infekte beeinträchtigen die Leistung kaum (Schwellnus 2022) | +1 RIR entfernt, Hinweis auf Warnzeichen |
+| Rückkehr nach Krankheit: 2 Sätze, 3–4 Reserve | Abgeleitet: Konsens empfiehlt eine erste Belastung mit 60–70 % der normalen (Schwellnus 2022). 2 statt 3 Sätze = 67 % Umfang, mehr Reserve senkt die Intensität. Danach normal, wenn keine Warnzeichen | bleibt, Warnzeichen im Hinweis |
+| «Hals-Regel» | Expertenmeinung laut Konsens | als solche benannt, keine Regel mehr |
+
 ## Noch offen nach dem Audit
 1. Volle Nuzzo-Tabelle (übungsspezifische Kurven) für den Krafttest N5.
 2. Statisches Dehnen direkt vor dem Krafttraining (akute Wirkung auf die Kraft): nicht geprüft. Der Gym-Block bevorzugt dynamische Übungen, diese Wahl ist noch ohne Quelle.

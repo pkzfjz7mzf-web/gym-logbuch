@@ -2937,17 +2937,17 @@ function sheetLife(){
   if(L.view==='move') return '<h2 id="sh-t">Einheit verschieben</h2><div class="prose"><p><b>Verschieb frei.</b> Ohne Coach-Plan läuft die App nach Reihenfolge, nicht nach Wochentag. Du startest die Einheit einfach am Tag, an dem es passt.</p><p>Trainieren zwei Einheiten an aufeinanderfolgenden Tagen die Beine, schaffst du am zweiten Tag eventuell etwas weniger: Ohne Training bis zum Versagen brauchen die Beine rund 24–48 Stunden, bis die Leistung wieder voll da ist. Für den langfristigen Fortschritt fand eine Studie keinen Nachteil. Zwischen Ausdauer und Krafttraining mindestens 3 Stunden Abstand.</p><cite>'+REC_SRC+' · Schumann et al. 2022 · Petré et al. 2021, Sports Med</cite></div>'+back;
   if(L.view==='away'){
     const until=L.until||addDays(todayStr(),7);
-    let h='<h2 id="sh-t">Ferien oder Reise</h2><p class="lead">Kraft hält sich erstaunlich gut: Mit rund einem Drittel des Umfangs bleibt sie über Wochen erhalten, solange die Sätze anstrengend bleiben.</p>';
+    let h='<h2 id="sh-t">Ferien oder Reise</h2><p class="lead">Kraft hält sich gut: Eine Einheit pro Woche mit einem Satz pro Übung hält Kraft und Muskeln über Monate, solange das Gewicht gleich schwer bleibt.</p>';
     h+='<label class="q"><span class="q-l">Unterwegs bis</span><input class="field" type="date" id="life-until" min="'+todayStr()+'" value="'+until+'"></label>';
     h+='<div class="q"><span class="q-l">Was passt?</span><div class="seg">'+[['hotel','Hotel-Gym'],['pause','Bewusst Pause']].map(o=>'<button class="'+(L.mode===o[0]?'on':'')+'" data-a="life-mode" data-v="'+o[0]+'">'+o[1]+'</button>').join('')+'</div></div>';
-    h+='<p class="ob-sub">'+(L.mode==='hotel'?'Du bekommst eine kurze Reise-Einheit für Kurzhanteln und Bank, rund 40 Minuten. 1–2 davon pro Woche reichen für den Erhalt.':'Auch gut. Bis 2 Wochen Pause machst du danach normal weiter. Bei 2–4 Wochen startet die erste Einheit mit mehr Reserve, darüber führt dich die App neu ans Gewicht.')+' Die Mobility-Routine geht überall.</p>';
-    h+='<cite class="ob-sub">Erhaltungsdosis nach Spiering et al. 2021. Kraft bleibt etwa 4 Wochen erhalten (Bosquet et al. 2013).</cite>';
+    h+='<p class="ob-sub">'+(L.mode==='hotel'?'Du bekommst eine kurze Reise-Einheit für Kurzhanteln und Bank, rund 40 Minuten. 1–2 davon pro Woche reichen für den Erhalt.':'Auch gut. Drei Wochen Pause bremsen den Fortschritt über Monate nicht: Die Kraft bleibt weitgehend, verlorene Muskelmasse kommt beim Wiedereinstieg schnell zurück. Ab 2 Wochen Pause plant die App die erste Einheit mit 1 Wdh. mehr Reserve, weil der Schutz vor Muskelkater nachlässt. Ab 4 Wochen bestimmst du das Gewicht mit dem Krafttest neu.')+' Die Mobility-Routine geht überall.</p>';
+    h+='<cite class="ob-sub">Spiering et al. 2021, J Strength Cond Res · Ogasawara et al. 2013, Eur J Appl Physiol · Bosquet et al. 2013 · Chen et al. 2012, Eur J Appl Physiol</cite>';
     return h+'<button class="btn pri block" data-a="life-away-save">Speichern</button>'+back;
   }
-  if(L.view==='sick') return '<h2 id="sh-t">Krank</h2><p class="lead">Faustregel aus der Sportmedizin, keine Diagnose. Im Zweifel pausieren.</p><div class="opts">'
-    +'<button class="opt" data-a="life-sick" data-v="rest"><span class="tx"><b>Fieber, Husten in der Brust, Gliederschmerzen oder Magen-Darm</b><small>Pause, bis du symptomfrei bist. Danach gestufter Einstieg.</small></span><span class="chev">'+I.chev+'</span></button>'
-    +'<button class="opt" data-a="life-sick" data-v="light"><span class="tx"><b>Nur leichter Schnupfen, sonst fit</b><small>Lockere Einheit möglich, mit mehr Reserve</small></span><span class="chev">'+I.chev+'</span></button>'
-    +'</div><p class="ob-sub">Die Regel «Symptome nur oberhalb des Halses: locker möglich, unterhalb oder Fieber: Pause» ist verbreiteter Konsens, aber schwach durch Studien belegt. Bei Brustschmerz, Atemnot oder Herzstolpern: nicht trainieren und abklären lassen.</p>'+back;
+  if(L.view==='sick') return '<h2 id="sh-t">Krank</h2><p class="lead">Keine Diagnose. Im Zweifel pausieren.</p><div class="opts">'
+    +'<button class="opt" data-a="life-sick" data-v="rest"><span class="tx"><b>Fieber über 38 °C, Schüttelfrost, starke Müdigkeit, Gliederschmerzen, Husten in der Brust oder Magen-Darm</b><small>Pause, bis die Symptome weg sind. Danach eine leichtere erste Einheit.</small></span><span class="chev">'+I.chev+'</span></button>'
+    +'<button class="opt" data-a="life-sick" data-v="light"><span class="tx"><b>Nur leichte Erkältung, sonst fit</b><small>Training wie geplant möglich, auf Warnzeichen achten</small></span><span class="chev">'+I.chev+'</span></button>'
+    +'</div><p class="ob-sub">Bei starken oder den ganzen Körper betreffenden Symptomen gilt Ruhe, bis sie weg sind. Leichte Erkältungen beeinträchtigen die Leistung kaum, und moderates Training veränderte in einer Studie weder Stärke noch Dauer einer Erkältung. Die bekannte «Hals-Regel» ist nur Expertenmeinung. <b>Sofort aufhören und abklären lassen</b> bei Brustschmerz, Atemnot, Herzrasen, Schwindel oder ungewöhnlicher Erschöpfung.</p><cite class="ob-sub">IOC-Konsens, Schwellnus et al. 2022, Br J Sports Med · Weidner et al. 1998, Med Sci Sports Exerc</cite>'+back;
   return '';
 }
 function lifeAction(a, d){
@@ -2971,7 +2971,7 @@ function lifeAction(a, d){
   if(a==='life-away-end'){ delete st.away; Store.saveSettings(); render(); toast('Willkommen zurück.'); return; }
   if(a==='life-sick'){
     if(d.v==='rest'){ st.sick={since:todayStr()}; delete st.comeback; toast('Gute Besserung. Melde dich auf der Startseite zurück, wenn du gesund bist.'); }
-    else { st.comeback='soft'; toast('Nächste Einheit mit 1 Wdh. mehr Reserve.'); }
+    else { toast('Training wie geplant möglich. Hör bei Warnzeichen auf.'); }
     Store.saveSettings(); closeSheet(); render(); return;
   }
   if(a==='life-well'){ delete st.sick; st.comeback='hard'; Store.saveSettings(); render(); toast('Schön, dass du zurück bist. Die erste Einheit ist bewusst leicht.'); return; }
@@ -2979,8 +2979,8 @@ function lifeAction(a, d){
 /* Hinweise auf der Startseite: unterwegs, krank, Rückkehr */
 function lifeBanner(){
   const st=state.settings, a=awayActive(); let h='';
-  if(st.sick) h+='<div class="callout">'+I.info+'<div><b>Krank seit '+fmtDate(st.sick.since)+'.</b> Erhol dich zuerst. Die erste Einheit danach hat 2 Sätze pro Übung und 3–4 Wdh. Reserve.<br><button class="link" data-a="life-well">Ich bin wieder gesund</button></div></div>';
-  else if(st.comeback) h+='<div class="callout info">'+I.info+'<div>'+(st.comeback==='hard'?'<b>Rückkehr nach Krankheit:</b> nächste Einheit mit 2 Sätzen pro Übung und 3–4 Wdh. Reserve.':'<b>Heute etwas vorsichtiger:</b> nächste Einheit mit 1 Wdh. mehr Reserve.')+'</div></div>';
+  if(st.sick) h+='<div class="callout">'+I.info+'<div><b>Krank seit '+fmtDate(st.sick.since)+'.</b> Erhol dich zuerst, bis die Symptome weg sind. Die erste Einheit danach ist leichter: 2 Sätze pro Übung und 3–4 Wdh. Reserve.<br><button class="link" data-a="life-well">Ich bin wieder gesund</button></div></div>';
+  else if(st.comeback) h+='<div class="callout info">'+I.info+'<div>'+(st.comeback==='hard'?'<b>Rückkehr nach Krankheit:</b> nächste Einheit mit 2 Sätzen pro Übung und 3–4 Wdh. Reserve. Läuft sie ohne Warnzeichen, geht es danach normal weiter. Bei Brustschmerz, Atemnot, Herzrasen oder Schwindel aufhören und abklären lassen.':'<b>Heute etwas vorsichtiger:</b> nächste Einheit mit 1 Wdh. mehr Reserve.')+'</div></div>';
   if(a) h+='<div class="callout info">'+I.info+'<div><b>Unterwegs bis '+fmtDate(a.until)+'.</b> '+(a.mode==='hotel'?'1–2 kurze Einheiten pro Woche reichen für den Erhalt.':'Pause ist eingeplant. Danach geht es normal weiter.')+'<br>'+(a.day?'<button class="link" data-a="start" data-t="T" style="margin-right:18px">Reise-Einheit starten</button>':'')+'<button class="link" data-a="life-away-end">Ich bin zurück</button></div></div>';
   return h;
 }
