@@ -252,3 +252,12 @@ Ausdauer und andere Sportarten mit harten Einheiten und Vorrang, Auslöser pro B
 - **N5 Krafttest beim ersten Mal.** Ersetzt die Probesätze von «Gewicht finden» für Übungen mit Last: Tagesform, 2–3 Aufwärmsätze mit vorgeschlagenen Gewichten, ein Testsatz im Zielbereich bis kurz vor Technikverlust (RIR 0–1), daraus e1RM und Arbeitsgewichte für die restlichen Sätze. Kein Limit-Test bei: Technikstufe 0 der Bewegung (Technik-Einstieg), Region mit Beschwerden, Nordics, Mobility. Dort bleibt das vorsichtige Herantasten.
 - **N6 Screening nachholbar.** Beweglichkeitstests aus dem Onboarding lösen, als eigene Karte «Plan verbessern», mit Bild pro Test.
 - Danach wie geplant: Katalog erweitern, Erklärungen in drei Teilen, Animation.
+
+
+## 13. Verschieben und verpasste Einheiten (Aaron, 23.11.)
+- Der Coach-Plan hat offizielle Trainingstage (`plan.week`). Daraus entsteht eine Agenda mit Datum für die nächsten zwei Wochen (`settings.agenda`).
+- **Aktiv verschieben** (vorher bekannt): über «Etwas ist dazwischengekommen» oder durch Antippen eines geplanten Tags. Neuen Tag wählen, die App prüft die Erholung zu den Einheiten davor und danach.
+- **Erholung knapp:** drei Wege. Trotzdem so. Folgende Einheiten auch verschieben, bis die Erholung passt. Auf den nächsten Trainingstag, alle folgenden rücken einen Trainingstag nach.
+- **Nicht verschoben und nicht gemacht:** Am Tag danach fragt die App auf der Startseite nach: verschieben, nachtragen (doch gemacht) oder auslassen.
+- Erledigte Einheiten verbrauchen den frühesten Eintrag derselben Einheit. «Stattdessen …» tauscht so mit dem späteren Termin.
+- Ohne Coach-Plan (Standard A/B) bleibt es bei der reinen Reihenfolge.

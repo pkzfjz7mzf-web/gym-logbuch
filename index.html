@@ -292,6 +292,14 @@ details.cue p{margin:0 2px 12px;color:var(--muted)}
 .ob-bars{flex:1;display:flex;gap:6px}
 .ob-bars .ob-bar{flex:1}
 .opt .rec{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font:700 11px/1.4 var(--f-body);letter-spacing:.04em;text-transform:uppercase;vertical-align:1px}
+.mv-days{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.mv-day{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0;border:0;border-radius:12px;background:var(--raised);box-shadow:inset 0 0 0 1px var(--line);font:500 12px/1.2 var(--f-body);color:var(--muted);cursor:pointer}
+.mv-day b{font:700 16px/1.1 var(--f-body);color:var(--fg)}
+.mv-day.off{box-shadow:inset 0 0 0 2px var(--accent)}
+.mv-day i{height:20px;display:grid;place-items:center}
+.day .slot.plan{cursor:pointer}
+.day .slot.plan.late{border-color:var(--bad);color:var(--bad)}
+.row-links{display:flex;flex-wrap:wrap;gap:4px 18px;margin-top:6px}
 .pw{display:flex;flex-direction:column;gap:6px}
 .pw-n{font:600 14px/1.2 var(--f-body)}
 .pw-d{display:flex;gap:4px}
@@ -1066,7 +1074,7 @@ function saveUi(){ try{ localStorage.setItem(UI_KEY, JSON.stringify({cur:state.c
 function doneSessions(){ return Object.values(state.sessions).filter(s=>s.status==='done').sort((a,b)=>(b.startedAt||0)-(a.startedAt||0)); }
 function activeSession(){ const a=Object.values(state.sessions).filter(s=>s.status==='active').sort((a,b)=>(b.startedAt||0)-(a.startedAt||0)); return a[0]||null; }
 function curSession(){ return state.editId ? (state.sessions[state.editId]||null) : activeSession(); }
-function nextType(){ const ids=planIds(), l=doneSessions().find(s=>ids.includes(s.type)); return l ? ids[(ids.indexOf(l.type)+1)%ids.length] : ids[0]; }
+function nextType(){ const ag=agendaItems(); if(ag && ag.length && PLANS[ag[0].u]) return ag[0].u; const ids=planIds(), l=doneSessions().find(s=>ids.includes(s.type)); return l ? ids[(ids.indexOf(l.type)+1)%ids.length] : ids[0]; }
 
 function perfHistory(exId, beforeTs, excludeId){
   const out=[];
@@ -1584,7 +1592,7 @@ function softRender(){
 }
 document.addEventListener('focusout', ()=>{ if(needsRender){ needsRender=false; setTimeout(()=>{ const a=document.activeElement; if(!(a && /^(INPUT|TEXTAREA)$/.test(a.tagName))) render(); else needsRender=true; }, 50); } });
 
-function render(){ syncPlans(); renderTop(); renderMain(); renderDock(); maybeNews(); renderSheet(); }
+function render(){ syncPlans(); agendaSync(); renderTop(); renderMain(); renderDock(); maybeNews(); renderSheet(); }
 /* «Was ist neu»: einmal pro Gerät und Version, nur auf der Startseite, nie mitten in einer Einheit. */
 function maybeNews(){
   if(state.view!=='home' || state.sheet || !Store.cacheUid || activeSession()) return;
@@ -1740,10 +1748,10 @@ function viewHome(){
     const [d,n]=totalSets(act);
     h+='<section class="hero"><div class="hero-top"><div class="plate '+plateCls(act.type)+'">'+plateTxt(act.type)+'</div><div><h2>'+typeName(act.type)+' läuft</h2><div class="hero-sub">Gestartet '+fmtDate(act.date)+', '+new Date(act.startedAt).toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'})+' · '+d+' von '+n+' Sätzen</div></div></div><button class="btn pri block" data-a="resume">Weitertrainieren</button><div class="alt"><button class="link" data-a="discard">Einheit verwerfen</button></div></section>';
   } else {
-    h+=lifeBanner();
-    const nt=nextType(), pv=buildSession(nt,{preview:true});
+    h+=lifeBanner()+agendaPrompt();
+    const nt=nextType(), pv=buildSession(nt,{preview:true}), ag0=(agendaItems()||[])[0], when=ag0 && ag0.u===nt ? (ag0.d<t?'offen seit '+fmtDate(ag0.d):ag0.d===t?'geplant heute':'geplant '+fmtDate(ag0.d)) : 'Als Nächstes dran';
     const alts = planIds().filter(x=>x!==nt);
-    h+='<section class="hero"><div class="hero-top"><div class="plate '+plateCls(nt)+'">'+plateTxt(nt)+'</div><div><h2>'+typeName(nt)+'</h2><div class="hero-sub">Als Nächstes dran · ca. '+estimateMin(pv)+' min</div></div></div>';
+    h+='<section class="hero"><div class="hero-top"><div class="plate '+plateCls(nt)+'">'+plateTxt(nt)+'</div><div><h2>'+typeName(nt)+'</h2><div class="hero-sub">'+when+' · ca. '+estimateMin(pv)+' min</div></div></div>';
     const nf=findActive(pv);
     if(pv.reentry || nf) h+='<div class="chips">'+(pv.reentry?'<span class="chip warn">Wiedereinstieg · 2 Sätze · RIR '+({all:'3–4',none:'2–3',mixed:'2–3, Neues 3–4'}[freshKind(pv)])+'</span>':'')+(nf?'<span class="chip acc">Gewicht finden bei '+nf+' '+(nf===1?'Übung':'Übungen')+'</span>':'')+'</div>';
     h+=planList(pv);
@@ -1754,24 +1762,19 @@ function viewHome(){
   const ws=weekStart(t), wsess=weekSessions(ws), gym=wsess.filter(s=>!isAux(s.type));
   const ham=hamThisWeek(ws);
   // Coach-Plan: offene Einheiten als Vorschlag auf die üblichen Trainingstage legen (Reihenfolge wie im Plan)
-  const planned={}, coach=!!st.plan;
-  if(coach && !act){
-    const ids=planIds(), want=planWeekdays(), seq=[]; let k=ids.indexOf(nextType());
-    for(let n=Math.max(0, ids.length-gym.length); n>0; n--){ seq.push(ids[k%ids.length]); k++; }
-    for(let i=0;i<7 && seq.length;i++){ const d=addDays(ws,i); if(d>=t && want.includes(parseYmd(d).getDay()) && !gym.some(x=>x.date===d)) planned[d]=seq.shift(); }
-    for(let i=0;i<7 && seq.length;i++){ const d=addDays(ws,i); if(d>=t && !planned[d] && !gym.some(x=>x.date===d)) planned[d]=seq.shift(); }
-  }
+  const planned={}, coach=!!st.plan, agi=agendaItems()||[];
+  if(coach && !act) agi.forEach(x=>{ if(x.d>=ws && x.d<=addDays(ws,6) && !planned[x.d]) planned[x.d]=x; });
   h+='<section class="sec"><div class="sec-h"><h2 class="eyebrow">Diese Woche · KW '+isoWeek(t)+'</h2></div><div class="week">';
   for(let i=0;i<7;i++){
     const d=addDays(ws,i), ds=wsess.filter(s=>s.date===d);
     const dd=parseYmd(d);
-    h+='<div class="day'+(d===t?' today':'')+'"><span>'+WD[dd.getDay()]+'</span>'+(ds.length?'<span class="plate xs '+plateCls(ds[0].type)+'" title="'+esc(typeName(ds[0].type))+'">'+plateTxt(ds[0].type)+'</span>':planned[d]?'<span class="slot plan" title="Geplant: '+esc(typeName(planned[d]))+'">'+plateTxt(planned[d])+'</span>':'<span class="slot"></span>')+'<span class="tnum" style="font-weight:500">'+dd.getDate()+'</span></div>';
+    h+='<div class="day'+(d===t?' today':'')+'"><span>'+WD[dd.getDay()]+'</span>'+(ds.length?'<span class="plate xs '+plateCls(ds[0].type)+'" title="'+esc(typeName(ds[0].type))+'">'+plateTxt(ds[0].type)+'</span>':planned[d]?'<span class="slot plan'+(d<t?' late':'')+'" role="button" data-a="mv-open" data-k="'+agendaKey(planned[d])+'" title="'+(d<t?'Offen: ':'Geplant: ')+esc(typeName(planned[d].u))+', antippen zum Verschieben">'+plateTxt(planned[d].u)+'</span>':'<span class="slot"></span>')+'<span class="tnum" style="font-weight:500">'+dd.getDate()+'</span></div>';
   }
   h+='</div>';
   if(coach){
-    const n=planIds().length, pd=Object.keys(planned).sort();
+    const n=planIds().length, pd=Object.keys(planned).filter(d=>d>=t).sort();
     h+='<div class="chips"><span class="chip '+(gym.length>=n?'ok':'')+'">Gym '+gym.length+' von '+n+(gym.length>=n?' ✓':'')+'</span></div>';
-    if(pd.length) h+='<p class="phase-t" style="font-size:14px">Geplant: '+pd.map(d=>WD[parseYmd(d).getDay()]+' '+esc(typeName(planned[d]))).join(' · ')+'. Die Tage sind ein Vorschlag, du kannst jederzeit an einem anderen Tag trainieren.</p>';
+    if(pd.length) h+='<p class="phase-t" style="font-size:14px">Geplant: '+pd.map(d=>WD[parseYmd(d).getDay()]+' '+esc(typeName(planned[d].u))).join(' · ')+'. Tippe auf einen geplanten Tag, um die Einheit zu verschieben.</p>';
   } else h+='<div class="chips"><span class="chip '+(gym.length>=1?'ok':'')+'">'+(gym.length>=1?'Gym '+gym.length+'× · Baseline ✓':'Gym 0 von 1 (Baseline)')+'</span></div>';
   h+='</section>';
 
@@ -2209,6 +2212,7 @@ function renderSheet(){
   else if(t==='info') h=sheetInfo();
   else if(t==='brief') h=sheetBrief();
   else if(t==='backlog') h=sheetBacklog();
+  else if(t==='move') h=sheetMove();
   else if(t==='swap') h=sheetSwap();
   else if(t==='news') h=sheetNews();
   else if(t==='steps') h=sheetSteps();
@@ -2554,9 +2558,14 @@ function planWeekOf(pl, prefs){
 }
 function planWeekHtml(pl, prefs, ctx, hasSport){
   const m=planWeekOf(pl, prefs), by={}; Object.keys(m).forEach(id=>{ by[m[id]]=id; });
-  let h='<div class="prose"><h3>Deine Woche</h3><p>Lege jede Einheit auf einen Wochentag. Wie du sie verteilst, spielt für den Muskelaufbau bei gleichem Umfang keine Rolle. Auch bei Tagen direkt hintereinander fand eine Studie keinen Nachteil. Nimm die Tage, die in dein Leben passen.'+(hasSport?' Einzige Regel: zwischen Ausdauer und Krafttraining mindestens 3 Stunden Abstand.':'')+'<span class="ob-src">Quellen: ACSM Position Stand 2026 · Yang et al. 2018, Front Physiol'+(hasSport?' · Schumann et al. 2022 · Petré et al. 2021, Sports Med':'')+'</span></p></div>';
+  let h='<div class="prose"><h3>Deine Woche</h3><p>Lege jede Einheit auf einen Wochentag. Wie du sie verteilst, spielt für den Muskelaufbau bei gleichem Umfang keine Rolle. Nimm die Tage, die in dein Leben passen.'+(hasSport?' Einzige Regel: zwischen Ausdauer und Krafttraining mindestens 3 Stunden Abstand.':'')+'<span class="ob-src">Quellen: ACSM Position Stand 2026 · Yang et al. 2018, Front Physiol'+(hasSport?' · Schumann et al. 2022 · Petré et al. 2021, Sports Med':'')+'</span></p></div>';
   h+=pl.days.map(d=>'<div class="pw"><span class="pw-n">'+esc(d.name)+'</span><div class="pw-d">'+WDO.map(w=>{ const on=m[d.id]===w, other=!on && by[w]; return '<button class="'+(on?'on':other?'taken':'')+'" data-a="pw-set" data-id="'+d.id+'" data-v="'+w+'" data-ctx="'+ctx+'" aria-pressed="'+on+'" aria-label="'+esc(d.name)+' am '+WD[w]+'">'+WD[w]+'</button>'; }).join('')+'</div></div>').join('');
-  return h+'<p class="ob-src" style="margin-top:0">Ein belegter Tag tauscht mit der anderen Einheit. Die Tage sind ein Vorschlag: Trainierst du an einem anderen Tag, rückt die Reihenfolge nach.</p>';
+  const ord=pl.days.map(d=>({d, w:m[d.id]})).sort((a,b)=>WDO.indexOf(a.w)-WDO.indexOf(b.w)), notes=[];
+  ord.forEach((x,i)=>{ const y=ord[(i+1)%ord.length]; if(y===x) return; const gap=(WDO.indexOf(y.w)-WDO.indexOf(x.w)+7)%7; if(gap!==1) return;
+    const legs=Object.keys(blocksMuscles(x.d.blocks)).filter(k=>LEGS_M.includes(k) && blocksMuscles(y.d.blocks)[k]);
+    if(legs.length) notes.push(WD[x.w]+' und '+WD[y.w]); });
+  if(notes.length) h+='<div class="callout info">'+I.info+'<div><b>'+notes.join(', ')+' liegen direkt hintereinander, beide Einheiten trainieren die Beine.</b> Die Beine brauchen ohne Training bis zum Versagen rund 24–48 Stunden, bis die Leistung wieder voll da ist. Am zweiten Tag schaffst du eventuell etwas weniger. Langfristig fand eine Studie keinen Nachteil, du kannst es also so lassen.<span class="ob-src">Quellen: '+REC_SRC+'</span></div></div>';
+  return h+'<p class="ob-src" style="margin-top:0">Ein belegter Tag tauscht mit der anderen Einheit. Verpasst du eine Einheit, fragt die App nach, was passieren soll.</p>';
 }
 function planWeekSet(d){
   const ob=d.ctx==='ob', pl=ob ? (state.ob||{}).plan : state.settings.plan; if(!pl) return;
@@ -2572,6 +2581,158 @@ function planWeekdays(){
   if(pl && pl.days) return Object.values(planWeekOf(pl, prefs));
   const w=(prefs||[]).map(Number), n=planIds().length;
   return w.length ? w : ({1:[3], 2:[1,4], 3:[1,3,5], 4:[1,2,4,5], 5:[1,2,3,5,6], 6:[1,2,3,4,5,6]}[n] || [1,4]);
+}
+/* =========================================================
+   Agenda: geplante Einheiten mit Datum (nur Coach-Plan)
+   st.agenda = {plan, week, items:[{u, d}]}. Offizielle Trainingstage aus plan.week.
+   Verpasst = Datum vorbei, nicht erledigt, nicht verschoben: die App fragt nach.
+   Erholung (docs/coach/evidenz.md): ohne Versagen Beine rund 24–48 h, Oberkörper oft unter 24 h
+   (Sousa 2024, Belcher 2019, Morán-Navarro 2017, Pareja-Blanco 2019). Langfristig kein Nachteil
+   an Folgetagen (Yang 2018). Darum nur ein Hinweis mit Auswahl, kein Verbot.
+   ========================================================= */
+const LEGS_M = ['quads','glutes','hams','adductors'];
+function dayDiff(a,b){ return Math.round((parseYmd(b)-parseYmd(a))/864e5); }
+function officialDays(){
+  const pl=state.settings.plan; if(!pl || !pl.days) return [];
+  const m=planWeekOf(pl, (state.settings.profile||{}).weekdays);
+  return pl.days.map(d=>({u:d.id, w:m[d.id]})).sort((a,b)=>WDO.indexOf(a.w)-WDO.indexOf(b.w));
+}
+function nextOfficial(from, incl){
+  const od=officialDays().map(x=>x.w); if(!od.length) return null;
+  for(let i=incl?0:1; i<15; i++){ const d=addDays(from,i); if(od.includes(parseYmd(d).getDay())) return d; }
+  return null;
+}
+function agendaSort(ag){ ag.items.sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:0); }
+function agendaExtend(ag){
+  const cyc=officialDays(); if(!cyc.length) return;
+  const until=addDays(todayStr(), 13); let guard=0;
+  if(!ag.items.length){ const d=nextOfficial(todayStr(), true); if(!d) return; const w=parseYmd(d).getDay(); ag.items.push({u:cyc.find(x=>x.w===w).u, d}); }
+  while(ag.items[ag.items.length-1].d < until && guard++ < 40){
+    const last=ag.items[ag.items.length-1], i=cyc.findIndex(x=>x.u===last.u), d=nextOfficial(last.d, false); if(!d) break;
+    ag.items.push({u:cyc[(i+1)%cyc.length].u, d});
+  }
+}
+/* Hält die Agenda aktuell. Speichert nur, wenn sich etwas geändert hat. */
+function agendaSync(){
+  const st=state.settings, pl=st.plan;
+  if(!pl || !pl.days || !pl.days.length){ if(st.agenda){ delete st.agenda; Store.saveSettings(); } return; }
+  const id=String(pl.created||''), wk=JSON.stringify(planWeekOf(pl, (st.profile||{}).weekdays)), before=JSON.stringify(st.agenda||null);
+  if(!st.agenda || st.agenda.plan!==id) st.agenda={plan:id, week:wk, items:[]};
+  const ag=st.agenda;
+  if(ag.week!==wk){ const t=todayStr(); ag.items=ag.items.filter(x=>x.d<t); ag.week=wk; }
+  ag.items=ag.items.filter(x=>PLANS[x.u]);
+  agendaSort(ag); agendaExtend(ag);
+  if(JSON.stringify(ag)!==before) Store.saveSettings();
+}
+function agendaItems(){ const ag=state.settings.agenda; return ag && state.settings.plan ? ag.items : null; }
+function agendaKey(x){ return x.u+'@'+x.d; }
+function agendaFind(k){ const it=agendaItems()||[]; return it.find(x=>agendaKey(x)===k)||null; }
+function agendaOverdue(){ const t=todayStr(); return (agendaItems()||[]).find(x=>x.d<t)||null; }
+/* Erledigte Einheit verbraucht den frühesten Eintrag derselben Einheit. */
+function agendaDone(s){
+  const it=agendaItems(); if(!it || !s || isAux(s.type)) return;
+  const i=it.findIndex(x=>x.u===s.type); if(i>=0){ it.splice(i,1); Store.saveSettings(); }
+}
+/* Muskeln, die eine Einheit direkt trainiert (Übungsanteil 1). */
+function blocksMuscles(blocks, done){
+  const out={};
+  (blocks||[]).forEach(b=>b.items.forEach(e=>{
+    if(done && (e.skipped || !(e.sets||[]).some(x=>x.done))) return;
+    const m=(EX[e.ex]||{}).m||{}; Object.keys(m).forEach(k=>{ if(m[k]>=1) out[k]=true; });
+  }));
+  return out;
+}
+function recoveryClash(a, b){
+  const diff=Math.abs(dayDiff(a.d, b.d)); if(diff>=2) return null;
+  const both=Object.keys(a.m).filter(k=>b.m[k]), legs=both.filter(k=>LEGS_M.includes(k));
+  if(diff===1 && legs.length) return {diff, muscles:legs, a, b};
+  if(diff===0 && both.length) return {diff, muscles:both, a, b};
+  return null;
+}
+/* Prüft einen Eintrag am Datum d gegen die erledigten Einheiten und die anderen geplanten. */
+function agendaClashes(items, x){
+  const me={d:x.d, m:blocksMuscles((PLANS[x.u]||{}).blocks), u:x.u}, out=[];
+  doneSessions().filter(s=>!isAux(s.type) && Math.abs(dayDiff(s.date, x.d))<=1).forEach(s=>{ const c=recoveryClash(me, {d:s.date, m:blocksMuscles(s.blocks, true), u:s.type, done:true}); if(c) out.push(c); });
+  items.filter(y=>y!==x && Math.abs(dayDiff(y.d, x.d))<=1).forEach(y=>{ const c=recoveryClash(me, {d:y.d, m:blocksMuscles((PLANS[y.u]||{}).blocks), u:y.u}); if(c) out.push(c); });
+  return out;
+}
+const REC_SRC = 'Sousa et al. 2024, J Hum Kinet (Review) · Belcher et al. 2019, Appl Physiol Nutr Metab · Morán-Navarro et al. 2017, Eur J Appl Physiol · Yang et al. 2018, Front Physiol';
+function clashText(c){
+  const ms=c.muscles.map(m=>MUSCLES[m]||m).join(', '), other=(c.b.done?'erledigte ':'geplante ')+esc(typeName(c.b.u))+' ('+fmtDate(c.b.d)+')';
+  if(c.diff===0) return 'Am selben Tag wie die '+other+', beide trainieren '+ms+'. Direkt nach dem Training ist die Leistung dieser Muskeln für Stunden bis Tage tiefer.';
+  return 'Nur einen Tag neben der '+other+', beide trainieren '+ms+'. Ohne Training bis zum Versagen sind die Beine nach rund 24–48 Stunden wieder voll leistungsfähig, der Oberkörper oft schon nach weniger als 24. Am zweiten Tag schaffst du deshalb eventuell etwas weniger. Für den langfristigen Fortschritt fand eine Studie keinen Nachteil von Training an Folgetagen.';
+}
+function agendaMove(x, d){ x.d=d; agendaSort(state.settings.agenda); }
+/* Ab Eintrag x auf die nächsten offiziellen Trainingstage legen, alle folgenden rücken nach. */
+function agendaCascade(x){
+  const ag=state.settings.agenda, t=todayStr(); agendaSort(ag);
+  const i=ag.items.indexOf(x), tail=ag.items.slice(i);
+  let d=x.d<t ? nextOfficial(t, true) : nextOfficial(x.d, false);
+  tail.forEach(y=>{ y.d=d; d=nextOfficial(d, false); });
+  agendaSort(ag); agendaExtend(ag);
+}
+/* Eintrag x verschoben: folgende Einträge so weit nach hinten, bis die Erholung wieder passt. */
+function agendaChain(x){
+  const ag=state.settings.agenda; agendaSort(ag);
+  for(let i=ag.items.indexOf(x)+1, guard=0; i<ag.items.length && guard<20; i++, guard++){
+    const y=ag.items[i], prev=ag.items[i-1];
+    let moved=false;
+    while(recoveryClash({d:prev.d, m:blocksMuscles((PLANS[prev.u]||{}).blocks)}, {d:y.d, m:blocksMuscles((PLANS[y.u]||{}).blocks)}) || y.d<=prev.d){ y.d=addDays(y.d,1); moved=true; }
+    if(!moved) break;
+  }
+  agendaSort(ag);
+}
+function sheetMove(){
+  const mv=state.mv||{}, x=agendaFind(mv.k);
+  if(!x) return '<h2 id="sh-t">Einheit verschieben</h2><p class="lead">Diese Einheit ist nicht mehr geplant.</p><button class="btn sec block" data-a="sheet-close">Schliessen</button>';
+  const t=todayStr(), late=x.d<t, items=agendaItems();
+  let h='<h2 id="sh-t">'+esc(typeName(x.u))+' verschieben</h2><p class="lead">'+(late?'War geplant für '+fmtDate(x.d)+' und ist noch offen.':'Geplant für '+fmtDate(x.d)+'.')+'</p>';
+  if(mv.step==='clash'){
+    const cs=agendaClashes(items, Object.assign({}, x, {d:mv.to}));
+    h+='<div class="callout">'+I.info+'<div><b>'+fmtDate(mv.to)+': Erholung knapp.</b> '+cs.map(clashText).join(' ')+'<span class="ob-src">Quellen: '+REC_SRC+'</span></div></div>';
+    h+='<div class="opts">'
+      +'<button class="opt" data-a="mv-force"><span class="tx"><b>Trotzdem auf '+fmtDate(mv.to)+'</b><small>Die übrigen Einheiten bleiben, wo sie sind</small></span><span class="chev">'+I.chev+'</span></button>'
+      +'<button class="opt" data-a="mv-chain"><span class="tx"><b>Folgende Einheiten auch verschieben</b><small>So weit nach hinten, bis die Erholung wieder passt</small></span><span class="chev">'+I.chev+'</span></button>'
+      +'<button class="opt" data-a="mv-next"><span class="tx"><b>Auf den nächsten Trainingstag</b><small>Alle folgenden Einheiten rücken einen Trainingstag nach</small></span><span class="chev">'+I.chev+'</span></button>'
+      +'</div><button class="link" data-a="mv-back" style="align-self:center">Anderen Tag wählen</button>';
+    return h;
+  }
+  const od=officialDays().map(o=>o.w), start=late?t:addDays(t,0);
+  h+='<div class="q"><span class="q-l">Neuer Tag</span><div class="mv-days">';
+  for(let i=0;i<8;i++){
+    const d=addDays(start,i); if(d===x.d) continue;
+    const dd=parseYmd(d), on=items.find(y=>y!==x && y.d===d), off=od.includes(dd.getDay());
+    h+='<button class="mv-day'+(off?' off':'')+'" data-a="mv-day" data-v="'+d+'"><span>'+(i===0?'Heute':i===1?'Morgen':WD[dd.getDay()])+'</span><b>'+dd.getDate()+'.</b>'+(on?'<i class="plate xs '+plateCls(on.u)+'">'+plateTxt(on.u)+'</i>':'<i></i>')+'</button>';
+  }
+  h+='</div><span class="ob-sub">Blau umrandet: deine Trainingstage. Die App prüft, ob die Erholung zu den Einheiten davor und danach passt.</span></div>';
+  h+='<div class="opts">'
+    +'<button class="opt" data-a="mv-next"><span class="tx"><b>Auf den nächsten Trainingstag</b><small>Alle folgenden Einheiten rücken einen Trainingstag nach</small></span><span class="chev">'+I.chev+'</span></button>'
+    +'<button class="opt" data-a="mv-skip"><span class="tx"><b>Auslassen</b><small>Nicht nachholen. Die nächsten Trainingstage bleiben wie geplant.</small></span><span class="chev">'+I.chev+'</span></button>'
+    +'</div><button class="link" data-a="sheet-close" style="align-self:center">Abbrechen</button>';
+  return h;
+}
+function moveAction(a, d){
+  const mv=state.mv||(state.mv={}), x=agendaFind(mv.k);
+  if(a==='mv-open'){ state.mv={k:d.k, step:'pick'}; openSheet('move'); return; }
+  if(!x){ closeSheet(); return; }
+  const done=msg=>{ state.mv=null; Store.saveSettings(); closeSheet(); render(); toast(msg); };
+  if(a==='mv-back'){ mv.step='pick'; renderSheet(); return; }
+  if(a==='mv-day'){
+    const cs=agendaClashes(agendaItems(), Object.assign({}, x, {d:d.v}));
+    if(cs.length){ mv.step='clash'; mv.to=d.v; renderSheet(); return; }
+    agendaMove(x, d.v); done(typeName(x.u)+' auf '+fmtDate(d.v)+' verschoben.'); return;
+  }
+  if(a==='mv-force'){ agendaMove(x, mv.to); done(typeName(x.u)+' auf '+fmtDate(mv.to)+' verschoben.'); return; }
+  if(a==='mv-chain'){ agendaMove(x, mv.to); agendaChain(x); done('Verschoben. Die folgenden Einheiten sind nachgerückt.'); return; }
+  if(a==='mv-next'){ agendaCascade(x); done(typeName(x.u)+' auf '+fmtDate(x.d)+'. Die folgenden Einheiten rücken nach.'); return; }
+  if(a==='mv-skip'){ const it=agendaItems(); it.splice(it.indexOf(x),1); agendaExtend(state.settings.agenda); done('Ausgelassen. Es wird nichts nachgeholt.'); return; }
+}
+/* Nur für tools/test_app.py (lokaler Testserver): Zugriff auf Zustand und Agenda-Funktionen. */
+if(location.hostname==='127.0.0.1') window.__gl={get state(){ return state; }, render, todayStr, addDays, parseYmd, dayDiff, officialDays, agendaExtend, planIds, blocksMuscles, PLANS};
+/* Proaktiv: liegen gebliebene Einheit auf der Startseite klären. */
+function agendaPrompt(){
+  const x=agendaOverdue(); if(!x) return '';
+  return '<div class="callout warn-c">'+I.info+'<div><b>'+esc(typeName(x.u))+' war für '+fmtDate(x.d)+' geplant und ist noch offen.</b> Was ist passiert?<div class="row-links"><button class="link" data-a="mv-open" data-k="'+agendaKey(x)+'">Verschieben</button><button class="link" data-a="ag-backlog" data-k="'+agendaKey(x)+'">Habe ich gemacht, nachtragen</button><button class="link" data-a="ag-skip" data-k="'+agendaKey(x)+'">Auslassen</button></div></div></div>';
 }
 function planTitle(pl){ return pl && pl.days ? (pl.name || 'Coach-Plan · '+pl.days.length+' '+(pl.days.length===1?'Einheit':'Einheiten')+' pro Woche') : 'Ganzkörper A/B'; }
 /* Plan aktivieren. Der bisherige Plan wandert in den Verlauf (max. 5). Der Übungsverlauf hängt an der Übung und bleibt. */
@@ -2659,7 +2820,7 @@ function sheetLife(){
     if(st.plan && want>=4 && n<=want/2) h+='<div class="callout">'+I.info+'<div><b>Der Plan passt gerade nicht zu deinem Alltag.</b> Ein Plan mit weniger Tagen, den du einhältst, bringt mehr.</div></div><button class="btn sec block" data-a="ob-start">Plan mit weniger Tagen erstellen</button>';
     return h+back;
   }
-  if(L.view==='move') return '<h2 id="sh-t">Einheit verschieben</h2><div class="prose"><p><b>Verschieb frei.</b> Die App plant nach Reihenfolge, nicht nach Wochentag. Du startest die Einheit einfach am Tag, an dem es passt.</p><p>Zwei Dinge lohnt es sich zu beachten:</p><p>1. Zwischen zwei Einheiten mit denselben Muskeln liegen am besten 48 Stunden. Bei Ganzkörper-Plänen heisst das: ein Tag Pause dazwischen.</p><p>2. Beintraining nicht am selben Tag wie eine harte Ausdauereinheit, und wenn möglich nicht am Tag davor.</p><cite>Punkt 2 nach Schumann et al. 2022. Punkt 1 ist Coaching-Standard.</cite></div>'+back;
+  if(L.view==='move') return '<h2 id="sh-t">Einheit verschieben</h2><div class="prose"><p><b>Verschieb frei.</b> Ohne Coach-Plan läuft die App nach Reihenfolge, nicht nach Wochentag. Du startest die Einheit einfach am Tag, an dem es passt.</p><p>Trainieren zwei Einheiten an aufeinanderfolgenden Tagen die Beine, schaffst du am zweiten Tag eventuell etwas weniger: Ohne Training bis zum Versagen brauchen die Beine rund 24–48 Stunden, bis die Leistung wieder voll da ist. Für den langfristigen Fortschritt fand eine Studie keinen Nachteil. Zwischen Ausdauer und Krafttraining mindestens 3 Stunden Abstand.</p><cite>'+REC_SRC+' · Schumann et al. 2022 · Petré et al. 2021, Sports Med</cite></div>'+back;
   if(L.view==='away'){
     const until=L.until||addDays(todayStr(),7);
     let h='<h2 id="sh-t">Ferien oder Reise</h2><p class="lead">Kraft hält sich erstaunlich gut: Mit rund einem Drittel des Umfangs bleibt sie über Wochen erhalten, solange die Sätze anstrengend bleiben.</p>';
@@ -2679,6 +2840,7 @@ function lifeAction(a, d){
   const L=state.life||(state.life={view:'menu', mode:'hotel'}), st=state.settings;
   const keep=()=>{ const el=document.getElementById('life-until'); if(el && el.value) L.until=el.value; };
   if(a==='life-view'){
+    if(d.v==='move' && (agendaItems()||[]).length){ const x=agendaOverdue()||agendaItems()[0]; state.mv={k:agendaKey(x), step:'pick'}; openSheet('move'); return; }
     if(d.v==='short'){ closeSheet(); if(activeSession()){ toast('Es läuft schon eine Einheit.'); return; } state.check={type:nextType(), energy:null, sore:[], pain:[], intense:null, short:true, shortTouched:true}; openSheet('check'); return; }
     L.view=d.v; renderSheet(); return;
   }
@@ -2933,7 +3095,7 @@ function onClick(ev){
       const [dn]=totalSets(cs);
       if(dn===0){ toast('Noch kein Satz abgehakt. Zum Verwerfen in der Übersicht «Einheit verwerfen» wählen.'); break; }
       cs.status='done'; cs.endedAt=Date.now(); cs.feel=state.finish.feel; cs.fun=state.finish.fun; cs.note=(state.finish.note||'').trim();
-      persist(cs); Timer.stop(); keepAwake(false);
+      persist(cs); agendaDone(cs); Timer.stop(); keepAwake(false);
       const prs=sessionPRs(cs);
       state.sheet=null; state.detailId=cs.id; state.view='detail'; render(); window.scrollTo(0,0);
       toast(prs.length ? 'Gespeichert. '+prs.length+(prs.length===1?' neuer Bestwert!':' neue Bestwerte!') : 'Gespeichert. Gute Einheit!');
@@ -3000,6 +3162,9 @@ function onClick(ev){
     case 'rir-fix': { const cs=curSession(); if(!cs) break; const i=cs.blocks.findIndex(b=>missingRir(b)>0); state.sheet=null; if(i>-1) setCur(cs,i); render(); if(i>-1) scrollToBlock(i); break; }
     case 'ob-start': obStart(); break;
     case 'pw-set': planWeekSet(d); break;
+    case 'mv-open': case 'mv-back': case 'mv-day': case 'mv-force': case 'mv-chain': case 'mv-next': case 'mv-skip': moveAction(a, d); break;
+    case 'ag-skip': { const x=agendaFind(d.k); if(x){ state.mv={k:d.k}; moveAction('mv-skip', d); } break; }
+    case 'ag-backlog': { const x=agendaFind(d.k); if(x){ state.backlog={type:x.u, date:x.d}; openSheet('backlog'); } break; }
     case 'ob-set': case 'ob-tog': case 'ob-none': case 'ob-next': case 'ob-back': case 'ob-save': case 'ob-apply': obAction(a, d); break;
     case 'plan-open': openSheet('plan'); break;
     case 'life-open': lifeOpen(); break;
@@ -3049,7 +3214,7 @@ function onClick(ev){
 
     case 'edit-done': {
       const es=state.sessions[state.editId]; if(!es) { go('history'); break; }
-      if(es.status==='backlog'){ if(!totalSets(es)[0]){ toast('Hake mindestens einen Satz ab oder tippe auf Zurück zum Verwerfen.'); break; } es.status='done'; persist(es); }
+      if(es.status==='backlog'){ if(!totalSets(es)[0]){ toast('Hake mindestens einen Satz ab oder tippe auf Zurück zum Verwerfen.'); break; } es.status='done'; persist(es); agendaDone(es); }
       state.detailId=es.id; state.editId=null; go('detail'); toast('Gespeichert');
       break;
     }

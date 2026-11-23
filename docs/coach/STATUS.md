@@ -2,9 +2,10 @@
 
 **Zuerst lesen. Nach jedem Paket nachführen.**
 
-Letzte Aktualisierung: 13.11.2026
+Letzte Aktualisierung: 23.11.2026
 
 ## Fertig
+- Verschieben und Verpasstes (1.5 Test 21, 23.11., Aarons Vorgabe in konzept.md Abschnitt 13): Agenda-Modul (`agendaSync`, `agendaExtend`, `agendaDone`, `sheetMove`, `moveAction`, `agendaPrompt`), Erholungscheck nach Sousa 2024, Belcher 2019, Morán-Navarro 2017, Pareja-Blanco 2019, Yang 2018. Wochenübersicht und «Als Nächstes» aus der Agenda. Texte «Einheit verschieben» ohne die alten 48-h-Regeln. Testzugang `window.__gl` nur auf 127.0.0.1. `test_app.py` 51 OK.
 - N4 Wochenplanung (1.5 Test 20, 13.11.): `plan.week` = Einheit → Wochentag, `planWeekOf` (Ableitung aus Profil-Tagen oder gleichmässig), Editor `planWeekHtml` im Plan-Resultat und im Plan-Blatt (`pw-set`, belegter Tag tauscht), `planWeekdays` nutzt die Zuordnung für die Wochenübersicht. Keine Folgetag-Warnung (nicht belegt), nur die 3-Stunden-Regel bei Sport.
 - N3 Körperfigur (1.5 Test 18, 13.11.): `obBody` (SVG vorne/hinten, Punkte `OB_BODY`, gleiche Aktion wie die Chips), pro Region Schmerz 0–10 (`issue.pain`, Regler `ob-pain`), ab 5 `status:'acute'`, sonst `'sensitive'` (Silbernagel 2007, Smith 2017). Alte Statusstufen entfallen, alte Profile bleiben lesbar.
 - Offene Punkte nach dem Audit + Engine-Schwäche (1.5 Test 16, 13.11.): Epley ersetzt durch `repF` (2 % 1RM pro Wdh., Nuzzo 2024), Kopfhaltung mit Xing 2026 (fester Platz oberer Rücken, Dosis-Hinweis), Mobility-Dosis nach Ingram 2024 in der Begründung (`routine.dose`), Auffüllen ergänzt Übungen (`FILL`), wenn Zeit bleibt. Aaron hat die Projekt-Anleitung am 13.11. ersetzt (Evidenz-Regel, App ist die Quelle).
@@ -28,7 +29,7 @@ Letzte Aktualisierung: 13.11.2026
 
 ## Als Nächstes
 **Neu priorisiert am 11.11. abends, siehe konzept.md Abschnitt 12.** Aaron ist mit dem Onboarding unzufrieden («Ein Coach würde nicht vorschlagen, sondern die Bedürfnisse abfragen») und hat eine Referenz-App aufgenommen. Aaron hat am 12.11. mit «weiter» freigegeben. N1 und N2 sind fertig, weiter mit N3.
-0. **Als Nächstes N5 Krafttest (braucht die volle Nuzzo-Tabelle, Testsatz unter 10 Wdh.), dann N6 Screening. Check vor der Einheit: Schmerz auf 0–10 angleichen.** Rest siehe «Noch offen nach dem Audit» in evidenz.md. Erledigt: Liste «Offen» in evidenz.md abarbeiten (Quelle lesen, Regel belegen, ableiten oder entfernen), in kleinen Paketen. Bekannte Schwäche: Auffüllen des Umfangs nutzt freie Zeit nicht aus (2 × 90 min bleibt unter Ziel). Dann N3 Beschwerden auf Körperfigur 0–10 → N4 Wochenplanung → N5 Krafttest beim ersten Mal statt Probesätze → N6 Screening nachholbar. Erst danach die Punkte unten.
+0. **Als Nächstes: Ferien und Krankheit gegen Quellen prüfen (Life-Modul war nicht im Audit: «Kraft hält 4 Wochen», Stufen 2/2–4/über 4 Wochen, Rückkehr nach Krankheit 2 Sätze RIR 3–4, Pause 14–28 Tage +1 RIR, Hals-Regel). Dann N5 Krafttest (volle Nuzzo-Tabelle, Testsatz unter 10 Wdh.), N6 Screening. Check vor der Einheit: Schmerz auf 0–10 angleichen.**
 1. P5b Rest: Gewicht finden mit Schätzung aus verwandten Übungen (konzept.md Abschnitt 9). Heute startet eine neue Übung mit festem `FIND_START` oder 50 % des früheren Gewichts. Neu: Startwert aus dem e1RM einer Übung desselben Musters mal Verhältnis, minus 10–15 %. Dafür Verhältnis-Tabelle pro Muster in `coach/engine.js` und Aufruf in `findPlan()`.
 2. P6 Katalog erweitern: Waden, Körpergewichtsübungen (Kniebeuge, Liegestütz-Varianten, Ziehen ohne Stange), Bizeps und Trizeps als eigene Muskeln statt `arms`. Danach Reise-Modus «ohne Geräte» ergänzen (heute nur Hotel-Gym und Pause).
 3. P7 Erklärungen pro Übung in drei Teilen (Aufbau, Ausführung, häufige Fehler) statt einem `cue`. P8 Animation Prototyp mit 2–3 Übungen, Aaron entscheidet über Qualität.

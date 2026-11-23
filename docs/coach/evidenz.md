@@ -141,6 +141,23 @@ Aarons Präzisierung: Das Vorgehen wird aus Studien abgeleitet, nicht nachträgl
 - **Silbernagel 2007:** Silbernagel KG, Thomeé R, Eriksson BI, Karlsson J. Am J Sports Med. 2007;35(6):897–906. doi:10.1177/0363546506298279. RCT, 38 Personen mit Achillessehnen-Beschwerden: Weitertrainieren nach Schmerz-Monitoring gegen 6 Wochen Pause, kein Unterschied, keine Nachteile. Regeln: Schmerz bei Belastung erreicht 5 von 10 nicht, ist am nächsten Morgen weg, nimmt von Woche zu Woche nicht zu. Über PEDro und eine Zusammenfassung gelesen, nicht im Volltext.
 - **Ableitung:** Schmerz 0–10 pro Region. Ab 5 pausiert der Plan die Region (`status:'acute'`), darunter fallen nur auslösende Bewegungen weg (`'sensitive'`). Zweite Quelle: Smith 2017 (schmerzhafte Übungen bei chronischen Beschwerden schaden nicht). Grenze: Die Studie betrifft eine Sehne und chronische Beschwerden, nicht frische Verletzungen. Dafür bleiben die Warnzeichen-Frage und der Hinweis auf Fachpersonen. Die alten Stufen «in Reha» und «kommt wieder» hatten keine eigene Wirkung und sind weg.
 
+## Erholung zwischen Einheiten (23.11., für das Verschieben)
+### Quellen
+- **Sousa 2024:** Sousa CA, Zourdos MC, Storey AG, Helms ER. The Importance of Recovery in Resistance Training Microcycle Construction. J Hum Kinet. 2024;91:205–223. doi:10.5114/jhk/186659. Narrativer Review, 24 Studien. Unterkörper braucht länger (48–72 h) als Oberkörper (24 h oder weniger). Versagen, mehr Umfang, Mehrgelenkübungen und betonte exzentrische Arbeit verlängern die Erholung. Ohne Versagen war der Sprung nach 6 h wieder da. Keine feste Stundengrenze für gleiche Muskeln. Volltext gelesen (ohne Tabellen).
+- **Belcher 2019:** Belcher DJ, et al. Appl Physiol Nutr Metab. 2019. doi:10.1139/apnm-2019-0004. 12 Trainierte, 4 Sätze bis zum Versagen bei 80 %: Bankdrücken nach 24 h erholt, Kniebeuge nach 96 h, Muskelkater 48–72 h. Die Autoren vermuten ohne Versagen 24–48 h. Über Zusammenfassung gelesen.
+- **Morán-Navarro 2017:** Eur J Appl Physiol. 2017;117(12):2387–2399. doi:10.1007/s00421-017-3725-7. 10 Trainierte, Bankdrücken und Kniebeuge: ohne Versagen zwischen 24 und 48 h deutlich schneller erholt als mit Versagen. Abstract.
+- **Pareja-Blanco 2019:** Sports. 2019;7(3):59. doi:10.3390/sports7030059. 17 Untrainierte, Kniebeuge: mit 80 % und rund halber Satzlänge nach 48 h erholt, mit 60 % nach 48 h noch nicht. Volltext.
+- **Yang 2018** (siehe oben): langfristig kein Unterschied zwischen Folgetagen und Pausentagen.
+
+### Ableitung
+| Regel | Ableitung | Im Code |
+|---|---|---|
+| Hinweis, wenn zwei Einheiten an Folgetagen dieselben Beinmuskeln direkt trainieren | Die App plant ohne Versagen (RIR 1–3). Beine dann rund 24–48 h (Belcher-Autoren, Morán-Navarro, Pareja-Blanco), Folgetag = rund 24 h, also am unteren Rand. Oberkörper oft unter 24 h (Sousa, Belcher: Bankdrücken sogar mit Versagen nach 24 h), darum kein Hinweis für Oberkörper an Folgetagen | `recoveryClash`, `agendaClashes` |
+| Hinweis bei gleichen Muskeln am selben Tag | Leistung direkt danach deutlich tiefer, Erholung Stunden bis Tage (Morán-Navarro, Pareja-Blanco) | `recoveryClash` diff 0 |
+| Nur Hinweis, kein Verbot | Langfristig kein Nachteil an Folgetagen (Yang 2018, Einzelstudie). Es geht um die Tagesleistung. Darum entscheidet der Nutzer: trotzdem, folgende verschieben, oder nächster Trainingstag | `sheetMove` |
+| Direkt trainiert = Übungsanteil 1 | Indirekte Beanspruchung zählt halb (Pelland 2024), für die Erholung nicht untersucht. Vorsichtig nur direkte Muskeln | `blocksMuscles` |
+| Auslassen als Option | Projekt-Regel «Verpasstes wird nicht nachgeholt» (Aarons Vorliebe, keine Sportaussage) | `mv-skip`, `ag-skip` |
+
 ## Noch offen nach dem Audit
 1. Volle Nuzzo-Tabelle (übungsspezifische Kurven) für den Krafttest N5.
 2. Statisches Dehnen direkt vor dem Krafttraining (akute Wirkung auf die Kraft): nicht geprüft. Der Gym-Block bevorzugt dynamische Übungen, diese Wahl ist noch ohne Quelle.
