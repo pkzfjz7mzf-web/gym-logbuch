@@ -256,6 +256,13 @@ Aaron, 23.11.: Auch Technikbeschreibungen fallen unter die Evidenz-Pflicht.
 - Muster kneeext und abduct wieder aktiv, L2 hat wieder den Beinstrecker-Platz. Katalog 76, ausgemustert 40.
 - **Lehre:** Die übrigen 40 mit derselben breiteren Suche nochmals prüfen (ACE-Verzeichnis per RSS, Mayo-Clinic-Videos, offene Lehrbücher, Studienprotokolle).
 
+### Zweite Nachsuche 23.11. (1.5 Test 36): 97 im Katalog, 21 ausgemustert
+- **Zusätzliche Quellenarten:** Mayo-Clinic-Übungsvideos, geprüfte Patientenblätter (StayWell, Healthwise, WebMD Ignite mit Fachperson oder Review Board), Harvard Health, Cleveland Clinic mit genannter Fachperson, Physiopedia, Trainingsstudien mit genauer Methodenbeschreibung, ACE-Studienberichte.
+- **Zurück:** skull (Mayo, ACE), kickback (Mayo mit Band, ACE mit Kurzhantel; Kabel abgeleitet, gleiche Armbewegung), cablecurl (Mayo mit Band, ACE; Kabel abgeleitet), dbpullover (ACE, jetzt mit zwei Kurzhanteln wie in der Quelle), chintuck (StayWell mit Physiotherapeutin, ACE), pecstretch (StayWell/OSF, jetzt beide Arme), figure4 (WebMD Ignite), squathold (Harvard, Dosis 10–20 s statt 30–45 s), kneetowall (Physiopedia nach Bennell 1998; die Testbewegung als Übung ist abgeleitet), backext (WebMD, physiotherapeutisch geprüft), pullapart (Fukunaga 2022), slbridge (WebMD Ignite), cgbench (Lockie 2018: 95 % der Schulterbreite, und NSCA), ohext (Maeo 2023), seatedcalf (Kinoshita 2023: sitzend wächst vor allem der Soleus), latpdn (Buonsenso 2025, NSCA), pecdeck (ACE 2012), sumosq (Cleveland Clinic, Kampert; ACE), csrow (ACE «Dynamite Delts», 45°-Schrägbank; NSCA PTQ).
+- **Neu als Ersatz:** Wandgleiten mit Unterarmen `wallslidef` (Hardwick 2006, ersetzt Wand-Engel), Thomas-Dehnung `thomasstr` (ACE 192, ersetzt Couch Stretch).
+- **Weiter ohne Quelle (21):** dips, bbbridge, slhipthrust, pullthrough, cablekick, hamslide, cossack, adductor, revpec, inclinecurl, pikepush, kneeraise, cablecrunch, hacksquat, wallslide, shouldercar, couchstretch, hip9090, adductorrock, legswing, hamfloss. Für wallslide, couchstretch, hip9090 und hamfloss gibt es belegten Ersatz. Gefunden, aber zu dünn: Dips (McKenzie 2022 ohne Technikvorgaben), Pull-Through (IJES 2023 nur Name), Schrägbank-Curls (Studie mit Teilbewegung).
+- Werkzeug: `tools/unretire.py` holt eine Übung mit Erklärung zurück (Spezifikation als JSON).
+
 ## Noch offen nach dem Audit
 1. Volle Nuzzo-Tabelle (übungsspezifische Kurven) für den Krafttest N5.
 2. Statisches Dehnen direkt vor dem Krafttraining (akute Wirkung auf die Kraft): nicht geprüft. Der Gym-Block bevorzugt dynamische Übungen, diese Wahl ist noch ohne Quelle.

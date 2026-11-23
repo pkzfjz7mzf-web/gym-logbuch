@@ -38,7 +38,7 @@ for(const name in P){
 
 // Aaron: nahe am heutigen A/B
 { const got = ids(E.buildPlan(P.aaron, EX, CATALOG));
-  const want = ['goblet','rdl','incline','bss','facepull','deadbug','hipthrust','pullup','landmine','nordic','latlunge','pallof'];
+  const want = ['goblet','rdl','csrow','incline','bss','facepull','deadbug','hipthrust','pullup','landmine','nordic','latlunge','pallof'];
   const miss = want.filter(x => !got.includes(x));
   ok('Aaron: Plan enthält die Übungen aus A/B', miss.length===0, 'fehlen: '+miss.join(', ')); }
 

@@ -38,6 +38,7 @@ const SRC = {
   acechest: 'ACE-Sponsored Research: Top 3 Most Effective Chest Exercises, ACE Certified News 2012 (Kelly)',
   clevelandsq: 'Cleveland Clinic Health Essentials, Squat Variations (Sportmediziner Matthew Kampert, DO)',
   hardwick: 'Hardwick et al. (2006): Serratus anterior activation during a wall slide exercise. Journal of Orthopaedic and Sports Physical Therapy 36(12)',
+  acedelts: 'Sweeney, Porcari et al.: Dynamite Delts, ACE-Studie zu Schulterübungen, ACE ProSource 2014',
   asca: 'Snarr, Esco (2013): Exercise Technique: Inverted Row. Journal of Australian Strength and Conditioning 21(4)',
   nscaptq: 'Lincoln, Ill, Ibrahim (2023): Progressive Strategies for Teaching Fundamental Resistance Training Movement Patterns. NSCA Personal Training Quarterly 10(2)'
 };
@@ -501,7 +502,11 @@ const EXPLAIN = {
   thomasstr: ['Am Ende einer Bank sitzen, die Oberschenkel liegen bis zur Mitte auf. Aufrecht sitzen, Bauch fest, Schultern nach hinten-unten, ohne ins Hohlkreuz zu gehen.',
     'Leicht zurücklehnen, ein Knie zur Brust ziehen und den Oberschenkel festhalten. Den Rücken langsam Wirbel für Wirbel auf die Bank ablegen. Das andere Bein senken, sodass der Unterschenkel über die Kante hängt, das dehnt den Hüftbeuger dieses Beins. 15 bis 30 Sekunden halten, 2 bis 4 Wiederholungen, dann Seite wechseln. Kontrolliert hinein und hinaus.',
     ['Hohlkreuz: das Knie fest zur Brust ziehen.', 'Ruckartig: langsam in die Position und wieder hinaus.'],
-    ['ace']]
+    ['ace']],
+  csrow: ['Bauchlage auf einer Schrägbank mit etwa 45°, die Brust liegt auf. In jeder Hand eine Kurzhantel, die Arme hängen gestreckt nach unten.',
+    'Die Schulterblätter zusammenziehen und die Arme langsam so hoch wie möglich heben. Die Oberarme bleiben quer zum Körper, die Unterarme zeigen zum Boden. Oben angekommen die Hanteln langsam zurück in die Ausgangslage senken. Die Bank stützt den Oberkörper, das Gleichgewicht spielt kaum eine Rolle.',
+    ['Brust hebt von der Bank ab, Schwung aus dem Oberkörper: Brust auf der Bank lassen.', 'Hanteln fallen nach unten: langsam absenken.'],
+    ['acedelts','nscaptq']]
 };
 const api = {EXPLAIN, SRC};
 if(typeof module !== 'undefined' && module.exports) module.exports = api; else root.COACH_EXPLAIN = api;
