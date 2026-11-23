@@ -33,7 +33,7 @@ else:
                  'Zuerst APP_VERSION auf die nächste Version setzen und oben in CHANGELOG einen Eintrag mit date: null anlegen.')
     state_p = root / 'tools' / 'test-build.json'
     st = json.loads(state_p.read_text(encoding='utf-8')) if state_p.exists() else {}
-    sha = hashlib.sha256((src + ''.join((root / 'coach' / f).read_text(encoding='utf-8') for f in ('catalog.js', 'engine.js'))).encode('utf-8')).hexdigest()[:16]
+    sha = hashlib.sha256((src + ''.join((root / 'coach' / f).read_text(encoding='utf-8') for f in ('catalog.js', 'engine.js', 'explain.js'))).encode('utf-8')).hexdigest()[:16]
     if st.get('version') != ver:
         build = 1
     elif st.get('sha') != sha:
@@ -44,7 +44,7 @@ else:
     test_build = 'Test ' + str(build)
     band_ver = 'Version ' + ver + ' ' + test_build
 mock = (root / 'tools' / 'preview-mock.js').read_text(encoding='utf-8')
-coach = ''.join((root / 'coach' / f).read_text(encoding='utf-8') + '\n' for f in ('catalog.js', 'engine.js'))
+coach = ''.join((root / 'coach' / f).read_text(encoding='utf-8') + '\n' for f in ('catalog.js', 'engine.js', 'explain.js'))
 out = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else root / 'tools' / 'out' / 'preview.html')
 
 css = src[src.index('<style>') + 7:src.index('</style>')]

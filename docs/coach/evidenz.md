@@ -221,6 +221,11 @@ Aarons Präzisierung: Das Vorgehen wird aus Studien abgeleitet, nicht nachträgl
 | Kein Krafttest bei Schmerz in der Region, egal wie stark | Vorsicht, ohne eigene Quelle (siehe Krafttest) | `testEligible` |
 | Alte Checks ohne Stärke: wie bisher weglassen | Abwärtskompatibilität | `pl[r]==null` |
 
+## Übungserklärungen (23.11., P7)
+- `coach/explain.js`: Aufbau, Ausführung, häufige Fehler pro Übung. Reine Beschreibung der Ausführung, keine Aussage über Wirkung, Verletzungsschutz oder «gefährlich». Fehler stehen als Abweichung mit Korrektur.
+- Quelle: Standardtechnik der Übungen. Ein Technik-Handbuch habe ich nicht gelesen (z. B. NSCA Exercise Technique Manual, nicht frei zugänglich). Status: **offen**, Aaron entscheidet, ob Technikbeschreibungen unter die Evidenz-Pflicht fallen.
+- Stand: 28 von 111 Übungen (A/B-Plan und direkte Alternativen). Übrige zeigen den kurzen Hinweis aus `EX`.
+
 ## Noch offen nach dem Audit
 1. Volle Nuzzo-Tabelle (übungsspezifische Kurven) für den Krafttest N5.
 2. Statisches Dehnen direkt vor dem Krafttraining (akute Wirkung auf die Kraft): nicht geprüft. Der Gym-Block bevorzugt dynamische Übungen, diese Wahl ist noch ohne Quelle.

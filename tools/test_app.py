@@ -35,6 +35,8 @@ with sync_playwright() as p:
     ok('Check zeigt Hinweis zum Arbeitsgewicht', 'krafttest' in pg.inner_text('#sheet').lower())
     pg.click('text=Ohne Check starten'); pg.click('text=Alles erledigt')
     ok('Goblet startet mit Krafttest (Anlauf)', pg.is_visible('#find-0-0') and 'krafttest' in pg.inner_text('#find-0-0').lower() and 'anlauf' in pg.inner_text('#find-0-0').lower())
+    cx=pg.evaluate("()=>{ const d=document.querySelector('#ex-0-0 details.cue'); return d ? d.textContent : ''; }")
+    ok('Technik in drei Teilen beim Goblet Squat', 'Aufbau' in cx and 'Ausführung' in cx and 'Häufige Fehler' in cx)
     GA="const {state,repF}=window.__gl; const s=Object.values(state.sessions).find(x=>x.status==='active');"
     # Anlauf 12 kg × 5 mit 5–7 in Reserve -> Testsatz schwerer als 12 kg
     pg.click('#find-0-0 [data-a="ft-rate"][data-v="r57"]'); pg.wait_for_timeout(150)

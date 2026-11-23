@@ -21,6 +21,7 @@
 <script src="vendor/supabase.js"></script>
 <script src="coach/catalog.js"></script>
 <script src="coach/engine.js"></script>
+<script src="coach/explain.js"></script>
 <style>
 @font-face{font-family:"Barlow";font-style:normal;font-weight:400;font-display:swap;src:url(fonts/barlow-latin-400-normal.woff2) format("woff2")}
 @font-face{font-family:"Barlow";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/barlow-latin-500-normal.woff2) format("woff2")}
@@ -245,6 +246,9 @@ details.cue summary .chev-d{margin-left:auto;width:22px;height:22px;color:var(--
 details.cue[open] summary .chev-d{transform:rotate(180deg)}
 details.cue[open] .when-closed,details.cue:not([open]) .when-open{display:none}
 details.cue p{margin:0 2px 12px;color:var(--muted)}
+.cue-x h4{margin:4px 2px 2px;font:600 13px/1.3 var(--f-body);color:var(--fg)}
+.cue-x ul{margin:0 2px 12px;padding-left:18px;color:var(--muted)}
+.cue-x li{margin:2px 0}
 .warm{background:var(--surface);border-radius:var(--r-l);padding:6px 14px}
 .warm-i{display:flex;gap:12px;align-items:center;width:100%;text-align:left;padding:10px 0;border-top:1px solid var(--line);min-height:52px;font-size:15px}
 .warm-i:first-child{border-top:0}
@@ -882,6 +886,7 @@ const CHANGELOG = [
     'Jede Einheit im Coach-Plan beginnt mit einem Mobility-Block. Dazu gibt es eine kurze Mobility-Routine für freie Tage. 21 neue Mobility-Übungen.',
     'Alle Regeln der App sind gegen Studien geprüft. Unter «So rechnet die App» stehen die Quellen.',
     '«Etwas ist dazwischengekommen» auf der Startseite: verpasst, verschieben, wenig Zeit, Ferien oder Reise (mit Reise-Einheit fürs Hotel-Gym), krank.',
+    'Technik in drei Teilen: Aufbau, Ausführung und häufige Fehler, zuerst für die Übungen aus A/B und ihre Alternativen.',
     'Bizeps und Trizeps zählen getrennt, Waden sind neu dabei. Neue Übungen: Wadenheben stehend, sitzend und einbeinig, Pike-Liegestütze, Glute Bridge, Unterarmstütz und Seitstütz.',
     'Gewichtsschritte pro Übung: Unter «Schritte» legst du fest, in welchen Schritten und in welchem Bereich das Gewicht an diesem Gerät wählbar ist, z. B. 0.75 kg von 2 bis 80 kg.']},
   {v:'1.4', date:'2026-11-10', items:[
@@ -1920,7 +1925,7 @@ function entryCard(s,bi,ii){
   const tags=[]; if(s.blocks[bi].opt==='nordicA') tags.push('Vorschlag · optional'); if(e.swapFrom && EX[e.swapFrom]) tags.push('Heute statt '+EX[e.swapFrom].name); if(e.swappedTo && EX[e.swappedTo]) tags.push('Gewechselt zu '+EX[e.swappedTo].name);
   let h='<article class="ex'+(ro?' ro':'')+'" id="ex-'+bi+'-'+ii+'"><div class="ex-head"><div class="tx">'+(tags.length?'<span class="ex-tag">'+esc(tags.join(' · '))+'</span>':'')+'<h3>'+esc(def.name)+'</h3><div class="ex-meta">'+meta.join(' · ')+'</div></div>'+(canSwap?'<button class="swap-btn" data-a="swap-open" '+ref+' aria-label="'+esc(def.name)+' tauschen">'+I.swap+'Tauschen</button>':'')+'</div>';
   const f=e.find;
-  if(f && f.status==='active' && !state.editId){ h+=(f.mode==='test'?testPanel(s,bi,ii):findPanel(s,bi,ii))+'<div class="ex-foot"><button class="ghost-btn" data-a="fd-skip" '+ref+'>Ich kenne mein Gewicht</button><span class="sp"></span>'+(EQUIP[def.equip].inc?'<button class="ghost-btn" data-a="steps-open" '+ref+'>Schritte</button>':'')+'<button class="ghost-btn" data-a="skip" '+ref+'>'+I.skip+'Auslassen</button></div>'; h+='<details class="cue"><summary>'+I.info+'<span class="when-closed">Technik-Tipp anzeigen</span><span class="when-open">Technik-Tipp</span>'+I.chevD+'</summary><p>'+esc(def.cue)+'</p></details>'; return h+'</article>'; }
+  if(f && f.status==='active' && !state.editId){ h+=(f.mode==='test'?testPanel(s,bi,ii):findPanel(s,bi,ii))+'<div class="ex-foot"><button class="ghost-btn" data-a="fd-skip" '+ref+'>Ich kenne mein Gewicht</button><span class="sp"></span>'+(EQUIP[def.equip].inc?'<button class="ghost-btn" data-a="steps-open" '+ref+'>Schritte</button>':'')+'<button class="ghost-btn" data-a="skip" '+ref+'>'+I.skip+'Auslassen</button></div>'; h+='<details class="cue"><summary>'+I.info+'<span class="when-closed">Technik anzeigen</span><span class="when-open">Technik</span>'+I.chevD+'</summary>'+cueHtml(e.ex)+'</details>'; return h+'</article>'; }
   const tagTxt={up:'↑ Mehr',hold:'= Halten',down:'↓ Leichter',new:'Neu',start:'Start',found:'Gefunden',reps:'Mehr Wdh.'}[t.action]||'';
   let extra='';
   if(f && f.status==='done') extra='<span class="note" style="color:var(--muted)">'+esc(f.steps.map(st=>f.mode==='test'?testStepText(st,def):findStepText(st,def)).join(' · '))+'</span>'+(findCanUndo(e)&&!state.editId?'<button class="act" data-a="fd-undo" '+ref+'>Letzten '+(f.mode==='test'?'Satz':'Probesatz')+' zurücknehmen</button>':'');
@@ -1945,7 +1950,7 @@ function entryCard(s,bi,ii){
   });
   const lastDone = e.sets.length>0 && e.sets[e.sets.length-1].done;
   h+='</div><div class="ex-foot"><div class="setctl" role="group" aria-label="Anzahl Sätze"><button data-a="rm-set" '+ref+' aria-label="Satz entfernen"'+(e.sets.length<=1||lastDone?' disabled':'')+'>−</button><span>'+e.sets.length+' '+(e.sets.length===1?'Satz':'Sätze')+'</span><button data-a="add-set" '+ref+' aria-label="Satz hinzufügen">+</button></div><span class="sp"></span>'+(EQUIP[def.equip].inc?'<button class="ghost-btn" data-a="steps-open" '+ref+'>Schritte</button>':'')+'<button class="ghost-btn" data-a="skip" '+ref+'>'+I.skip+'Auslassen</button></div>';
-  h+='<details class="cue"><summary>'+I.info+'<span class="when-closed">Technik-Tipp anzeigen</span><span class="when-open">Technik-Tipp</span>'+I.chevD+'</summary><p>'+esc(def.cue)+'</p></details>';
+  h+='<details class="cue"><summary>'+I.info+'<span class="when-closed">Technik anzeigen</span><span class="when-open">Technik</span>'+I.chevD+'</summary>'+cueHtml(e.ex)+'</details>';
   return h+'</article>';
 }
 
@@ -3165,6 +3170,12 @@ function toast(msg){ const el=$('#toast'); el.textContent=msg; el.classList.add(
 
 function go(view){ state.view=view; state.delArm=false; if(view!=='session') keepAwake(false); render(); window.scrollTo(0,0); }
 
+/* Technik in drei Teilen (coach/explain.js), sonst der kurze Hinweis aus EX. */
+function cueHtml(id){
+  const x=((window.COACH_EXPLAIN||{}).EXPLAIN||{})[id];
+  if(!x) return '<p>'+esc(EX[id].cue||'')+'</p>';
+  return '<div class="cue-x"><h4>Aufbau</h4><p>'+esc(x[0])+'</p><h4>Ausführung</h4><p>'+esc(x[1])+'</p><h4>Häufige Fehler</h4><ul>'+x[2].map(f=>'<li>'+esc(f)+'</li>').join('')+'</ul></div>';
+}
 function persist(s){ Store.saveSession(s); }
 
 function scrollToBlock(i){
