@@ -256,6 +256,16 @@ const EXPLAIN = {
     'Am tiefen Kabelzug mit schmalem Griff sitzen. Füsse auf der Plattform oder am Boden, Knie gebeugt, Rücken gerade.',
     'Den Griff fassen, die Brust heben und die Ellbogen langsam nach hinten Richtung Rippen ziehen, bis der Griff den Bauch berührt. Etwa eine Sekunde halten, dann die Arme langsam strecken, bis das Gewicht wieder unten ist.',
     ['Rücken rundet: Brust hoch, Rücken gerade.', 'Ellbogen weit vom Körper: nah an den Rippen nach hinten ziehen.'],
+    ['ace']],
+  chestpress: [
+    'Rücken ganz an der Lehne. Sitz so einstellen, dass die Griffe auf Höhe der mittleren Brust sind. Griffe fest mit dem Daumen umfassen, Handgelenke gerade, Füsse fest am Boden. Bauch fest, ohne den unteren Rücken ins Polster zu drücken, Schulterblätter nach hinten-unten.',
+    'Ausatmen und die Griffe langsam nach vorne drücken, Handgelenke gerade, Kopf in Linie mit der Wirbelsäule. Drücken, bis die Ellbogen fast gestreckt, aber nicht durchgedrückt sind. Die Schulterblätter bleiben an der Lehne. Kurz halten, dann langsam zurück.',
+    ['Schulterblätter lösen sich von der Lehne, Schultern runden nach vorne: Schulterblätter flach an der Lehne lassen.', 'Ellbogen durchgedrückt: kurz vorher stoppen.', 'Handgelenke knicken: gerade halten.'],
+    ['ace']],
+  dbfly: [
+    'Rückenlage auf der Flachbank, Füsse am Boden, Wirbelsäule neutral. In jeder Hand eine Kurzhantel. Schulterblätter nach hinten-unten, die Hanteln über der Brust, Ellbogen leicht gebeugt, Handgelenke gerade, Handflächen zueinander.',
+    'Einatmen und die Hanteln in einem weiten Bogen seitlich absenken, bis etwa auf Schulter- oder Brusthöhe. Ausatmen und auf demselben Bogen zurück. Ellbogen und Handgelenke bleiben gleich.',
+    ['Ellbogen beugen und strecken sich, es wird ein Drücken: Ellbogenwinkel gleich lassen.', 'Zu tief: nur bis etwa Schulter- oder Brusthöhe.'],
     ['ace']]
 };
 const api = {EXPLAIN, SRC};
