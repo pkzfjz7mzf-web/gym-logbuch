@@ -23,6 +23,7 @@ Aarons persönliche Trainings-Web-App (Einheit A/B, Progressionsvorschläge, RIR
 - Plan in `docs/coach/PLAN.md`, Stand in `docs/coach/STATUS.md`. **Jede Session liest zuerst STATUS.md und macht dort weiter.**
 - Limit-sicher arbeiten (von Aaron verlangt, gilt besonders mit Fable): kleine Pakete, nach jedem Paket committen, auf `test` pushen und STATUS.md nachführen. Grosse Dateien stückweise schreiben und zwischendurch sichern.
 - Aaron sagt an, wenn er zu Fable wechselt oder davon weg.
+- **Übungen nur mit Technikquelle (Aaron, 23.11.):** Jede Übung im Coach-Katalog braucht eine Erklärung mit Quelle in `coach/explain.js`. Übungen ohne Quelle bekommen in `EX` `retired:true` und fliegen aus `coach/catalog.js`, bleiben aber in `EX` für den Verlauf.
 - **Evidenz-Pflicht (von Aaron verlangt, 13.11.):** Alles Sportliche (Regeln, Zahlen, Coach-Aussagen) kommt aus Studien, keine eigenen Faustregeln. Register in `docs/coach/evidenz.md` führen: Quelle vorher lesen, Regel als belegt, abgeleitet oder offen eintragen. Offenes darf nicht als Coach-Aussage in die App.
 
 ## Versionen und Rollback

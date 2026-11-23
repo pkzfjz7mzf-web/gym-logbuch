@@ -15,7 +15,7 @@ const DAYS = {
   U1:   {name:'Oberkörper', type:'upper', slots:[S('hpush',1,1),S('hpull',1,1),S('vpush',0,1),S('vpull',0,1),S('rear',0,2),S('triceps',0,3),S('biceps',0,3)]},
   U2:   {name:'Oberkörper', type:'upper', slots:[S('vpull',1,1),S('vpush',1,1),S('hpull',0,1),S('hpush',0,1),S('deltiso',0,2),S('rear',0,2),S('biceps',0,3),S('triceps',0,3)]},
   L1:   {name:'Unterkörper', type:'lower', slots:[S('squat',1,1),S('hinge',1,1),S('single',0,1),S('kneeflex',0,2),S('antiext',0,2),S('lateral',0,3)]},
-  L2:   {name:'Unterkörper', type:'lower', slots:[S('glute',1,1),S('squat',0,1),S('kneeflex',0,1),S('kneeext',0,2),S('lateral',0,2),S('antirot',0,2)]},
+  L2:   {name:'Unterkörper', type:'lower', slots:[S('glute',1,1),S('squat',0,1),S('kneeflex',0,1),S('single',0,2),S('lateral',0,2),S('antirot',0,2)]},
   PUSH1:{name:'Drücken', type:'push', slots:[S('hpush',1,1),S('vpush',0,1),S('chestiso',0,2),S('deltiso',0,2),S('triceps',0,2)]},
   PUSH2:{name:'Drücken', type:'push', slots:[S('vpush',1,1),S('hpush',0,1),S('deltiso',0,2),S('chestiso',0,3),S('triceps',0,2)]},
   PULL1:{name:'Ziehen', type:'pull', slots:[S('vpull',1,1),S('hpull',0,1),S('rear',0,2),S('latiso',0,3),S('biceps',0,2)]},
@@ -26,7 +26,7 @@ const SPLIT_WHY = {1:'1 Tag pro Woche: eine Ganzkörper-Einheit mit allen Grundm
   3:'3 Tage pro Woche: Ganzkörper mit wechselnden Schwerpunkten.', 4:'4 Tage pro Woche: je 2× Oberkörper und Unterkörper.',
   5:'5 Tage pro Woche: Oberkörper, Unterkörper, dann Drücken, Ziehen und Beine.', 6:'6 Tage pro Woche: 2× Drücken, Ziehen, Beine.'};
 /* Ergänzungsmuster, mit denen ein Muskel unter Ziel aufgefüllt wird. */
-const FILL = {biceps:['biceps'], triceps:['triceps'], calves:['calf'], chest:['chestiso','hpush'], shoulders:['deltiso','vpush'], lats:['latiso','vpull'], upback:['rear','hpull'], quads:['kneeext','single'], hams:['kneeflex'], glutes:['glute','abduct'], arms:['biceps','triceps']};
+const FILL = {biceps:['biceps'], triceps:['triceps'], calves:['calf'], chest:['chestiso','hpush'], shoulders:['deltiso','vpush'], lats:['latiso','vpull'], upback:['rear','hpull'], quads:['single'], hams:['kneeflex'], glutes:['glute'], arms:['biceps','triceps']};
 const LEG = ['squat','hinge','single','glute','kneeflex','kneeext','lateral','abduct'];
 const UPPER_OK = {rear:['fb','upper','pull'], deltiso:['fb','upper','push'], chestiso:['fb','upper','push'], latiso:['fb','upper','pull'], biceps:['fb','upper','pull'], triceps:['fb','upper','push']};
 const CORE = ['antiext','antirot','coreflex'];
@@ -41,7 +41,8 @@ const BASE = {goblet:3, frontsq:2, rdl:3, dbrdl:2, csrow:3, dbrow:2, cablerow:2,
   nordic:3, seatcurl:2, legcurl:2, latlunge:3, adductor:2, pallof:3, chop:2, curl:2, inclinecurl:2, pushdown:2, ohext:2, latraise:2, cablelat:2,
   cablefly:2, pecdeck:2, straightarm:2, legext:2, legpress:2, hacksquat:2, cablecrunch:2, kneeraise:2, abduction:2,
   tspineroll:4, openbook:3, threadneedle:2, wallslide:3, pecstretch:2, latstretch:2, chintuck:3, hipflexstretch:3, couchstretch:2, hip9090:2, lungerot:3,
-  squathold:3, adductorrock:2, figure4:2, kneetowall:3, calfstretch:2, legswing:3, hamfloss:2, inchworm:2};
+  squathold:3, adductorrock:2, figure4:2, kneetowall:3, calfstretch:2, legswing:3, hamfloss:2, inchworm:2,
+  heeltouch:2, chestopen:3, neckflex:3, hamwall:2, hip9090h:2};
 /* Zusätzliches Material neben dem Gerätetyp. gym hat alles. */
 const NEEDS = {pullup:['bar'], chinup:['bar'], kneeraise:['bar'], invrow:['bar'], dips:['gym'], incline:['bench'], dbbench:['bench'], csrow:['bench'], bbbench:['bench'],
   skull:['bench'], inclinecurl:['bench'], dbfly:['bench'], dbpullover:['bench'], hipthrust:['bench'], seatedpress:['bench'], slhipthrust:['bench'], bss:['bench'], stepup:['bench'],
@@ -223,7 +224,7 @@ function buildPlan(profile, EX, CAT){
   if(gw(p,'athletic')){ ensure('single', 1, 2, 'Ziel Athletik: einbeinige Kraft und Rumpf gegen Drehung sind fix dabei.'); ensure('antirot', 1, 2); }
   if(kinds.some(k => ['court','padel','tennis','football','team'].includes(k))){ ensure('lateral', 1, 2, 'Spielsport: seitliche Bewegungen und Rumpf gegen Drehung für Richtungswechsel.'); ensure('antirot', 1, 2); }
   if(kinds.includes('run')) ensure('kneeflex', 1, 2, 'Laufen: Beinbeuger für die Hamstrings. Wadenübungen folgen mit der Katalog-Erweiterung.');
-  const FOCUS = {chest:'chestiso', shoulders:'deltiso', lats:'latiso', quads:'kneeext', hams:'kneeflex', glutes:'glute', upback:'rear'};
+  const FOCUS = {chest:'chestiso', shoulders:'deltiso', lats:'latiso', quads:'single', hams:'kneeflex', glutes:'glute', upback:'rear'};
   (p.focus||[]).forEach(m => { if(m==='arms'){ ensure('biceps',2,2); ensure('triceps',2,2,'Schwerpunkt Arme: Bizeps und Trizeps an zwei Tagen.'); } else if(FOCUS[m]) ensure(FOCUS[m], 2, 2, 'Schwerpunkt '+m+': zusätzlicher Platz an zwei Tagen.'); });
 
   // 3) Übungen wählen

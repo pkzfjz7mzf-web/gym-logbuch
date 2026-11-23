@@ -2,7 +2,8 @@
 const {grab} = require('./extract.js');
 const {CATALOG, PATTERNS, TESTS, TRIGGERS, REGIONS} = require('../coach/catalog.js');
 const EX = grab('EX'); const err = [];
-for(const id in EX) if(!CATALOG[id]) err.push('fehlt im Katalog: '+id);
+for(const id in EX){ if(!EX[id].retired && !CATALOG[id]) err.push('fehlt im Katalog: '+id); if(EX[id].retired && CATALOG[id]) err.push('ohne Quelle, aber im Katalog: '+id); }
+for(const id in CATALOG) if(!require('../coach/explain.js').EXPLAIN[id]) err.push('im Katalog ohne Erklärung: '+id);
 for(const id in CATALOG){
   const c = CATALOG[id];
   if(!EX[id]) err.push('nicht in EX: '+id);
@@ -21,5 +22,5 @@ const per = {}; for(const id in CATALOG){ per[CATALOG[id].pattern] = (per[CATALO
 PATTERNS.forEach(p => { if(!per[p]) err.push('kein Eintrag für Muster '+p); });
 console.log(Object.keys(CATALOG).length+' Übungen · '+PATTERNS.map(p => p+' '+(per[p]||0)).join(', '));
 if(err.length){ console.log('FEHLER:\n'+err.join('\n')); process.exit(1); }
-console.log('Erklärungen: '+Object.keys(EXPLAIN).length+' von '+Object.keys(EX).length+' Übungen');
+console.log('Erklärungen: '+Object.keys(EXPLAIN).length+' für '+Object.keys(CATALOG).length+' Übungen im Katalog, '+Object.keys(EX).filter(i=>EX[i].retired).length+' ohne Quelle ausgemustert');
 console.log('Katalog OK');

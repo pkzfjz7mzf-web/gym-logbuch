@@ -38,7 +38,7 @@ for(const name in P){
 
 // Aaron: nahe am heutigen A/B
 { const got = ids(E.buildPlan(P.aaron, EX, CATALOG));
-  const want = ['goblet','rdl','csrow','incline','bss','facepull','deadbug','hipthrust','pullup','landmine','nordic','latlunge','pallof'];
+  const want = ['goblet','rdl','incline','bss','facepull','deadbug','hipthrust','pullup','landmine','nordic','latlunge'];
   const miss = want.filter(x => !got.includes(x));
   ok('Aaron: Plan enthält die Übungen aus A/B', miss.length===0, 'fehlen: '+miss.join(', ')); }
 
@@ -79,7 +79,7 @@ for(const name in P){
   ok('Hocke und Zehen «geht nicht»: Beintag mit Sprunggelenk, Hüfte, hinterer Kette', ['mob_ankle','mob_hip','mob_chain'].every(k => leg.includes(k)), leg.join(','));
   ok('Oberkörpertag: Mobility für Brustwirbelsäule oder Schulter', up.some(k => k==='mob_tspine' || k==='mob_shoulder'), up.join(','));
   const head = E.buildPlan({days:2, posture:['head']}, EX, CATALOG);
-  ok('Kopf nach vorne: Nackenübung in der Routine', head.routine.blocks[0].items.some(i => i.ex==='chintuck'));
+  ok('Kopf nach vorne: Nackenübung in der Routine', head.routine.blocks[0].items.some(i => i.ex==='neckflex'));
   const knee = E.buildPlan({days:2, issues:[{region:'knee', status:'sensitive', triggers:['kneel','deepknee']}]}, EX, CATALOG);
   const kn = [].concat(...knee.days.map(d => d.blocks[0].items), knee.routine.blocks[0].items).filter(i => CATALOG[i.ex].triggers.some(t => ['kneel','deepknee'].includes(t)));
   ok('Knie empfindlich beim Knien: keine knienden Mobility-Übungen', kn.length===0, kn.map(i=>i.ex).join(',')); }

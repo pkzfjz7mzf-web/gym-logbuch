@@ -21,6 +21,7 @@ const SRC = {
   hkvanasten: 'van Asten, Complete Conditioning for Hockey, Human Kinetics (Auszug)',
   acetabor: 'Tabor, Thoracic Mobility Exercises to Address Shoulder Pain, ACE Fachartikel',
   nscalp: 'NSCA Lifting Proficiencies for Various Strength Movements (Lehrunterlage, Western Illinois University)',
+  cleveland: 'Cleveland Clinic Health Essentials, Anleitung von Physiotherapeutin Dawn Lorring',
   asca: 'Snarr, Esco (2013): Exercise Technique: Inverted Row. Journal of Australian Strength and Conditioning 21(4)',
   nscaptq: 'Lincoln, Ill, Ibrahim (2023): Progressive Strategies for Teaching Fundamental Resistance Training Movement Patterns. NSCA Personal Training Quarterly 10(2)'
 };
@@ -359,7 +360,32 @@ const EXPLAIN = {
     'Seitenlage, die Knie etwa rechtwinklig gebeugt, die Hände übereinander auf Brusthöhe.',
     'Die Knie bleiben zusammen. Den oberen Arm wie ein Buch öffnen und nach hinten Richtung Boden führen. Zurück und wiederholen, etwa 5 bis 10 pro Seite.',
     ['Knie gehen auseinander oder heben ab: Knie zusammen und am Boden lassen.'],
-    ['acetabor']]
+    ['acetabor']],
+  heeltouch: [
+    'Rückenlage, Knie gebeugt, Füsse flach am Boden. Den unteren Rücken in den Boden drücken.',
+    'Die Schulterblätter Richtung Oberschenkel anheben und die Hände Richtung Fersen schieben. Eine Sekunde halten, dann zurück. Für die seitliche Bauchmuskulatur abwechselnd zur gegenüberliegenden Ferse greifen.',
+    ['Kopf wird nach vorne gezogen: Kopf locker, die Bewegung kommt aus dem Rumpf.', 'Unterer Rücken hebt ab: in den Boden gedrückt lassen.'],
+    ['nscab']],
+  chestopen: [
+    'Aufrecht stehen, Füsse hüftbreit, Zehen nach vorne, Arme seitlich. Bauch anspannen, Schultern nach hinten-unten, ohne ins Hohlkreuz zu gehen.',
+    'Ausatmen, die Brust leicht heben, die Schultern nach aussen drehen und die Schulterblätter zusammenziehen. 15 bis 30 Sekunden halten. Variante: Hände hinter dem Rücken fassen oder ein Handtuch halten und langsam nach hinten-oben drücken, ohne die Hüfte nach vorne zu schieben.',
+    ['Hohlkreuz oder Hüfte schiebt nach vorne: Bauch fest, Becken bleibt.', 'Brust nach vorne gedrückt: die Brust hebt sich nur leicht.'],
+    ['ace']],
+  neckflex: [
+    'Aufrecht stehen, Füsse hüftbreit, Arme seitlich. Bauch anspannen, Schultern nach hinten-unten, ohne ins Hohlkreuz zu gehen.',
+    'Beugen: das Kinn langsam zur Brust senken und gerade nach hinten schieben wie für ein Doppelkinn, 15 bis 30 Sekunden halten, zurück. Strecken: den Hinterkopf langsam Richtung Rücken bringen und das Kinn zur Decke heben, die Schultern bleiben locker und unten, 5 bis 10 Sekunden halten, zurück. Langsam und kontrolliert.',
+    ['Schultern bewegen sich mit: Schultern locker und unten lassen.', 'Kopf schiebt nach vorne oder hinten: nur beugen und strecken.'],
+    ['ace']],
+  hamwall: [
+    'Rückenlage an einer Wandecke oder in einem Türrahmen. Ein Bein liegt an der Wand, das andere flach am Boden an der Kante vorbei. Hüfte am Boden, Arme seitlich auf Schulterhöhe, Handflächen nach oben. Bauch anspannen.',
+    'Ausatmen und das Bein an der Wand langsam strecken, die Oberschenkelvorderseite anspannen und die Zehen zu dir ziehen. Hüfte und unterer Rücken bewegen sich nicht. 15 bis 30 Sekunden halten, dann lösen. Nur bis zur Spannung dehnen, nicht wippen. Danach Seite wechseln.',
+    ['Hüfte oder unterer Rücken bewegen sich: weniger strecken.', 'Wippen: ruhig halten.'],
+    ['ace']],
+  hip9090h: [
+    'Auf dem Boden sitzen. Das vordere Bein liegt mit der Aussenseite des Oberschenkels am Boden, das Knie 90° gebeugt, der Unterschenkel parallel zum Oberkörper. Das hintere Bein liegt seitlich mit der Innenseite am Boden, das Knie 90° gebeugt, der Unterschenkel zeigt nach hinten. Füsse locker. Kommt das vordere Knie nicht zum Boden, ein Kissen darunter oder auf einen Block sitzen.',
+    'Oberkörper aufrecht, Schultern gerade, der Körper bildet ein aufrechtes Rechteck. 20 bis 60 Sekunden halten, dann die Beine wechseln. Bei Schmerz oder Einklemmen aufhören.',
+    ['Oberkörper fällt zur Seite oder rundet: aufrecht sitzen, notfalls erhöht sitzen.'],
+    ['cleveland']]
 };
 const api = {EXPLAIN, SRC};
 if(typeof module !== 'undefined' && module.exports) module.exports = api; else root.COACH_EXPLAIN = api;
