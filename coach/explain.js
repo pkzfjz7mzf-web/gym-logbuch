@@ -19,6 +19,8 @@ const SRC = {
   hkbaechle: 'Baechle, Earle, Weight Training, 5. Aufl., Human Kinetics (Auszug)',
   hkboyle: 'Boyle, New Functional Training for Sports, Human Kinetics (Auszug Overhead Pressing)',
   hkvanasten: 'van Asten, Complete Conditioning for Hockey, Human Kinetics (Auszug)',
+  acetabor: 'Tabor, Thoracic Mobility Exercises to Address Shoulder Pain, ACE Fachartikel',
+  nscalp: 'NSCA Lifting Proficiencies for Various Strength Movements (Lehrunterlage, Western Illinois University)',
   asca: 'Snarr, Esco (2013): Exercise Technique: Inverted Row. Journal of Australian Strength and Conditioning 21(4)',
   nscaptq: 'Lincoln, Ill, Ibrahim (2023): Progressive Strategies for Teaching Fundamental Resistance Training Movement Patterns. NSCA Personal Training Quarterly 10(2)'
 };
@@ -211,8 +213,8 @@ const EXPLAIN = {
   calfraise: [
     'Aufrecht stehen, Füsse hüftbreit, Zehen nach vorne. Bei Last auf den Schultern: Brust hoch und Schulterblätter zusammen, damit der Rücken gerade bleibt. Knie leicht gebeugt.',
     'Die Zehen in den Boden drücken und die Fersen heben. Oben kurz halten, die Fersen langsam senken, unten kurz halten. Die Füsse drehen nicht.',
-    ['Füsse drehen nach innen oder aussen: Füsse gerade halten.', 'Schnell und wippend: oben und unten kurz halten.'],
-    ['ace']],
+    ['Füsse drehen nach innen oder aussen: Füsse gerade halten.', 'Schnell und wippend: volle Bewegung in gleichmässigem Tempo, oben und unten kurz halten.'],
+    ['ace','nscalp']],
   slcalf: [
     'Etwa 15 bis 30 cm vor einer Wand stehen, Handflächen auf Brust- oder Schulterhöhe an der Wand. Ein Knie beugen, sodass dieser Fuss den Boden nicht mehr berührt.',
     'Ausatmen und die Ferse des Standbeins langsam heben, das Knie bleibt gestreckt und der Fuss dreht nicht. Die Hände stützen nur. Oben kurz halten, einatmen und die Ferse langsam senken. Danach Seite wechseln.',
@@ -236,8 +238,8 @@ const EXPLAIN = {
   machrow: [
     'Sitzen, der Rücken fest an der Lehne bzw. die Brust am Polster. Den Sitz so einstellen, dass die Griffe auf Höhe der mittleren Brust sind. Füsse auf der Plattform. Griffe mit neutralem oder leichtem Obergriff fassen, Bauch fest, Schultern nach hinten-unten.',
     'Die Griffe zum Oberkörper ziehen: die Schulterblätter zusammenziehen und die Ellbogen nach hinten führen. Kontrolliert zurück und kurz vor dem ganzen Strecken der Arme stoppen.',
-    ['Zu viel Gewicht, ruckartig: weniger Gewicht, gleichmässig.', 'Ziehen nur aus den Armen: mit den Schulterblättern beginnen.', 'Nur halbe Bewegung: ganz nach hinten ziehen.', 'Schultern runden oder starkes Vorlehnen: aufrecht bleiben.', 'Schwung: kontrolliert ziehen und zurück.'],
-    ['nasm']],
+    ['Zu viel Gewicht, ruckartig: weniger Gewicht, gleichmässig.', 'Ziehen nur aus den Armen: mit den Schulterblättern beginnen.', 'Nur halbe Bewegung: ganz nach hinten ziehen, die Ellbogen nah an den Rippen.', 'Schultern runden oder starkes Vorlehnen: aufrecht bleiben.', 'Schwung aus dem Oberkörper: Oberkörper ruhig am Polster.'],
+    ['nasm','nscalp']],
   invrow: [
     'Eine Stange im Rack oder in der Smith-Maschine etwa auf Hüfthöhe, tiefer ist schwerer. Unter die Stange legen, die Brust direkt darunter. Obergriff etwas breiter als schulterbreit, Daumen um die Stange, Arme gestreckt. Gesäss und Bauch anspannen, der Rumpf ist gerade und fest. Beine gestreckt, Füsse zusammen, Fersen am Boden, Kopf neutral.',
     'Die Ellbogen beugen und den Körper zur Stange ziehen, bis die Mitte der Brust auf Höhe der Hände ist. Dabei ausatmen, etwa 2 bis 3 Sekunden. Kontrolliert absenken, bis die Arme wieder gestreckt sind, ebenfalls etwa 2 bis 3 Sekunden.',
@@ -271,8 +273,8 @@ const EXPLAIN = {
   dbfly: [
     'Rückenlage auf der Flachbank, Füsse am Boden, Wirbelsäule neutral. In jeder Hand eine Kurzhantel. Schulterblätter nach hinten-unten, die Hanteln über der Brust, Ellbogen leicht gebeugt, Handgelenke gerade, Handflächen zueinander.',
     'Einatmen und die Hanteln in einem weiten Bogen seitlich absenken, bis etwa auf Schulter- oder Brusthöhe. Ausatmen und auf demselben Bogen zurück. Ellbogen und Handgelenke bleiben gleich.',
-    ['Ellbogen beugen und strecken sich, es wird ein Drücken: Ellbogenwinkel gleich lassen.', 'Zu tief: nur bis etwa Schulter- oder Brusthöhe.'],
-    ['ace']],
+    ['Ellbogen beugen und strecken sich, es wird ein Drücken: Ellbogen leicht gebeugt und fix lassen.', 'Handgelenke knicken: Handgelenke fest.', 'Zu tief: nur bis etwa Schulter- oder Brusthöhe.'],
+    ['ace','nscalp']],
   catcow: [
     'Vierfüsslerstand: Hände direkt unter den Schultern, schulterbreit, Finger nach vorne. Knie unter der Hüfte, Knie und Füsse hüftbreit. Bauch leicht anspannen, Wirbelsäule neutral.',
     'Katze: ausatmen, den Bauch anspannen und den Rücken nach oben zur Decke rund machen, der Kopf sinkt Richtung Brust und bleibt in Linie mit der Wirbelsäule. Kuh: locker lassen, der Bauch sinkt Richtung Boden, das Hohlkreuz wird grösser und die Schulterblätter gehen zur Wirbelsäule. Dann zurück in die neutrale Ausgangslage.',
@@ -342,7 +344,22 @@ const EXPLAIN = {
     'Kabelzug etwa auf Hüfthöhe mit einem Einzelgriff. Seitlich zum Gerät stehen und den Griff mit der Hand weg vom Gerät fassen, das Kabel läuft vor dem Körper.',
     'Brust hoch, Hüfte gestreckt, die Füsse in den Boden drücken. Den Arm seitlich vom Körper weg heben, bis er waagrecht ist. Eine Sekunde halten, dann langsam zurück. Danach Seite wechseln.',
     ['Oberkörper lehnt sich weg oder dreht: Brust hoch, ruhig stehen.', 'Arm schnellt zurück: langsam absenken.'],
-    ['ace']]
+    ['ace']],
+  tspineroll: [
+    'Rückenlage, die Faszienrolle quer unter dem oberen Rücken, knapp unter den Schulterblättern. Hände hinter dem Kopf.',
+    'Bauch anspannen und den oberen Rücken über die Rolle nach hinten strecken, dann zurück, ohne einen Crunch zu machen. Die Rolle in kleinen Schritten nach oben verschieben, bis sie hinter den Schultern liegt. An jeder Stelle ein paar Wiederholungen.',
+    ['Unterer Rücken geht ins Hohlkreuz: Bauch fest, die Streckung kommt aus dem oberen Rücken.', 'Beim Zurückkommen ein Crunch: nur zurück in die Ausgangslage.'],
+    ['acetabor']],
+  threadneedle: [
+    'Vierfüsslerstand. Bauch anspannen, damit der untere Rücken ruhig bleibt.',
+    'Eine Hand unter dem Oberkörper durchschieben. Dann aufdrehen und diesen Arm zur Decke strecken, der Blick folgt der Hand. Etwa 5 bis 10 Wiederholungen pro Seite.',
+    ['Unterer Rücken und Becken drehen mit: Bauch fest, die Drehung kommt aus dem oberen Rücken.'],
+    ['acetabor']],
+  openbook: [
+    'Seitenlage, die Knie etwa rechtwinklig gebeugt, die Hände übereinander auf Brusthöhe.',
+    'Die Knie bleiben zusammen. Den oberen Arm wie ein Buch öffnen und nach hinten Richtung Boden führen. Zurück und wiederholen, etwa 5 bis 10 pro Seite.',
+    ['Knie gehen auseinander oder heben ab: Knie zusammen und am Boden lassen.'],
+    ['acetabor']]
 };
 const api = {EXPLAIN, SRC};
 if(typeof module !== 'undefined' && module.exports) module.exports = api; else root.COACH_EXPLAIN = api;
